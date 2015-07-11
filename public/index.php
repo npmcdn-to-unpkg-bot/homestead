@@ -1,4 +1,4 @@
-<?php
+<?php function printR($arr){ echo "<pre>";print_r($arr);echo"</pre>";}
 /**
  * Laravel - A PHP Framework For Web Artisans
  *

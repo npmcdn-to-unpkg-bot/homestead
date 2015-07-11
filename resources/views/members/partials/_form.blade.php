@@ -8,6 +8,10 @@
     {!! Form::label('last_name', 'Last Name:') !!}
     {!! Form::text('last_name') !!}
 </div>
+<div class="form-group">
+    {!! Form::label('avatar', 'Avatar:') !!}
+    {!! Form::text('avatar') !!}
+</div>
 
 {!! Form::label('Social Media Ids:') !!}
 <ul class='form-group'>

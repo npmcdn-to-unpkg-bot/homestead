@@ -105,7 +105,7 @@ class MembersController extends Controller {
         $this->validate($request, $this->rules); 
         $inputArr = Input::all();
         $socialSiteArr = $inputArr['site'];
-        $categoryIdArr = $inputArr['category_id'];
+        $categoryIdArr = isset($inputArr['category_id']) ? $inputArr['category_id'] : array();
         Member::saveMemberCategoryIds($categoryIdArr, $memberObj->id);
         $inputArr = array_except($inputArr, '_method', 'site', 'category_id');
         $memberObj->update($inputArr);

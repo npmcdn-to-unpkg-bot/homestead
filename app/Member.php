@@ -9,7 +9,7 @@ class Member extends Model {
     
     protected $guarded = [];
         
-    protected $fillable = array('first_name', 'last_name', 'slug');
+    protected $fillable = array('first_name', 'last_name', 'slug', 'avatar');
 
 
     /*
@@ -47,6 +47,7 @@ class Member extends Model {
         // delete existing categories in table
         DB::table('member_categories')->where('member_id', $memberId)->delete(); 
         
+        $valuesArr = array();
         foreach($categoryIdArr as $categoryId) {
     	   $valuesArr[] = array('member_id' => $memberId, 'category_id' => $categoryId );
     	}
