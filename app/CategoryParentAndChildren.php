@@ -8,7 +8,7 @@ class CategoryParentAndChildren extends Model {
 
     protected $table = 'category_parent_and_children';
     
-    public static function saveParentChild($parentIdArr, $childId, $deleteParentIdArr)
+    public function saveParentChild($parentIdArr, $childId, $deleteParentIdArr)
     {
 
         // TODO: transaction
@@ -36,9 +36,9 @@ class CategoryParentAndChildren extends Model {
     /*
      * Get parent ids associated with child_id
      */
-    public static function getSelectedParentIdNameArr($child_id)
+    public function getSelectedParentIdNameArr($child_id)
     {
-        return self::select(array('categories.display_name as display_name', 'categories.id as parent_id'))
+        return $this->select(array('categories.display_name as display_name', 'categories.id as parent_id'))
                     ->join('categories', 'categories.id', '=', 'category_parent_and_children.parent_id')
                     ->where('category_parent_and_children.child_id', '=', $child_id)
                     ->lists('display_name', 'parent_id');
@@ -69,7 +69,7 @@ class CategoryParentAndChildren extends Model {
      * Don't allow the current category id be selectable as a parent
      * Don't allow already selected parent id selectable in dropdowns except for the drop down it is set as selected in
      */
-    public static function makeDDArr($parentIdNameArr, $selectedParentIdNameArr, $currentId)
+    public function makeDDArr($parentIdNameArr, $selectedParentIdNameArr, $currentId)
     {
 
         $ddArr = array(0 => ' - none -');
@@ -83,14 +83,14 @@ class CategoryParentAndChildren extends Model {
         
     }
     
-    private static function buildTree(array $elements, $parentId = 0) 
+    private function buildTree(array $elements, $parentId = 0) 
     {
 
         $branch = array();
     
         foreach ($elements as $element) {
             if ($element['parent_id'] == $parentId) {
-                $children = self::buildTree($elements, $element['child_id']);
+                $children = $this->buildTree($elements, $element['child_id']);
                 if ($children) {
                     $element['children'] = $children;
                 }
@@ -118,7 +118,7 @@ class CategoryParentAndChildren extends Model {
                                     [parent_id] => 18
                                     [child_id] => 49
     */
-    public static function getHierarchy()
+    public function getHierarchy()
     {
         
         $parentChildArr = array();
@@ -127,13 +127,13 @@ class CategoryParentAndChildren extends Model {
             $parentChildArr[] = array('parent_id' => 0, 'child_id' => $id);
         }
         
-        $categoriesParentAndChildrenArr = self::all();
+        $categoriesParentAndChildrenArr = $this->all();
         foreach($categoriesParentAndChildrenArr as $key => $obj) {
             $tmp = $obj->getAttributes();
             $parentChildArr[] = array('parent_id' => $tmp['parent_id'], 'child_id' => $tmp['child_id']);
         }
         
-        $tree = self::buildTree($parentChildArr);
+        $tree = $this->buildTree($parentChildArr);
 
         return $tree;
         

@@ -6,11 +6,11 @@ class Category extends Model {
 
     protected $guarded = [];
     
-    public static function getParents()
+    public function getParents()
     {
  
         $arr = self::where('is_a_parent', '=', 1)->lists('display_name', 'id');
-        if (!is_array($arr)){ 
+        if (!is_array($arr)){
             $arr = array();
         }
         //$arr+=array(0 => ' - none - ');
@@ -22,11 +22,11 @@ class Category extends Model {
     /*
      * Make categories object into a lookup table
      */
-    public static function getCategoriesArr($categoriesObj = '')
+    public function getCategoriesArr($categoriesObj = '')
     {
 
         if ($categoriesObj == '') {
-            $categoriesObj = self::all();
+            $categoriesObj = $this->all();
         }
         
     	$categoriesArr = array();

@@ -11,13 +11,12 @@ class Member extends Model {
         
     protected $fillable = array('first_name', 'last_name', 'slug', 'avatar');
 
-
     /*
      * Get category_ids member belongs to
      * 
      * return
      */
-    public static function getMemberCategoryIdArr($memberId)
+    public function getMemberCategoryIdArr($memberId)
     {
         
         $memberCategoryIdArr = DB::table('member_categories')->where('member_id', $memberId)->lists('category_id');
@@ -25,7 +24,7 @@ class Member extends Model {
         
     }
     
-    public static function getSocialIdSiteArr()
+    public function getSocialIdSiteArr()
     {
         
         return array(
@@ -40,7 +39,7 @@ class Member extends Model {
         
     }
     
-    public static function saveMemberCategoryIds($categoryIdArr, $memberId)
+    public  function saveMemberCategoryIds($categoryIdArr, $memberId)
     {
         
         // TODO: transaction
@@ -61,11 +60,11 @@ class Member extends Model {
     /*
      * Get members that belong to a category
      */
-    public static function getCategoryMembers($slug)
+    public  function getCategoryMembers($slug)
     {
         
         // get members with slug in category 
-        $r = self::select() 
+        $r = $this->select() 
                 ->join('member_categories', 'members.id', '=', 'member_categories.member_id')
                 ->join('categories', 'categories.id', '=', 'member_categories.category_id')
                 ->where('categories.slug', '=', $slug)
@@ -82,11 +81,11 @@ class Member extends Model {
      * ['twitter'] = array('name' => 'Twitter', 'memberSocialId' => '3r9230rj23rj'),
      * ['instagram'] = etc
      */
-    public static function getMemberSocialIdArr($memberId)
+    public function getMemberSocialIdArr($memberId)
     {
         
         $memberSocialIdArr = DB::table('member_social_ids')->where('member_id', '=', $memberId)->lists('member_social_id', 'social_site');
-        $socialIdSiteArr = self::getSocialIdSiteArr();
+        $socialIdSiteArr = $this->getSocialIdSiteArr();
         $fullMemberSocialIdArr = array();
         foreach($socialIdSiteArr as $socialId => $socialSite) {
             $memberSocialId = isset($memberSocialIdArr[$socialId]) ? $memberSocialIdArr[$socialId]: '';    
@@ -97,10 +96,10 @@ class Member extends Model {
         
     }
     
-    public static function saveMemberSocialIds($siteArr, $memberId)
+    public  function saveMemberSocialIds($siteArr, $memberId)
     {
         
-        $socialIdSiteArr = self::getSocialIdSiteArr();
+        $socialIdSiteArr = $this->getSocialIdSiteArr();
 
         // TODO: transaction
         // delete existing parent-child relationships in table

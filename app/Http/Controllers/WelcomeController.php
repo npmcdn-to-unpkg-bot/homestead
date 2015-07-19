@@ -14,20 +14,20 @@ class WelcomeController extends Controller {
 	 */
 	public function __construct()
 	{
-		//$this->middleware('guest');
-	}
+        $this->categoryPAndCObj = new CategoryParentAndChildren();
+    }
 
 	/**
 	 * Show the application welcome screen to the user.
 	 *
 	 * @return Response
 	 */
-	public function index()
+	public function index(Category $category)
 	{
-
-		$categoriesObj = Category::all();
-		$categoriesArr = Category::getCategoriesArr($categoriesObj);
-		$parentChildArr = CategoryParentAndChildren::getHierarchy();
+ 
+		$categoriesObj = $category->all();
+		$categoriesArr = $category->getCategoriesArr($categoriesObj);
+		$parentChildArr = $this->categoryPAndCObj->getHierarchy();
 		return view('welcome', compact('categoriesObj', 'parentChildArr', 'categoriesArr'));
 	}
 

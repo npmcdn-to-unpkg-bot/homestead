@@ -15,18 +15,25 @@ class CategoriesController extends Controller {
 		'slug' => ['required'],
 		'id' => ['required']
 	];
+    
+    public function __construct()
+    {
+        $this->categoryPAndCObj = new CategoryParentAndChildren();
+    }
 
 	/**
 	 * Display a listing of the resource.
 	 *
 	 * @return Response
 	 */
-	public function index()
+	public function index(Category $category)
 	{
-		$categoriesObj = Category::all();
-        $categoriesArr = Category::getCategoriesArr($categoriesObj);
-		$parentChildArr = CategoryParentAndChildren::getHierarchy();
+
+		$categoriesObj = $category->all();
+        $categoriesArr = $category->getCategoriesArr($categoriesObj);
+		$parentChildArr = $this->categoryPAndCObj->getHierarchy();
 		return view('categories.index', compact('categoriesObj', 'parentChildArr', 'categoriesArr'));
+        
 	}
 
 	/**
@@ -38,9 +45,9 @@ class CategoriesController extends Controller {
 	{
 
 	    $category->id = 0;
-	    $parentIdNameArr = Category::getParents();
-	    $selectedParentIdNameArr = CategoryParentAndChildren::getSelectedParentIdNameArr($category->id);
-	    $ddArr = CategoryParentAndChildren::makeDDArr($parentIdNameArr, $selectedParentIdNameArr, $category->id);
+	    $parentIdNameArr = $category->getParents();
+	    $selectedParentIdNameArr = $this->categoryPAndCObj->getSelectedParentIdNameArr($category->id);
+	    $ddArr = $this->categoryPAndCObj->makeDDArr($parentIdNameArr, $selectedParentIdNameArr, $category->id);
         return view('categories.create', compact('category', 'ddArr', 'selectedParentIdNameArr'));
         
 	}
@@ -53,9 +60,9 @@ class CategoriesController extends Controller {
 	 */
 	public function edit(Category $category)
 	{
-	    $parentIdNameArr = Category::getParents();
-	    $selectedParentIdNameArr = CategoryParentAndChildren::getSelectedParentIdNameArr($category->id);
-	    $ddArr = CategoryParentAndChildren::makeDDArr($parentIdNameArr, $selectedParentIdNameArr, $category->id);
+	    $parentIdNameArr = $category->getParents();
+	    $selectedParentIdNameArr = $this->categoryPAndCObj->getSelectedParentIdNameArr($category->id);
+	    $ddArr = $this->categoryPAndCObj->makeDDArr($parentIdNameArr, $selectedParentIdNameArr, $category->id);
         return view('categories.edit', compact('category', 'ddArr', 'selectedParentIdNameArr'));
 	}
 
@@ -72,9 +79,9 @@ class CategoriesController extends Controller {
 	    $parentIdArr = $inputArr['parent_id'];
 	    $categoryId = $inputArr['category_id'];
     	$inputArr = array_except($inputArr, array('parent_id', 'category_id'));
-    	$obj = Category::create( $inputArr );
+    	$obj = $category->create( $inputArr );
 
-    	CategoryParentAndChildren::saveParentChild($parentIdArr, $obj->id, array());
+    	$this->categoryPAndCObj->saveParentChild($parentIdArr, $obj->id, array());
 
     	return Redirect::route('categories.edit', [$obj->slug])->with('message', 'Category created.');
 	}
@@ -106,7 +113,7 @@ class CategoriesController extends Controller {
     	$inputArr = array_except($inputArr, array('_method', 'parent_id', 'category_id', 'delete_parent_id'));
     	$category->update($inputArr);
 
-    	CategoryParentAndChildren::saveParentChild($parentIdArr, $id, $deleteParentIdArr);
+    	$this->categoryPAndCObj->saveParentChild($parentIdArr, $id, $deleteParentIdArr);
 
     	return Redirect::route('categories.edit', [$category->slug])->with('message', 'Category updated.');
 

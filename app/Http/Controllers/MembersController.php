@@ -14,15 +14,21 @@ class MembersController extends Controller {
     protected $rules = [
 		'first_name' => ['required', 'min:3'],
 	];
+    
+    public function __construct()
+    {
+        $this->categoryObj = new Category();
+        $this->categoryPAndCObj = new CategoryParentAndChildren();
+    }
 
 	/**
 	 * Display a listing of the resource.
 	 *
 	 * @return Response
 	 */
-	public function index()
+	public function index(Member $memberObj)
 	{
-        $membersObj = Member::all();
+        $membersObj = $memberObj->all();
         return view('members.index', compact('membersObj'));	
 	}
 
@@ -34,10 +40,10 @@ class MembersController extends Controller {
 	public function create(Member $memberObj)
 	{
 	    $memberObj->id = 0;
-	    $memberSocialIdArr = Member::getMemberSocialIdArr($memberObj->id);
+	    $memberSocialIdArr = $memberObj->getMemberSocialIdArr($memberObj->id);
 	    
-	   	$parentChildArr = CategoryParentAndChildren::getHierarchy();
-	    $categoriesArr = Category::getCategoriesArr();
+	   	$parentChildArr = $this->categoryPAndCObj->getHierarchy();
+	    $categoriesArr = $this->categoryObj->getCategoriesArr();
 	    $memberCategoryIdArr = array();
 	    
         return view('members.create', compact('memberObj', 'memberSocialIdArr', 'parentChildArr', 'categoriesArr', 'memberCategoryIdArr'));
@@ -48,17 +54,16 @@ class MembersController extends Controller {
 	 *
 	 * @return Response
 	 */
-	public function store()
+	public function store(Member $memberObj)
 	{
 	 
     	$inputArr = Input::all();
     	$socialSiteArr = $inputArr['site'];
         $categoryIdArr = $inputArr['category_id'];
     	$inputArr = array_except($inputArr, array('site', 'category_id'));
-    	$memberObj = Member::create( $inputArr );
-    	Member::saveMemberSocialIds($socialSiteArr, $memberObj->id);
-        Member::saveMemberCategoryIds($categoryIdArr, $memberObj->id);
-
+    	$memberObj = $memberObj->create( $inputArr );
+    	$memberObj->saveMemberSocialIds($socialSiteArr, $memberObj->id);
+        $memberObj->saveMemberCategoryIds($categoryIdArr, $memberObj->id);
 
     	return Redirect::route('members.edit', [$memberObj->id])->with('message', 'Member added.');
 		
@@ -84,10 +89,10 @@ class MembersController extends Controller {
 	public function edit(Member $memberObj)
 	{
 
-	    $memberSocialIdArr = Member::getMemberSocialIdArr($memberObj->id);
-	    $parentChildArr = CategoryParentAndChildren::getHierarchy();
-	    $categoriesArr = Category::getCategoriesArr();
-	    $memberCategoryIdArr = Member::getMemberCategoryIdArr($memberObj->id);
+	    $memberSocialIdArr = $memberObj->getMemberSocialIdArr($memberObj->id);
+	    $parentChildArr = $this->categoryPAndCObj->getHierarchy();
+	    $categoriesArr = $this->categoryObj->getCategoriesArr();
+	    $memberCategoryIdArr = $memberObj->getMemberCategoryIdArr($memberObj->id);
 	    
         return view('members.edit', compact('memberObj', 'memberSocialIdArr', 'parentChildArr', 'memberCategoryIdArr', 'categoriesArr'));
  
@@ -106,10 +111,10 @@ class MembersController extends Controller {
         $inputArr = Input::all();
         $socialSiteArr = $inputArr['site'];
         $categoryIdArr = isset($inputArr['category_id']) ? $inputArr['category_id'] : array();
-        Member::saveMemberCategoryIds($categoryIdArr, $memberObj->id);
+        $memberObj->saveMemberCategoryIds($categoryIdArr, $memberObj->id);
         $inputArr = array_except($inputArr, '_method', 'site', 'category_id');
         $memberObj->update($inputArr);
-        Member::saveMemberSocialIds($socialSiteArr, $memberObj->id);
+        $memberObj->saveMemberSocialIds($socialSiteArr, $memberObj->id);
 
     	return Redirect::route('members.edit', [$memberObj->id])->with('message', 'Member updated.');
 
