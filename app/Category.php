@@ -1,6 +1,7 @@
 <?php namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use DB;
 
 class Category extends Model {
 
@@ -9,13 +10,11 @@ class Category extends Model {
     public function getParents()
     {
  
-        $arr = self::where('is_a_parent', '=', 1)->lists('display_name', 'id');
-        if (!is_array($arr)){
-            $arr = array();
-        }
-        //$arr+=array(0 => ' - none - ');
-        return $arr; 
-        //return DB::table('categories')->where('is_a_parent', '>', 0)->orderBy('name', 'desc')->get();
+        $arr = $this->select()->join('category_parent_and_children', 'categories.id', '=', 'child_id')
+                ->where('parent_id', '=', '0')
+                ->lists('display_name', 'id');
+
+        return $arr;
         
     }
 

@@ -11,11 +11,13 @@
     {!! Form::text('slug') !!}
 </div>
 
+{{--
 <div class="form-group">
     {!! Form::label('', 'Is a parent?') !!}
     no: {!! Form::radio('is_a_parent', 0, ($is_a_parent?false:true)) !!}
     yes: {!! Form::radio('is_a_parent', 1, ($is_a_parent?true:false)) !!}
 </div>
+--}}
 
 @if (count($selectedParentIdNameArr)) 
     {!! Form::label('Selected parents:') !!}

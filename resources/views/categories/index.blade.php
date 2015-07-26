@@ -33,10 +33,14 @@
     
     <div class='right_col'>
        <h2>Hierarchy</h2>
-       <?php 
-       foreach($parentChildArr as $itemArr) {
-            $route = '/socialmedia/' . $categoriesArr[$itemArr['child_id']]['slug']; 
-            echo renderItem($itemArr, $categoriesArr, $route);
+        <?php 
+        foreach($parentChildArr as $itemArr) {
+            if (!isset($categoriesArr[$itemArr['child_id']])) {
+                //echo 'asdf';
+            }else{
+                $route = '/socialmedia/' . $categoriesArr[$itemArr['child_id']]['slug']; 
+                echo renderItem($itemArr, $categoriesArr, $route);
+            }
        }
        ?> 
     </div> 

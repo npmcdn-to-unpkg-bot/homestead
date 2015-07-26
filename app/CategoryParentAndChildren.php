@@ -122,17 +122,18 @@ class CategoryParentAndChildren extends Model {
     {
         
         $parentChildArr = array();
-        $parentArr = DB::table('categories')->where('is_a_parent', '=', 1)->lists('display_name', 'id');
+        $categoryModel = new Category();
+        $parentArr = $categoryModel->getParents();
         foreach($parentArr as $id => $name) {
             $parentChildArr[] = array('parent_id' => 0, 'child_id' => $id);
         }
-        
+
         $categoriesParentAndChildrenArr = $this->all();
         foreach($categoriesParentAndChildrenArr as $key => $obj) {
             $tmp = $obj->getAttributes();
             $parentChildArr[] = array('parent_id' => $tmp['parent_id'], 'child_id' => $tmp['child_id']);
         }
-        
+
         $tree = $this->buildTree($parentChildArr);
 
         return $tree;

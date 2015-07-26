@@ -19,6 +19,7 @@ class CategoriesController extends Controller {
     public function __construct()
     {
         $this->categoryPAndCObj = new CategoryParentAndChildren();
+
     }
 
 	/**

@@ -68,8 +68,8 @@ class Member extends Model {
                 ->join('member_categories', 'members.id', '=', 'member_categories.member_id')
                 ->join('categories', 'categories.id', '=', 'member_categories.category_id')
                 ->where('categories.slug', '=', $slug)
-                ->toSql();
-                //->get();
+                //->toSql();
+                ->get();
         return $r;
         
     }
