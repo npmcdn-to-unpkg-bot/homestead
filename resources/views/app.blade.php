@@ -65,6 +65,11 @@
 	</nav>
 	
 	<div class='content'>
+        
+        <p align='right'>
+        <a href='/categories'>Categories</a> | <a href='/categories/create'>Create Category</a> | <a href='/members'>Members</a> | 
+        <a href='/members/create'>Member Create</a> | 
+        </p>
 	
 	@if (Session::has('message'))
 		<div class="flash alert-info">

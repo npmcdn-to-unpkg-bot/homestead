@@ -20,7 +20,7 @@ class CategoryParentAndChildren extends Model {
     	   $valuesArr = array();
     	   $parentIdArr = array_unique($parentIdArr);
     	   foreach($parentIdArr as $parentId) {
-    	       if ($parentId == 0 || in_array($parentId, $deleteParentIdArr)) {
+    	       if (in_array($parentId, $deleteParentIdArr)) {
     	           continue;
     	       }
     	       $valuesArr[] = array('child_id' => $childId, 'parent_id' => $parentId);

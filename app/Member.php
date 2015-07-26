@@ -78,18 +78,35 @@ class Member extends Model {
      * Create an array of social sites and the ids a member has for each one
      * 
      * returns array in format:
-     * ['twitter'] = array('name' => 'Twitter', 'memberSocialId' => '3r9230rj23rj'),
+     * ['twitter'] = array('name' => 'Twitter', 'memberSocialId' => '3r9230rj23rj', 'disabled' => 1),
      * ['instagram'] = etc
      */
     public function getMemberSocialIdArr($memberId)
     {
         
-        $memberSocialIdArr = DB::table('member_social_ids')->where('member_id', '=', $memberId)->lists('member_social_id', 'social_site');
+        // get member's social ids (eg. twitter screen_name 'nba_playa')
+        $memberSocialIdArr = DB::table('member_social_ids')
+                ->where('member_id', '=', $memberId)
+                ->get();
+
+        // get array of social sites and set member's social ids for each site
         $socialIdSiteArr = $this->getSocialIdSiteArr();
         $fullMemberSocialIdArr = array();
         foreach($socialIdSiteArr as $socialId => $socialSite) {
-            $memberSocialId = isset($memberSocialIdArr[$socialId]) ? $memberSocialIdArr[$socialId]: '';    
-            $fullMemberSocialIdArr[$socialId] = array('name' => $socialSite, 'memberSocialId' => $memberSocialId);
+            $memberSocialId = '';
+            $disabled = 1;
+            foreach($memberSocialIdArr as $key => $obj) {
+                if ($obj->social_site == $socialId) {
+                    $memberSocialId = $obj->member_social_id;
+                    $disabled = $obj->disabled;
+                    break;
+                }
+            }
+            $fullMemberSocialIdArr[$socialId] = array(
+                'name' => $socialSite, 
+                'memberSocialId' => $memberSocialId,
+                'disabled' => $disabled
+            );
         }
 
         return $fullMemberSocialIdArr;
@@ -107,16 +124,22 @@ class Member extends Model {
 
         // save new parent-child relationships
     	if (count($siteArr) > 0) {
-    	   $valuesArr = array();
-    	   $siteArr = array_unique($siteArr);
-    	   foreach($siteArr as $site => $siteId) {
-    	       
-    	       $site = trim($site);
-    	       $siteId = trim($siteId);
-    	       if ($siteId == '' || $site == '' || !isset($socialIdSiteArr[$site])) {
-    	           continue;
-    	       }
-    	       $valuesArr[] = array('member_id' => $memberId, 'social_site' => $site, 'member_social_id' => $siteId );
+            $valuesArr = array();
+            //$siteArr = array_unique($siteArr);
+            foreach($siteArr as $site => $arr) {
+
+                $site = trim($site);
+                $siteId = trim($arr['id']);
+                if ($siteId == '' || $site == '' || !isset($socialIdSiteArr[$site])) {
+                    continue;
+                }
+    	        $valuesArr[] = array(
+                   'member_id' => $memberId, 
+                   'social_site' => $site, 
+                   'member_social_id' => $siteId,
+                   'disabled' => $arr['disabled'] 
+                   
+                );
     	   }
     	   if (count($valuesArr) > 0) {
     	       DB::table('member_social_ids')->insert($valuesArr);

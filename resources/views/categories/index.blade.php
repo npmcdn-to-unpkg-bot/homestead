@@ -18,7 +18,7 @@
             @foreach( $categoriesObj as $obj )
                 <li class='cat_row'>
                     {!! Form::open(array('class' => 'form-inline', 'method' => 'DELETE', 'route' => array('categories.destroy', $obj->slug))) !!}
-                        <div class='category_label'>{{ $obj->name }}</div>
+                        <div class='category_label'>{{ $obj->display_name }}</div>
                             {!! link_to_route('categories.edit', 'Edit', array($obj->slug), array('class' => 'btn btn-info')) !!} &nbsp;   
                             {!! Form::submit('Delete', array('class' => 'btn btn-danger')) !!}
                     {!! Form::close() !!}
@@ -34,14 +34,7 @@
     <div class='right_col'>
        <h2>Hierarchy</h2>
         <?php 
-        foreach($parentChildArr as $itemArr) {
-            if (!isset($categoriesArr[$itemArr['child_id']])) {
-                //echo 'asdf';
-            }else{
-                $route = '/socialmedia/' . $categoriesArr[$itemArr['child_id']]['slug']; 
-                echo renderItem($itemArr, $categoriesArr, $route);
-            }
-       }
+        renderTree($parentChildArr, $categoriesArr);
        ?> 
     </div> 
     

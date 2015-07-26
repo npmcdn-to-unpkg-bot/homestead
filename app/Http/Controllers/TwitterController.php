@@ -16,7 +16,11 @@ class TwitterController extends Controller
     
     public function addNewMembers()
     {
-        Twitter::addNewMembers();
+        $cursor = -1;
+        do {
+            $cursor = Twitter::addNewMembers($cursor);
+        } while($cursor >0 );
+        
         exit('asfd');
     }
     

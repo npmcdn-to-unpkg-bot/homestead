@@ -19,8 +19,13 @@
     <?php
     foreach($memberSocialIdArr as $siteKey => $arr) {
     ?>
+    
         {!! Form::label('site', $arr['name'] . ":", array('class' => 'site_label')) !!}
-        {!! Form::text("site[$siteKey]", $arr['memberSocialId']) !!}
+        {!! Form::text("site[$siteKey][id]", $arr['memberSocialId']) !!}
+        
+        on: {!! Form::radio("site[$siteKey][disabled]", 0, ($arr['disabled']?false:true)) !!}
+        off: {!! Form::radio("site[$siteKey][disabled]", 1, ($arr['disabled']?true:false)) !!}
+        
         <br>
     <?php
     }

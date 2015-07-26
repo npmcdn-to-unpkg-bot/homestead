@@ -5,9 +5,17 @@ use Illuminate\Database\Eloquent\Model;
 use Twitter;
 use DB;
 use Category;
+//use CategoriesParentAndChildren;
 
 class TwitterNA extends Model
 {
+    
+    public function __construct()
+    {
+
+        $this->categoriesArr = DB::table('categories')->get();
+        $this->catPCArr = DB::table('category_parent_and_children')->lists('parent_id', 'child_id');
+    }
 
     private function getFriendsIds($screenName = 'nbablvd', $count = 2, $format = 'json')
     {
@@ -30,30 +38,38 @@ class TwitterNA extends Model
 	 * - skip_status (0|1)
 	 * - include_user_entities (0|1)
 	 */
-    public function addNewMembers()
+    public function addNewMembers($nextCursor = -1)
     {
 
         // get members being followed on twitter
-        $paramArr = ['screen_name' => 'nbablvd', 'skip_status' => true, 'include_user_entities' => false];
+        $paramArr = ['screen_name' => 'nbablvd', 'skip_status' => true, 'include_user_entities' => false, 'cursor' => $nextCursor];
         
-        if (0) { 
+        if (1) { 
             $r = Twitter::getFriends($paramArr); 
         } else {
             $r = new \stdClass();
             $mem = new \stdClass();
             $mem->screen_name = 'Adrien_Payne';
             $mem->name = 'Adreian Payne';
-            $mem->description = 'Blah blah minnesota Timberwolves';
+            $mem->description = 'Blah blah northwest minnesota Timberwolves';
             $mem->profile_image_url = 'http://pbs.twimg.com/profile_images/3439961848/64f4a9275de184af5e381486492000b2_normal.jpeg';
-            $r->users[0] = $mem; 
+            $r->users[2] = $mem; 
             $mem = new \stdClass();
             $mem->screen_name = 'Kobe_Bryant';
             $mem->name = 'Kobe Bryan';
             $mem->description = 'Blah blah LAKERS ASDF';
             $mem->profile_image_url = 'http://pbs.twimg.com/profile_images/3439961848/64f4a9275de184af5e381486492000b2_normal.jpeg';
             $r->users[1] = $mem; 
+            $mem = new \stdClass();
+            $mem->name = 'Jason Thompson';
+            $mem->screen_name = 'jtthekid';
+            $mem->description = 'PF/C for Philadelphia 76ers. iG: Jtthekid Manager: @dschwartze1 Mr. 519+';
+            $mem->profile_image_url = 'http://pbs.twimg.com/profile_images/618625788460560384/iwS9dPYE_normal.jpg';
+            $r->users[0] = $mem; 
+            $r->next_cursor_string = -1;
         }
-        //printR($r);exit;
+        //printR($r);
+        //exit;
         $screenNameArr = $this->retrieveScreenNameArr($r->users);
         if ($screenNameArr === false) { 
             return false;
@@ -64,12 +80,14 @@ class TwitterNA extends Model
         foreach($screenNameArr as $screenName) {
             $memberObj = $this->getMemberDetails($screenName, $r->users);
             if ($memberObj) {
-                // transaction 
+                //TODO transaction 
                 $memberObj = $this->addMember($memberObj);
                 $this->addCategories($memberObj);
                 // transaction commit or rollback
             }    
         }
+        
+        return $r->next_cursor_str;
 
     }
     
@@ -108,6 +126,8 @@ class TwitterNA extends Model
         
     }
     
+    // TODO move avatar to member_social_ids and make selectable
+    // TODO make avatar updatable
     protected function addMember($memberObj)
     {
 
@@ -139,45 +159,123 @@ class TwitterNA extends Model
     protected function addCategories($memberObj)
     {
         
-        if (is_null($this->categoriesArr)) {
-            $this->categoriesArr = DB::table('categories')->get();
-            if (count($this->categoriesArr) == 0) {
-                return false;
-            }
-        }
-        
+        $categoriesArr = $this->categoriesArr;
+        /* eg. Array(
+            [0] => stdClass Object
+                (
+                    [id] => 18
+                    [name] => Atlantic
+                    [display_name] => Atlantic
+                    [slug] => atlantic
+                    [created_at] => 2015-07-26 15:42:55
+                    [updated_at] => 2015-07-26 15:42:55
+                )
+        */
+
+        // child_id's pointing to their parent_id's
+        $catPCArr = $this->catPCArr;
+        /* eg.  Array(
+            [18] => 0
+            [19] => 0
+            ...
+            [49] => 18
+            ...
+            [44] => 19
+            [45] => 19
+        */
+
         // look for the category in the description
-        $found = false;
+        $catSetArr = array();
+        $childIdFound = false;
+        $parentIdFound = false;
         foreach($this->categoriesArr as $obj) {
-            if (stristr($memberObj->description, $obj->display_name)) {
-                $found = true;
-                $this->insertMemberCategory($memberObj, $obj->id);
-                break;
+            
+            if (stristr($memberObj->description, $obj->display_name) && !isset($catSetArr[$obj->id])) {
+                
+                $catSetArr[$obj->id] = 1;
+                
+                if ($this->isParentId($obj) && $parentIdFound === false) {
+                    $parentIdFound = $obj->id;
+                    $this->insertMemberCategory($memberObj, $parentIdFound);
+                }
+
+                list($childIdFound, $parentIdFound) = $this->saveParentAndChild($parentIdFound, $childIdFound, $obj, $memberObj);
+                    
+                if ($parentIdFound && $childIdFound) {
+                    break;
+                }
             }
         }
         
-        // if not found, break up category name, if possible, and search for each
+        if ($parentIdFound && $childIdFound) {
+            return;
+        }
+        
+        // break up category name, if possible, and search for each
         // word greater than 3 characters in the member description
-        if ($found === false) {
-            foreach($this->categoriesArr as $obj) {
-                $arr = explode(" ", $obj->display_name);
-                if (count($arr) == 1 ) {
+        foreach($this->categoriesArr as $obj) {
+            
+            $arr = explode(" ", $obj->display_name);
+            if (count($arr) == 1 ) {
+                continue;
+            }
+            
+            // reverse array since most significant part is last eg. Los Angeles Lakers, 
+            // Lakers is most significant part and will avoid conflicts with Los Angeles Clippers
+            $arr = array_reverse($arr);
+            
+            foreach($arr as $word) {
+                
+                if (strlen(trim($word)) < 3 ) {
                     continue;
                 }
-                foreach($arr as $word) {
-                    if (strlen(trim($word)) < 3 ) {
-                        continue;
-                    }
-                    if (stristr($memberObj->description, trim($word))) {
-                        $this->insertMemberCategory($memberObj, $obj->id);
-                        break;
+                
+                if (stristr($memberObj->description, trim($word)) && !isset($catSetArr[$obj->id])) {
+                    
+                    $catSetArr[$obj->id] = 1;
+
+                    // the isset($catSetArr) check above prevents duplicates here
+                    if ($this->isParentId($obj) == true && $parentIdFound === false) {
+                        $parentIdFound = $this->catPCArr[$obj->id];
+                        $this->insertMemberCategory($memberObj, $parentIdFound);
+                    } 
+                    
+                    list($childIdFound, $parentIdFound) = $this->saveParentAndChild($parentIdFound, $childIdFound, $obj, $memberObj);
+
+                    if ($childIdFound && $parentIdFound) {
+                        break 2;
                     }
                 }
-            }   
-        }
+                
+            }
+        }      
         
     }
     
+    // if the childId has not been found and the current category id is not a top level parent category
+    // (eg. top level parent category 'Pacific' for nba) 
+    protected function saveParentAndChild($parentIdFound, $childIdFound, $catObj, $memberObj)
+    {
+        
+        if ($this->isParentId($catObj) == false && $childIdFound === false) {
+            $childIdFound = $catObj->id;
+            $this->insertMemberCategory($memberObj, $childIdFound);
+            if ($parentIdFound === false) {
+                $parentIdFound = $this->catPCArr[$childIdFound];
+                $this->insertMemberCategory($memberObj, $parentIdFound);
+            }
+            
+        }
+        
+        return array($childIdFound, $parentIdFound);
+        
+    }
+    
+    private function isParentId($catObj) 
+    {
+        return (isset($this->catPCArr[$catObj->id]) && $this->catPCArr[$catObj->id] == 0 ) ? true : false;
+    }
+        
     private function insertMemberCategory($memberObj, $catId)
     {
         DB::table('member_categories')->insert([
