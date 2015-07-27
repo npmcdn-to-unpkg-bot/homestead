@@ -12,9 +12,42 @@ class Category extends Model {
  
         $arr = $this->select()->join('category_parent_and_children', 'categories.id', '=', 'child_id')
                 ->where('parent_id', '=', '0')
-                ->lists('display_name', 'id');
+                ->lists('display_name', 'child_id');
 
         return $arr;
+        
+    }
+        
+    public function getCategoryPath($slug)
+    {
+
+        $r = DB::table('categories') 
+            ->join('category_parent_and_children', 'child_id', '=', 'categories.id')
+            ->where('categories.slug', '=', $slug)
+            ->get();
+        
+        if (count($r) == 0) {
+            return array();
+        }
+
+        // if it is a parent, that's it, done
+        if (count($r) == 1 && $r[0]->parent_id == 0) {
+            return $r;
+        }
+        
+        $arr[] = $r[0];
+        do {
+            
+            $r = DB::table('categories') 
+                ->join('category_parent_and_children', 'child_id', '=', 'categories.id')
+                ->where('categories.id', '=', $r[0]->parent_id)
+                ->get();
+            $arr[] = $r[0];
+
+        } while($r[0]->parent_id >0 );
+
+        // since we built the array from child up to parent, reverse it for top down display
+        return array_reverse($arr);
         
     }
 

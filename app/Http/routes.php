@@ -10,7 +10,7 @@
 | and give it the controller to call when that URI is requested.
 |
 */
-Route::get('member', 'MembersController@index');
+Route::get('members/{category?}', 'MembersController@index');
 Route::get('/', 'WelcomeController@index');
 Route::get('twitter', 'TwitterController@index');
 Route::get('twitter/getfriendsids', 'TwitterController@getfriendsids');
@@ -36,10 +36,18 @@ Route::bind('socialmedia', function($slug, $route) {
     // be retrieved via social media model or social media controller
 	return App\Category::whereSlug($slug)->first();
 });
+/*
+Route::bind('members/index', function($slug, $route) {
+	return App\Category::whereSlug($slug)->first();
+});
+ 
+ */
 
 Route::bind('members', function($value, $route) {
 	return App\Member::where('id', $value)->first();
 });
+
+
 
 Route::bind('categories', function($slug, $route) {
     // pass category to social media controller

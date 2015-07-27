@@ -4,7 +4,7 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Twitter;
 use DB;
-use Category;
+//use Category;
 //use CategoriesParentAndChildren;
 
 class TwitterNA extends Model

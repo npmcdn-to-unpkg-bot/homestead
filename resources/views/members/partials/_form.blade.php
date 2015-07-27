@@ -1,6 +1,12 @@
 <div class='left_col'>
 
 <div class="form-group">
+    {!! Form::label('name', 'Name:') !!}
+    {!! Form::text('name') !!}
+</div>
+    
+    <!--
+<div class="form-group">
     {!! Form::label('first_name', 'First Name:') !!}
     {!! Form::text('first_name') !!}
 </div>
@@ -8,6 +14,7 @@
     {!! Form::label('last_name', 'Last Name:') !!}
     {!! Form::text('last_name') !!}
 </div>
+    -->
 <div class="form-group">
     {!! Form::label('avatar', 'Avatar:') !!}
     {!! Form::text('avatar') !!}

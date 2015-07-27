@@ -12,13 +12,14 @@ use Illuminate\Http\Request;
 class MembersController extends Controller {
     
     protected $rules = [
-		'first_name' => ['required', 'min:3'],
+		'name' => ['required', 'min:3'],
 	];
     
     public function __construct()
     {
         $this->categoryObj = new Category();
         $this->categoryPAndCObj = new CategoryParentAndChildren();
+        $this->memberObj = new Member();
     }
 
 	/**
@@ -26,10 +27,31 @@ class MembersController extends Controller {
 	 *
 	 * @return Response
 	 */
-	public function index(Member $memberObj)
+	public function index($slug = '')
 	{
-        $membersObj = $memberObj->all();
-        return view('members.index', compact('membersObj'));	
+    
+        $inputArr = Input::all();
+        $limit = 15;
+        $next = isset($inputArr['next']) ? (int)$inputArr['next'] : 0;
+
+        if ($slug) {
+            $membersObj = $this->memberObj->getMembersWithSlugSimple($slug, $next, $limit);
+            $catPathArr = $this->categoryObj->getCategoryPath($slug);
+        } else {
+            $membersObj = $this->memberObj->orderBy('created_at', 'desc')->skip($next)->take($limit)->get();
+        }
+        $prev = 0;
+        if ($next >= $limit) {
+            $prev = $next;
+            $next = $next + $limit;
+        }
+        
+        $categoriesObj = $this->categoryObj->all();
+        $categoriesArr = $this->categoryObj->getCategoriesArr($categoriesObj);
+		$parentChildArr = $this->categoryPAndCObj->getHierarchy();
+        
+        return view('members.index', compact('membersObj', 'next', 'prev', 'parentChildArr', 'categoriesArr', 'catPathArr'));
+ 
 	}
 
 	/**
@@ -75,9 +97,9 @@ class MembersController extends Controller {
 	 * @param  int  $id
 	 * @return Response
 	 */
-	public function show($id)
+	public function show(Member $memberObj)
 	{
-
+       exit('in show');
 	}
 
 	/**

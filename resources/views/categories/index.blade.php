@@ -1,10 +1,6 @@
 @extends('app')
 
 @section('content')
-
-    <p>
-        {!! link_to_route('categories.create', 'Create Category') !!}
-    </p>
     
     <div class='left_col'>
     

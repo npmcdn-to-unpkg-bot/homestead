@@ -1,16 +1,30 @@
 <?php
 
+if (!function_exists('str_slug')) {
+    /**
+     * Generate a URL friendly "slug" from a given string.
+     *
+     * @param  string  $title
+     * @param  string  $separator
+     * @return string
+     */
+    function str_slug($title, $separator = '_')
+    {
+        return Str::slug($title, $separator);
+    }
+}
+
 /**
  * View helper for formating category hierarchies with ul/li
  * 
  */
-function renderItem($itemArr, $categoriesArr, $route) 
+function renderItem($itemArr, $categoriesArr, $route, $slug = '') 
 {
 
     $id = $itemArr['child_id'];
     $out = "<span class='category_name'><a href='";
     //$out.= route($route);
-    $out.= $route;
+    $out.= '/' . $route . '/' . $slug;
     $out.= "'>";
     $out.= $categoriesArr[$id]['display_name'];
     $out.= "</a></span>";
@@ -18,7 +32,8 @@ function renderItem($itemArr, $categoriesArr, $route)
     if (isset($itemArr['children'])) {
         $out.= "<ul class='category_ul'>";
         foreach ($itemArr['children'] as $child) {
-            $out.= "<li>" . renderItem($child, $categoriesArr, $route) . "</li>";
+            $slug = $categoriesArr[$child['child_id']]['slug'];
+            $out.= "<li>" . renderItem($child, $categoriesArr, $route, $slug) . "</li>";
         }
         $out.= "</ul>";
     }
@@ -28,15 +43,16 @@ function renderItem($itemArr, $categoriesArr, $route)
     
 }
 
-function renderTree($parentChildArr, $categoriesArr) 
+function renderTree($parentChildArr, $categoriesArr, $route = 'socialmedia') 
 {
     foreach($parentChildArr as $itemArr) {
-        if (!isset($categoriesArr[$itemArr['child_id']])) {
-            //echo 'asdf';
-        }else{
-            $route = '/socialmedia/' . $categoriesArr[$itemArr['child_id']]['slug']; 
-            echo renderItem($itemArr, $categoriesArr, $route);
-        }
+        
+        $id = $itemArr['child_id'];
+        $slug = $categoriesArr[$id]['slug'];
+        //printR($itemArr);       
+        //printR($parentChildArr);        
+        //printR($categoriesArr);
+        echo renderItem($itemArr, $categoriesArr, $route, $slug);
     }
 }
 

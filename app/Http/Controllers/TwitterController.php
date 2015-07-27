@@ -14,12 +14,12 @@ class TwitterController extends Controller
         $this->twitterNA = new TwitterNA();
     }
     
-    public function addNewMembers()
+    public function index()
     {
         $cursor = -1;
         do {
-            $cursor = Twitter::addNewMembers($cursor);
-        } while($cursor >0 );
+            $cursor = $this->twitterNA->addNewMembers($cursor);
+        } while($cursor > 0);
         
         exit('asfd');
     }
@@ -32,16 +32,6 @@ class TwitterController extends Controller
         $idArr = $obj->ids;
         $r = Twitter::getFriends($idArr);
         print_r($r);
-    }
-    /**
-     * Display a listing of the resource.
-     *
-     * @return Response
-     */
-    public function index()
-    {
-        $this->twitterNA->addNewMembers();
-        exit('asfd');
     }
 
     /**

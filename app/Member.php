@@ -1,15 +1,16 @@
 <?php namespace App;
 
-use Illuminate\Database\Eloquent\Model;
+use App\ModelNA;
+//use Illuminate\Database\Eloquent\Model;
 use DB;
 use App\CategoryParentAndChildren;
 use App\Category;
 
-class Member extends Model {
+class Member extends ModelNA {
     
     protected $guarded = [];
         
-    protected $fillable = array('first_name', 'last_name', 'slug', 'avatar');
+    protected $fillable = array('name', 'name', 'slug', 'avatar');
 
     /*
      * Get category_ids member belongs to
@@ -23,7 +24,7 @@ class Member extends Model {
         return $memberCategoryIdArr;
         
     }
-    
+        
     public function getSocialIdSiteArr()
     {
         
@@ -60,19 +61,41 @@ class Member extends Model {
     /*
      * Get members that belong to a category
      */
-    public  function getCategoryMembers($slug)
+    public  function getMembersWithSlugSimple($slug, $next = 0, $limit = 15)
     {
-        
-        // get members with slug in category 
+
+        // TODO optimize - where clause with 'slug = $slug' should come first to greatly reduce
+        // rows scanned
+        $r = $this->select('members.*','categories.display_name') 
+            ->join('member_categories', 'members.id', '=', 'member_categories.member_id')
+            ->join('categories', function($join) use ($slug)
+            {
+                $join->on('categories.id', '=', 'member_categories.category_id')
+                        ->where('categories.slug', '=', $slug);
+            })
+            ->skip($next)->take($limit);
+       /*
         $r = $this->select() 
                 ->join('member_categories', 'members.id', '=', 'member_categories.member_id')
                 ->join('categories', 'categories.id', '=', 'member_categories.category_id')
                 ->where('categories.slug', '=', $slug)
-                //->toSql();
-                ->get();
-        return $r;
+                ->skip($next)->take($limit);
+        */
+        /*$r = DB::table('categories') 
+                ->join('member_categories', 'member_categories.category_id', '=', 'categories.id')
+                ->join('members', 'members.id', '=', 'member_categories.member_id')
+                ->where('categories.slug', '=', $slug)
+                ->skip($next)->take($limit);
+         * 
+         */
+        if (0) {
+            echo $this->getQuery($r);
+        } else {
+            return $r->get();
+        }
         
     }
+
 
     /*
      * Create an array of social sites and the ids a member has for each one

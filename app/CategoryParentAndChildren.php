@@ -125,7 +125,7 @@ class CategoryParentAndChildren extends Model {
         $categoryModel = new Category();
         $parentArr = $categoryModel->getParents();
         foreach($parentArr as $id => $name) {
-            $parentChildArr[] = array('parent_id' => 0, 'child_id' => $id);
+            //$parentChildArr[] = array('parent_id' => 0, 'child_id' => $id);
         }
 
         $categoriesParentAndChildrenArr = $this->all();
@@ -133,7 +133,7 @@ class CategoryParentAndChildren extends Model {
             $tmp = $obj->getAttributes();
             $parentChildArr[] = array('parent_id' => $tmp['parent_id'], 'child_id' => $tmp['child_id']);
         }
-
+//printR($parentChildArr);exit;
         $tree = $this->buildTree($parentChildArr);
 
         return $tree;
