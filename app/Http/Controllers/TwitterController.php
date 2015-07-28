@@ -4,35 +4,34 @@ use Illuminate\Http\Request;
 
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
-use App\TwitterNA;
+use App\TwitterAdapter;
+use App\MemberSocial;
 
 class TwitterController extends Controller
 {
     
     public function __construct()
     {
-        $this->twitterNA = new TwitterNA();
+        $this->twitterAdapter = new TwitterAdapter('nbablvd');
+        $this->memberSocialObj = new MemberSocial('nba', 'twitter');
     }
     
     public function index()
     {
+        // format the twitter feed
         $cursor = -1;
         do {
-            $cursor = $this->twitterNA->addNewMembers($cursor);
+            $cursor = $this->twitterAdapter->parseMembers($cursor);
         } while($cursor > 0);
+        
+        // operate on the formatted twitter feed
+        if (count($this->twitterAdapter->getMemberArr()) >0 ) {
+            $this->memberSocialObj->addNewMembers($this->twitterAdapter->getMemberArr());
+        }
         
         exit('asfd');
     }
-    
-    public function getFriendsIds()
-    {
-
-        $r = Twitter::getFriendsIds(['screen_name' => 'nbablvd', 'count' => 20, 'format' => 'json']);
-        $obj = json_decode($r);
-        $idArr = $obj->ids;
-        $r = Twitter::getFriends($idArr);
-        print_r($r);
-    }
+  
 
     /**
      * Show the form for creating a new resource.
@@ -97,4 +96,14 @@ class TwitterController extends Controller
     {
         //
     }
+    
+    public function getFriendsIds()
+    {
+
+        $r = Twitter::getFriendsIds(['screen_name' => 'nbablvd', 'count' => 20, 'format' => 'json']);
+        $obj = json_decode($r);
+        $idArr = $obj->ids;
+        $r = Twitter::getFriends($idArr);
+        print_r($r);
+    }    
 }

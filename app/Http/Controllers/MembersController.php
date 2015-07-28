@@ -33,11 +33,11 @@ class MembersController extends Controller {
         $catPathArr = array();
         $inputArr = Input::all();
         $limit = 15;
-        $next = isset($inputArr['next']) ? (int)$inputArr['next'] : 0;
+        $next = isset($inputArr['next']) ? (int)$inputArr['next'] : false;
 
         if ($slug == 'nochild') {
             $membersObj = $this->memberObj->getNoChild($next, $limit);
-        } else if ($slug == 'nocategory') {
+        } else if ($slug == 'uncategorized') {
             $membersObj = $this->memberObj->getNoCategory($next, $limit);
         } else if ($slug) {
             $membersObj = $this->memberObj->getMembersWithSlugSimple($slug, $next, $limit);
@@ -46,12 +46,18 @@ class MembersController extends Controller {
             $membersObj = $this->memberObj->orderBy('created_at', 'desc')->skip($next)->take($limit)->get();
 
         }
-        $prev = 0;
-        if (count($membersObj) >= $limit) {
-            $prev = $next;
-            $next = $next + $limit;
+
+        $prev = false;
+        if ($next >= $limit) {
+            $prev = $next - $limit;
         }
-        
+
+        if ($membersObj->count() >= $limit) {
+            $next = $next + $limit;
+        } else {
+            $next = false;
+        }
+
         $categoriesObj = $this->categoryObj->all();
         $categoriesArr = $this->categoryObj->getCategoriesArr($categoriesObj);
 		$parentChildArr = $this->categoryPAndCObj->getHierarchy();

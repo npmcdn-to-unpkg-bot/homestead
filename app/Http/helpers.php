@@ -76,7 +76,7 @@ function renderCheckboxItem($itemArr, $categoriesArr, $memberCategoryIdArr)
         }
 
         //$out.= {{ Form::checkbox('category_id[]', $id, $bool) }}
-        $out.= "<input type='checkbox' name='category_id[]' value='$id' $checked>";
+        $out.= "<input type='checkbox' name='category_id[]' value='$id' $checked> ";
 
         $out.= $categoriesArr[$id]['display_name'];
         $out.= "</span>";

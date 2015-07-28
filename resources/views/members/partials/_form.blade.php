@@ -31,9 +31,14 @@
     <br>
     <?php
     foreach($memberSocialIdArr as $siteKey => $arr) {
+
+        $labelName = $arr['name'];
+        if ($arr['name'] == 'Twitter' && $arr['memberSocialId'] != '') {
+            $labelName = '<a target="_blank" href="https://twitter.com/' . $arr['memberSocialId'] . '">Twitter</a>';
+        }
     ?>
     
-        {!! Form::label('site', $arr['name'] . ":", array('class' => 'site_label')) !!}
+        {!! Html::decode(Form::label('site', $labelName . ":", array('class' => 'site_label'))) !!}
         {!! Form::text("site[$siteKey][id]", $arr['memberSocialId']) !!}
         
         on: {!! Form::radio("site[$siteKey][disabled]", 0, ($arr['disabled']?false:true)) !!}
@@ -54,7 +59,7 @@
 
 
 <br>
-{!! link_to_route('members.index', '&laquo;Back to Members') !!}
+<a href='javascript:void(0);' onclick='history.go(-1);'>&laquo;Back to Members</a>
 &nbsp; &#183; &nbsp; 
 {!! link_to_route('members.create', 'Add a Member&raquo;') !!}
 

@@ -21,8 +21,8 @@
         }
 
         // page number navigation
-        if ($prev) {
-            echo "<a style='float:left;' href='" . Request::url() . "/?prev=$prev'>&laquo; Prev $prev</a> ";
+        if ($prev !== false) {
+            echo "<a style='float:left;' href='" . Request::url() . "/?next=$prev'>&laquo; Prev $prev</a> ";
         }
         
         if ($next) {
@@ -62,7 +62,7 @@
        <h2>Browse by Category</h2>
        &#183; <a href='/members/nochild'>Browse no child</a>
        <br>
-       &#183; <a href='/members/nocategory'>Browse no category</a>
+       &#183; <a href='/members/uncategorized'>Browse uncategorized</a>
        <br><br>
        <?php 
         renderTree($parentChildArr, $categoriesArr, 'members');

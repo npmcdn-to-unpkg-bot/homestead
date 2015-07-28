@@ -72,6 +72,20 @@ class Member extends ModelNA {
         $q.= "LIMIT $next, $limit";
         
         $r = $this->select('members.*', DB::raw('count(*) as num'))
+            ->join('member_categories', function($join)
+            {
+                $join->on('member_categories.member_id', '=', 'members.id')
+                        ->where('member_categories.category_id', '!=', 0);
+            })               
+            ->groupBy('member_categories.member_id')
+            ->havingRaw('num < 2')
+            ->skip($next)->take($limit)
+            ->get();
+//            ->toSql();
+//exit($r);
+        return $r;
+        
+        $r = $this->select('members.*', DB::raw('count(*) as num'))
                 ->join('member_categories as mc', 'mc.member_id', '=', 'members.id')
                 ->groupBy('mc.member_id')
                 ->havingRaw('num < 2')
@@ -84,6 +98,13 @@ class Member extends ModelNA {
     
     public function getNoCategory($next = 0, $limit = 15)
     {
+        
+        $r = $this->select('members.*')
+            ->join('member_categories as mc', 'mc.member_id', '=', 'members.id')
+            ->where('mc.category_id', '=', 0)
+            ->skip($next)->take($limit)
+            ->get();
+        return $r;
         
         $r = $this->select('members.*')
                 ->leftJoin('member_categories as mc', 'mc.member_id', '=', 'members.id')
