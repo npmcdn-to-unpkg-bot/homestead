@@ -35,6 +35,7 @@ class Category extends Model {
             return $r;
         }
         
+        $count = 0;
         $arr[] = $r[0];
         do {
             
@@ -43,7 +44,11 @@ class Category extends Model {
                 ->where('categories.id', '=', $r[0]->parent_id)
                 ->get();
             $arr[] = $r[0];
-
+            if ($count++ >3 ) {
+                echo $r->toSql();
+                exit;
+                break;
+            }
         } while($r[0]->parent_id >0 );
 
         // since we built the array from child up to parent, reverse it for top down display
@@ -68,6 +73,36 @@ class Category extends Model {
 		}
 		
 		return $categoriesArr;
+        
+    }
+    
+    public function getCategoryNameWithId($id)
+    {
+        if (is_null($this->categoriesArr)) {
+            $this->categoriesArr = $this->getCategoriesArr();
+        }
+        
+        if (!isset($this->categoriesArr[$id]['display_name'])) {
+            return false;
+        }
+        
+        return $this->categoriesArr[$id]['display_name'];
+        
+    }
+    
+    public function getCategoryIdWithName($name)
+    {
+        if (is_null($this->categoriesArr)) {
+            $this->categoriesArr = $this->getCategoriesArr();
+        }
+                
+        foreach($this->categoriesArr as $id => $arr) {
+            if (strtolower($arr['display_name']) == strtolower($name)) {
+                return $id;
+            }
+        }
+        
+        return false;
         
     }
 

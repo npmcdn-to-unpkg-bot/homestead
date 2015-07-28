@@ -4,11 +4,7 @@
 
     <div class='left_col'>
 
-    @if ( !$membersObj->count() )
-        You have no members 
-    @else
-    
-        <div style='width:340px;text-align:center;'>
+      <div style='width:340px;text-align:center;margin-bottom:10px;'>
 
         <?php
         
@@ -26,24 +22,30 @@
 
         // page number navigation
         if ($prev) {
-            echo "<a style='float:left;' href='/members/?prev=$prev'>&laquo; Prev $prev</a> ";
+            echo "<a style='float:left;' href='" . Request::url() . "/?prev=$prev'>&laquo; Prev $prev</a> ";
         }
         
         if ($next) {
-            echo "<a style='float:right;' href='/members/?next=$next'>Next $next &raquo;</a>";
+            echo "<a style='float:right;' href='" . Request::url() . "/?next=$next'>Next $next &raquo;</a>";
         }
         
         ?>
     
-        </div>
-      
-        <br>
+    </div>
+
+    <br>        
+        
+    @if ( !$membersObj->count() )
+        No members 
+    @else
+    
         <ul class='list-unstyled'>
             @foreach( $membersObj as $obj )
                 <li class='cat_row'>
                     {!! Form::open(array('class' => 'form-inline', 'method' => 'DELETE', 'route' => array('members.destroy', $obj->id))) !!}
                         <div class='category_label'>
-                            {{ $obj->name }}                            
+                            {{ $obj->name }} 
+                            
                         </div>
                             {!! link_to_route('members.edit', 'Edit', array($obj->id), array('class' => 'btn btn-info')) !!} &nbsp;   
                             {!! Form::submit('Delete', array('class' => 'btn btn-danger')) !!}
@@ -56,8 +58,13 @@
     </div>
 
     <div class='right_col'>
+        
        <h2>Browse by Category</h2>
-        <?php 
+       &#183; <a href='/members/nochild'>Browse no child</a>
+       <br>
+       &#183; <a href='/members/nocategory'>Browse no category</a>
+       <br><br>
+       <?php 
         renderTree($parentChildArr, $categoriesArr, 'members');
        ?> 
     </div> 

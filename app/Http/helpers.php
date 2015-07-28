@@ -23,7 +23,6 @@ function renderItem($itemArr, $categoriesArr, $route, $slug = '')
 
     $id = $itemArr['child_id'];
     $out = "<span class='category_name'><a href='";
-    //$out.= route($route);
     $out.= '/' . $route . '/' . $slug;
     $out.= "'>";
     $out.= $categoriesArr[$id]['display_name'];

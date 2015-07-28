@@ -4,16 +4,20 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Twitter;
 use DB;
-//use Category;
+use App\Scraper;
+use App\Category;
 //use CategoriesParentAndChildren;
 
-class TwitterNA extends Model
+class TwitterNA extends ModelNA
 {
     
     public function __construct()
     {
 
+        $this->categoryObj = new Category();
+        $this->scraperObj = new Scraper();
         $this->categoriesArr = DB::table('categories')->get();
+        // catPCArr category parent and child array where child_id is index and parent_id is value
         $this->catPCArr = DB::table('category_parent_and_children')->lists('parent_id', 'child_id');
     }
 
@@ -68,29 +72,53 @@ class TwitterNA extends Model
             $r->users[0] = $mem; 
             $r->next_cursor_string = -1;
         }
+        
+        if (!isset($r->users)) {
+            exit ('users is not a property of twitter result');
+        }
+        
         //printR($r);
         //exit;
         $screenNameArr = $this->retrieveScreenNameArr($r->users);
         if ($screenNameArr === false) { 
-            return false;
+            return $r->next_cursor_string;
         }
         
         $screenNameArr = $this->getScreenNamesNotInDB($screenNameArr);
         
         foreach($screenNameArr as $screenName) {
+
             $memberObj = $this->getMemberDetails($screenName, $r->users);
             if ($memberObj) {
                 //TODO transaction 
                 $memberObj = $this->addMember($memberObj);
-                $this->addCategories($memberObj);
+                $addCatSuccess = $this->addCategories($memberObj);
+                if ($addCatSuccess == false) {
+                    $team = $this->scraperObj->scrapeTeam($memberObj, 'nba');
+                    $memberObj->description = $team;
+                }
+                
+                $addCatSuccess = $this->addCategories($memberObj);
+                if ($addCatSuccess == false){
+                    echo "<br>failed: " . $memberObj->name . "<br>"; 
+                    if ($id = $this->categoryObj->getCategoryIdWithName('Free Agent') == true) {
+                        $this->insertMemberCategory($memberObj, $id);
+                        echo " setting as Free Agent<br><br>";
+                    }
+                } else {
+                    echo "<br>succeeded: " . $memberObj->name."<br>";
+                }
+                
                 // transaction commit or rollback
+            } else {
+                echo "memberObj not set via getMemberDetails() <br>";
             }    
         }
         
         return $r->next_cursor_str;
 
     }
-    
+        
        /*
      * Extract screen names from twitter friends list and return as an array
      * $twitterFriendArr is in the format:
@@ -132,8 +160,7 @@ class TwitterNA extends Model
     {
 
         $memberObj->member_id = DB::table('members')->insertGetId([
-            'first_name' => $memberObj->firstName,
-            'last_name' => $memberObj->lastName,
+            'name' => $memberObj->name,
             'avatar' => $memberObj->profile_image_url
         ]);
         
@@ -190,16 +217,23 @@ class TwitterNA extends Model
         $parentIdFound = false;
         foreach($this->categoriesArr as $obj) {
             
+            // non-parent example A: description 'Hello Los Angeles Lakers fans!', display_name 'Los Angeles Lakers'
+            // parent example B: description 'Great to be playing on the Pacific Coast!' display_name 'Pacific'
             if (stristr($memberObj->description, $obj->display_name) && !isset($catSetArr[$obj->id])) {
                 
                 $catSetArr[$obj->id] = 1;
                 
+                // Try to set child_id first, and from that, the parent_id
+                // example A goes into this method and 'Los Angeles Lakers' and its parent 'Pacific' is set
+                list($childIdFound, $parentIdFound) = $this->saveParentAndChild($parentIdFound, $childIdFound, $obj, $memberObj);
+                
+                // If the child/parent was not set above, see if parent alone can be set
+                // example A skips this conditional
+                // example B goes into this conditional and parentIdFound is set
                 if ($this->isParentId($obj) && $parentIdFound === false) {
                     $parentIdFound = $obj->id;
                     $this->insertMemberCategory($memberObj, $parentIdFound);
                 }
-
-                list($childIdFound, $parentIdFound) = $this->saveParentAndChild($parentIdFound, $childIdFound, $obj, $memberObj);
                     
                 if ($parentIdFound && $childIdFound) {
                     break;
@@ -208,7 +242,7 @@ class TwitterNA extends Model
         }
         
         if ($parentIdFound && $childIdFound) {
-            return;
+            return true;
         }
         
         // break up category name, if possible, and search for each
@@ -233,22 +267,24 @@ class TwitterNA extends Model
                 if (stristr($memberObj->description, trim($word)) && !isset($catSetArr[$obj->id])) {
                     
                     $catSetArr[$obj->id] = 1;
+                    
+                    list($childIdFound, $parentIdFound) = $this->saveParentAndChild($parentIdFound, $childIdFound, $obj, $memberObj);
 
                     // the isset($catSetArr) check above prevents duplicates here
                     if ($this->isParentId($obj) == true && $parentIdFound === false) {
                         $parentIdFound = $this->catPCArr[$obj->id];
                         $this->insertMemberCategory($memberObj, $parentIdFound);
                     } 
-                    
-                    list($childIdFound, $parentIdFound) = $this->saveParentAndChild($parentIdFound, $childIdFound, $obj, $memberObj);
 
                     if ($childIdFound && $parentIdFound) {
-                        break 2;
+                        return true;
                     }
                 }
                 
             }
-        }      
+        }
+        
+        return false;
         
     }
     
@@ -278,22 +314,30 @@ class TwitterNA extends Model
         
     private function insertMemberCategory($memberObj, $catId)
     {
-        DB::table('member_categories')->insert([
-            'member_id' => $memberObj->member_id,
-            'category_id' => $catId
-        ]);  
+        $r = DB::table('member_categories')->select()
+                ->where('member_id', '=', $memberObj->member_id)
+                ->where('category_id', '=', $catId);
+
+        if (count($r) == 0) {
+            DB::table('member_categories')->insert([
+                'member_id' => $memberObj->member_id,
+                'category_id' => $catId
+            ]);  
+        }
     }
     
     protected function getMemberDetails($screenName, $usersArr) 
     {
-        
-        $memberObj = false;
+
         foreach($usersArr as $obj) {
+            $memberObj = false;
             if (strtolower($screenName) == strtolower($obj->screen_name)) {
                 $memberObj = $obj;
+                /*
                 $pos = strpos($memberObj->name, " ");
                 $memberObj->firstName = trim(substr($memberObj->name, 0, $pos));
                 $memberObj->lastName = trim(substr($memberObj->name, $pos));
+                 * */
                 break;
             }
         }
@@ -314,6 +358,10 @@ class TwitterNA extends Model
 
         foreach($screenNameDBArr as $key => $screenNameDB) {
             unset($screenNameArr[strtolower($screenNameDB->member_social_id)]);
+        }
+        
+        if (is_null($screenNameArr)) {
+            return array();
         }
         
         return $screenNameArr;

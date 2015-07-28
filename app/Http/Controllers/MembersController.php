@@ -30,18 +30,24 @@ class MembersController extends Controller {
 	public function index($slug = '')
 	{
     
+        $catPathArr = array();
         $inputArr = Input::all();
         $limit = 15;
         $next = isset($inputArr['next']) ? (int)$inputArr['next'] : 0;
 
-        if ($slug) {
+        if ($slug == 'nochild') {
+            $membersObj = $this->memberObj->getNoChild($next, $limit);
+        } else if ($slug == 'nocategory') {
+            $membersObj = $this->memberObj->getNoCategory($next, $limit);
+        } else if ($slug) {
             $membersObj = $this->memberObj->getMembersWithSlugSimple($slug, $next, $limit);
             $catPathArr = $this->categoryObj->getCategoryPath($slug);
         } else {
             $membersObj = $this->memberObj->orderBy('created_at', 'desc')->skip($next)->take($limit)->get();
+
         }
         $prev = 0;
-        if ($next >= $limit) {
+        if (count($membersObj) >= $limit) {
             $prev = $next;
             $next = $next + $limit;
         }
@@ -114,9 +120,11 @@ class MembersController extends Controller {
 	    $memberSocialIdArr = $memberObj->getMemberSocialIdArr($memberObj->id);
 	    $parentChildArr = $this->categoryPAndCObj->getHierarchy();
 	    $categoriesArr = $this->categoryObj->getCategoriesArr();
+
 	    $memberCategoryIdArr = $memberObj->getMemberCategoryIdArr($memberObj->id);
 	    
-        return view('members.edit', compact('memberObj', 'memberSocialIdArr', 'parentChildArr', 'memberCategoryIdArr', 'categoriesArr'));
+        return view('members.edit', 
+                compact('memberObj', 'memberSocialIdArr', 'parentChildArr', 'memberCategoryIdArr', 'categoriesArr'));
  
 	}
 

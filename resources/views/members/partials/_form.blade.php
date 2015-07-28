@@ -18,7 +18,13 @@
 <div class="form-group">
     {!! Form::label('avatar', 'Avatar:') !!}
     {!! Form::text('avatar') !!}
+    <?php
+    if ($memberObj->avatar != '') {
+        echo "<img src='" . $memberObj->avatar . "'>";
+    }
+    ?>
 </div>
+
 
 {!! Form::label('Social Media Ids:') !!}
 <ul class='form-group'>
