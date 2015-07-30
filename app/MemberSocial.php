@@ -6,12 +6,13 @@ use Twitter;
 use DB;
 use App\Scraper;
 use App\Category;
+use App\SocialMedia;
 //use CategoriesParentAndChildren;
 
 class MemberSocial extends ModelNA
 {
     
-    public function __construct($keyword, $socialSite)
+    public function __construct($keyword = '', $socialSite = '')
     {
         $this->socialSite = $socialSite;
         $this->keyword = $keyword;
@@ -20,6 +21,40 @@ class MemberSocial extends ModelNA
         $this->categoriesArr = DB::table('categories')->get();
         // catPCArr category parent and child array where child_id is index and parent_id is value
         $this->catPCArr = DB::table('category_parent_and_children')->lists('parent_id', 'child_id');
+    }
+    
+    public function getMembersAndSocialMediaWithinSingleCategory(Category $catObj)
+    {
+        
+        // Get members within category         
+        $r = DB::table('members')->select()
+            ->join('member_categories', function($join) use ($catObj)
+            {
+                $join->on('member_categories.member_id', '=', 'members.id')
+                        ->where('member_categories.category_id', '=', $catObj->id);
+            })->get();
+
+        // set member_id's into an array
+        $memberIdArr = array();
+        foreach($r as $obj) {
+            $memberIdArr[] = $obj->member_id;
+        }
+
+        if (count($memberIdArr) ==0 ) {
+            return false;
+        }
+        
+        $q = "SELECT * FROM ";
+        $q.="(";
+        $q.= "SELECT * FROM social_media ";
+        $q.= "WHERE member_id IN ('" . implode("',' ", $memberIdArr) . "') ";
+        $q.= "ORDER BY created_at DESC";
+        $q.= ") ";
+        $q.= "AS tmp_table GROUP BY member_id";
+        $r = DB::select($q);
+
+        return $r;
+        
     }
 
     public function addNewMembers(array $membersArr)
@@ -36,17 +71,20 @@ class MemberSocial extends ModelNA
             $memberObj = $this->addMember($memberObj);
             $addCatSuccess = $this->addCategories($memberObj);
             if ($addCatSuccess == false) {
+                echo "<p>scraping for: " . $memberObj->name . "</p>";
                 $team = $this->scraperObj->scrapeTeam($memberObj, $this->keyword);
-                $memberObj->description = $team;
+                if ($team) {
+                    $memberObj->description = $team;
+                    $addCatSuccess = $this->addCategories($memberObj);
+                }
             }
 
-            $addCatSuccess = $this->addCategories($memberObj);
-            if ($addCatSuccess == false){
+            if ($addCatSuccess) {
+                echo "succeeded: " . $memberObj->name."<br>";
+            } else {
                 echo "<br>failed: " . $memberObj->name . "<br>"; 
                 $this->insertMemberCategory($memberObj, 0);
                 echo " setting as Uncategorized<br><br>";
-            } else {
-                echo "<br>succeeded: " . $memberObj->name."<br>";
             }
 
             // transaction commit or rollback
@@ -124,9 +162,13 @@ class MemberSocial extends ModelNA
             // If we have the childId, we have the parentId and can stop looking
             if ($memberObj->childId >0 ) {
                 $this->saveChildParentIds($memberObj);
-                return true;
+                break;
             }
          
+        }
+        
+        if ($memberObj->childId >0 ) {
+            return true;
         }
         
         
@@ -181,7 +223,7 @@ class MemberSocial extends ModelNA
     protected function setChildParentIds($text, $memberObj, $catObj)
     {
     
-        // if 'Los Angeles Lakers' text is in description
+        // eg. if 'Los Angeles Lakers' text is in description
         if (stristr($memberObj->description, $text)) {
             if ($this->isChildId($catObj)) {
                 $memberObj->childId = $catObj->id;
@@ -196,11 +238,18 @@ class MemberSocial extends ModelNA
         
     }
 
+    /*
+     * $this->catPCArr is a lookup array with childId as index and parentId as value
+     * Array values of 0 given an index value means the given index value is a parent
+     */
     private function isParentId($catObj) 
     {
         return (isset($this->catPCArr[$catObj->id]) && $this->catPCArr[$catObj->id] == 0 ) ? true : false;
     }
     
+    /* $this->catPCArr is a lookup array with childId as index and parentId as value
+     * Array values greater than zero given and index means the given index value has a parent and is thus a child 
+     */
     private function isChildId($catObj)
     {
         return (isset($this->catPCArr[$catObj->id]) && $this->catPCArr[$catObj->id] > 0 ) ? true : false;        
@@ -250,11 +299,61 @@ class MemberSocial extends ModelNA
 
     }
            
+    public function getMemberSocialIds()
+    {
+        
+        return DB::table('member_social_ids')
+            ->where('social_site', '=', $this->socialSite)
+            ->lists('member_social_id', 'member_id');
+        
+    }
     
+    public function getMemberIdsWithMemberSocialIds(array $memberSocialIdArr)
+    {
+        $arr = DB::table('member_social_ids')
+            ->where('social_site', '=', $this->socialSite)
+            ->whereIn('member_social_id', $memberSocialIdArr)
+            ->lists('member_id', 'member_social_id');
+    
+        return array_change_key_case($arr);
+        
+    }
+    
+    public function addSocialMedia(array $arr) 
+    {
+  
+        $memberSocialIdArr = array();
+        foreach($arr as $key => $val) {
+            $memberSocialIdArr[] = $val['memberSocialId'];
+        }
+        
+        $memberSocialIdMemberIdArr = $this->getMemberIdsWithMemberSocialIds($memberSocialIdArr);
+        
+        foreach($arr as $val) {
+            
+            $memberId = $memberSocialIdMemberIdArr[$val['memberSocialId']];
 
-    
-   
-    
-    
+            $socialMediaObj = new SocialMedia();            
+            $socialMediaObj->setMemberSocialId($val['memberSocialId'])
+                    ->setMemberId($memberId)
+                    ->setSocialId($val['socialId'])
+                    ->setText($val['text'])
+                    ->setLink($val['link'])
+                    ->setMediaUrl($val['mediaUrl'])
+                    ->setMediaHeight($val['mediaHeight'])
+                    ->setMediaWidth($val['mediaWidth'])
+                    ->setSource($val['source']);
+            
+            $r = DB::table("social_media")
+                ->where('member_social_id', '=', $val['memberSocialId'])
+                ->where('social_id', '=', $val['socialId']);
+            
+            if ($r->count() ==0 ) {
+                $socialMediaObj->create(get_object_vars($socialMediaObj));
+            }
+  
+        }
+
+    }
     
 }

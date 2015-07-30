@@ -13,6 +13,115 @@ class TwitterAdapter
         $this->screenName = $screenName;
         
     }
+    
+    public function addStatus()
+    {
+        
+        if (1) {
+            
+            $since_id = \DB::table('social_media')->orderBy('social_id', 'DESC')->take(1)->pluck('social_id');
+          
+            $paramArr = [
+                'count' => 200,
+                'include_entities' => 1,
+                'since_id' => $since_id
+            ];
+            printR($paramArr);
+            $r = \Twitter::getHomeTimeline($paramArr);
+            
+        } else {
+            $r[0] = new \stdClass();
+            $r[0]->created_at = 'Wed Jul 29 17:01:55 +0000 2015';
+            $r[0]->user = new \stdClass();
+            $r[0]->user->screen_name = 'LAClippers';
+            $r[0]->id_str = 626447502926024704;
+            $r[0]->text = 'RT @mexime1t: The @LAClippers know how to treat their fans!Thank you for my #GearUpLA AUTOGRAPHED @paulpierce34 hat! #ClipperNation http://…';
+            $r[0]->in_reply_to_status_id = '';
+            $r[0]->in_reply_to_screen_name ='';
+            $r[0]->retweeted_status = new \stdClass();
+            $r[0]->retweeted_status->text = 'The @LAClippers know how to treat their fans!Thank you for my #GearUpLA AUTOGRAPHED @paulpierce34 hat! #ClipperNation http://t.co/rXq8sbyR7M';
+            $r[0]->entities = new \stdClass();
+            $r[0]->entities->urls = array();
+            $r[0]->entities->media[0] = new \stdClass();
+            $r[0]->entities->media[0]->media_url = 'http://pbs.twimg.com/media/CLGTDzZUYAAhTwK.jpg';
+            $r[0]->entities->media[0]->sizes = new \stdClass();
+            $r[0]->entities->media[0]->sizes->thumb = new \stdClass();
+            $r[0]->entities->media[0]->sizes->thumb->w = 150;
+            $r[0]->entities->media[0]->sizes->thumb->h = 150;
+        }
+
+        if (count($r) == 0) {
+            return false;
+        }
+                
+        return $this->parseStatus($r);
+
+    }
+        
+    public function parseStatus($r)
+    {
+        
+        $socialMediaArr = [];
+        foreach($r as $key => $obj) {
+            
+            $memberSocialId = strtolower($obj->user->screen_name);
+            $socialId = $obj->id_str;
+            $link = 'https://twitter.com/' . $memberSocialId . '/status/' . $socialId;
+            $mediaUrl = '';
+            $mediaHeight = '';
+            $mediaWidth = '';
+            if (!empty($obj->entities->media)) {
+                $media = $obj->entities->media;
+                if (isset($media[0]->media_url)) {
+                    $mediaUrl = $media[0]->media_url;
+                    $mediaHeight = $media[0]->sizes->thumb->h;
+                    $mediaWidth = $media[0]->sizes->thumb->w;
+                }
+            }
+            
+            // replace shortened urls with full urls
+            $text = $obj->text;
+            if (!empty($obj->entities->urls)) {
+                foreach($obj->entities->urls as $key => $urlObj) {
+                    $text = str_replace($urlObj->url, $urlObj->expanded_url, $text);
+                }
+            }
+            
+            // for retweets, set full retweeted text to $text 
+            if (!empty($obj->retweeted_status)) {
+                $retweetedText = $obj->retweeted_status->text;
+                $text = preg_match("~RT @[^:]+: (.*?)~is", $text, $arr);
+                $text = $arr[0] . $retweetedText;
+            }
+            
+            // add 'in reply to' link to text
+            if (!empty($obj->in_reply_to_status_id)) {
+                $replyLink = "<reply>";
+                $replyLink.= "<a target='_blank' ";
+                $replyLink.= "href='https://twitter.com/" . $obj->in_reply_to_screen_name . "/status/";
+                $replyLink.= $obj->in_reply_to_status_id . "'>(in reply to " . $obj->in_reply_to_screen_name . ")";
+                $replyLink.= "</a>";
+                $replyLink.= "</reply> ";
+                $text = $replyLink . $text;
+            }
+
+            $socialMediaArr[] = [
+                'memberSocialId' => $memberSocialId,
+                'memberId' => 0,
+                'socialId' => $socialId,
+                'text' => $text,
+                'link' => $link,
+                'mediaUrl' => $mediaUrl,
+                'mediaHeight' => $mediaHeight,
+                'mediaWidth' => $mediaWidth,
+                'source' => 'twitter'
+            ];
+            
+        }
+        
+        return $socialMediaArr;
+
+    }
 
     public function parseMembers($nextCursor = -1)
     {
@@ -22,11 +131,14 @@ class TwitterAdapter
             'screen_name' => $this->screenName, 
             'skip_status' => true, 
             'include_user_entities' => false, 
-            'cursor' => $nextCursor
+            'cursor' => $nextCursor,
+            'count' => 200
         ];
         
-        if (1) { 
-            $r = \Twitter::getFriends($paramArr); 
+        if (1) {
+            
+             $r = \Twitter::getFriends($paramArr);
+
         } else {
             
             // test data
@@ -50,6 +162,14 @@ class TwitterAdapter
             $mem->name = 'Jason Thompson';
             $mem->screen_name = 'jtthekid';
             $mem->description = 'PF/C for Philadelphia 76ers. iG: Jtthekid Manager: @dschwartze1 Mr. 519+';
+            $mem->profile_image_url = 'http://pbs.twimg.com/profile_images/618625788460560384/iwS9dPYE_normal.jpg';
+            $r->users[3] = $mem; 
+            
+            $r = new \stdClass();
+            $mem = new \stdClass();
+            $mem->name = 'DeAndre Jordan';
+            $mem->screen_name = 'deandrejordan6';
+            $mem->description = 'love comedy, netflix, and gluten cookies.';
             $mem->profile_image_url = 'http://pbs.twimg.com/profile_images/618625788460560384/iwS9dPYE_normal.jpg';
             $r->users[0] = $mem; 
             

@@ -12,13 +12,22 @@ class TwitterController extends Controller
     
     public function __construct()
     {
-        $this->twitterAdapter = new TwitterAdapter('nbablvd');
         $this->memberSocialObj = new MemberSocial('nba', 'twitter');
+        $this->twitterAdapter = new TwitterAdapter('nbablvd');
     }
     
-    public function index()
+    public function addStatus()
     {
-        // format the twitter feed
+        
+        if (($socialMediaArr = $this->twitterAdapter->addStatus()) !== false) {
+            $this->memberSocialObj->addSocialMedia($socialMediaArr);
+        }
+
+    }
+    
+    public function addFriends()
+    {
+
         $cursor = -1;
         do {
             $cursor = $this->twitterAdapter->parseMembers($cursor);

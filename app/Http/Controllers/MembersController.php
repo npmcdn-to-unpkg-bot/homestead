@@ -165,7 +165,9 @@ class MembersController extends Controller {
 	public function destroy(Member $memberObj)
 	{
 
-	   $memberObj->delete();
+        $memberObj->delete();
+        \DB::table('member_categories')->where('member_id', '=', $memberObj->id)->delete();
+        \DB::table('member_social_ids')->where('member_id', '=', $memberObj->id)->delete();
  
 	   return Redirect::route('members.index')->with('message', 'Member deleted.');
 	}
