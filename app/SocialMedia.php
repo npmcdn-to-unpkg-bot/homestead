@@ -315,6 +315,7 @@ class SocialMedia extends ModelNA{
                     ->setMediaUrl($val['mediaUrl'])
                     ->setMediaHeight($val['mediaHeight'])
                     ->setMediaWidth($val['mediaWidth'])
+                    ->setCreatedAt($val['created_at'])
                     ->setSource($val['source']);
             
             $r = DB::table("social_media")

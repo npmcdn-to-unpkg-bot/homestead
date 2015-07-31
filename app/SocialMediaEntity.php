@@ -23,6 +23,13 @@ class SocialMediaEntity extends ModelNA{
     public $media_width;
     public $link;
     public $source;//twitter
+    public $created_at;
+    
+    public function setCreatedAt($created_at)
+    {
+        $this->created_at = $created_at;
+        return $this;
+    }
 
     function setId($id) {
         $this->id = $id;

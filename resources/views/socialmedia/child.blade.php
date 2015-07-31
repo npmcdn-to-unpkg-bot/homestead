@@ -8,10 +8,11 @@ renderCategoryPath($catPathArr);
 
 echo "<br>";
 
-foreach($contentArr as $memberId => $arr) {
+foreach($memberArr as $obj) {
     
-    $name = $memberArr[$memberId]->name;
-    $avatar = $memberArr[$memberId]->avatar;
+    $memberId = $obj->id;
+    $name = $obj->name;
+    $avatar = $obj->avatar;
     
     echo "<div id = 'rowCont_" . $memberId . "' class='rowCont'>";
     
@@ -35,68 +36,42 @@ foreach($contentArr as $memberId => $arr) {
     
     echo "<div class='rowContentCont'>";// maintains correct width even if member doesn't have content
     
-    unset($key);
-    $footer = '';
-    // use firstId and lastId to retrieve content via the navigation
-    $firstId = 0;
-    $lastId = 0;
-    foreach($arr as $key => $obj) {
-        
-        if ($key == 0) {
-            $firstId = $obj->id;
-        }
-        
-        $idStr = $obj->id . "_" . $obj->social_id;
+    for($i=1; $i<4; $i++) {
         
         echo "<div class='contentCont";
-        if ($key ==0 ) {
+        if ($i == 1) {
             echo " firstContentCont";
         }
-        echo "' id='contentCont_" . $idStr . "'>";
+        echo "'>"; 
         
-        if ($obj->media_url !='' ) {
-            echo "<div class='thumbCont'>";
-            echo "<a target='_blank' href='" . $obj->link . "'>";
-            echo "<img class='thumb' ";
-            echo "src='" . $obj->media_url . ":thumb' ";
-            //echo "width='" . $obj->media_width . "' ";
-            //echo "height='" . $obj->media_height . "'";
-            echo "width='100' ";
-            //echo "height='100'";
-            echo ">";
-            echo "</a>";
-            echo "</div>";
-        }
+        echo "<div  id='thumbCont_" . $memberId . "_" . $i . "' class='thumbCont' style='display:none;'>";
+        echo "<a target='_blank' href=''>";
+        echo "<img class='thumb' ";
+        echo "src='' ";
+        //echo "width='" . $obj->media_width . "' ";
+        //echo "height='" . $obj->media_height . "'";
+        echo "width='100' ";
+        //echo "height='100'";
+        echo ">";
+        echo "</a>";
+        echo "</div>";
         
-        $lastId = $obj->id;
-
-        //echo "<div class='textCont'>";
-        echo Twitter::linkify($obj->text);
-        //echo "</div>";
+        echo "<div id='textCont_" . $memberId . "_" . $i . "' class='textCont'></div>";
         
         echo "</div>";// close contentCont
-        
-        $footer.= "<div class='contentFooter";
-        if ($key ==0 ) {
-            $footer.= " firstContentFooter";
-        }
-        
-        $footer.= "' id='footer_" . $idStr . "'>";
-        $footer.= "<a target='_blank' href='" . $obj->link . "'>on " . $obj->source . "&raquo;</a>";
-        $footer.= "</div>";
                 
     }
-    
+
     echo "<div style='clear:both;'></div>";
     echo "</div>";//close rowContentContainer
     
-    echo "<div class='contentNav' id='contentNav_" . $idStr . "'>";
+    echo "<div class='contentNav' id='contentNav_" . $memberId . "'>";
     echo "<div class='contentNavInner'>";
-        echo "<a class='navRight' href='javascript:void(0);' id='right_" . $memberId . "_" . $lastId . "'>";
+        echo "<a class='navRight' href='javascript:void(0);' id='right_" . $memberId . "'>";
         echo "<span class='navButton'>&raquo;</span>";
         echo "</a>";
         echo "<br>";
-        echo "<a class='navLeft' href='javascript:void(0);' id='left_" . $memberId . "_" . $firstId . "'>";
+        echo "<a class='navLeft' href='javascript:void(0);' id='left_" . $memberId . "'>";
         echo "<span class='navButton'>&laquo;</span>";
         echo "</a>";
         echo "<Br>";
@@ -105,39 +80,78 @@ foreach($contentArr as $memberId => $arr) {
         echo "</a>";
     echo "</div>";
     echo "</div>";
+    
+    for($i=1; $i<4; $i++) {
 
-    echo $footer;
-    if (!isset($key)) {
-        echo "<div class='contentFooter firstContentFooter'> &nbsp; </div>";
-        echo "<div class='contentFooter'> &nbsp; </div>";
-        echo "<div class='contentFooter'> &nbsp; </div>";
-    } elseif ($key === 1) {
-        echo "<div class='contentFooter'> &nbsp; </div>";
-    } else if ($key === 0) {
-        echo "<div class='contentFooter'> &nbsp; </div>";
-        echo "<div class='contentFooter'> &nbsp; </div>";
+        echo "<div class='footerCont";
+        if ($i == 1) {
+            echo " firstFooterCont";
+        }
+        
+        echo "' id = 'footerCont_" . $memberId . "_" . $i . "'>";
+        echo " &nbsp; ";
+        echo "</div>";
+
     }
         
     echo "</div>";//close rowCont
     
-    echo "<Hr>";
+    echo "<hr>";
    
 }
 
-printR($catPathArr);
+//printR($catPathArr);
 printR($memberArr);
 printR($contentArr);
+
+
 
 ?>
 
 <script>
+
+<?php echo 'contentArr=' . json_encode($contentArr); ?>
+    
 $(document).ready(function() {
+    
+    for(var memberId in contentArr) {
+        console.log('memberId: ' + memberId);
 
-$(".navRight").click(function() {
+        for(var j in contentArr[memberId]) {
+            
+            var idStr = memberId + "_" + (parseInt(j) + 1);
+            console.log('content key: ' + j);
+            console.log('idStr: ' + idStr);
+            var obj = contentArr[memberId][j];
+            text = obj['text'];
+            link = obj['link'];
+            $("#textCont_" + idStr).html(text);
+            if (obj['media_url'] != '') {
+                $("#thumbCont_" + idStr).show();
+                media_url = obj['media_url'];
+                if (obj['source'] == 'twitter') {
+                    media_url = media_url + ":thumb";
+                }
+                $("#thumbCont_" + idStr + " > a").attr("href", link);
+                $("#thumbCont_" + idStr + " > a >.thumb").attr("src", media_url);
 
-   console.log($(this).attr('id'));
-   
-});
+            }
+            
+            onLink = "<a target='_blank' href='" + link + "'>on " + obj['source'] + "&raquo;</a>";
+            footerContent = obj['formatted_created_at'] + " " + onLink;
+            $("#footerCont_" + idStr).html(footerContent);
+            console.log(footerContent);
+            
+        }
+    }
+
+    $(".navRight").click(function() {
+
+       console.log($(this).attr('id'));
+
+
+
+    });
 
 
 

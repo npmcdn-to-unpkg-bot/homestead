@@ -61,7 +61,7 @@
     line-height: 1.2;
 }
 
-.contentFooter, .firstContentFooter{
+.footerCont, .firstFooterCont {
     width:420px;
     display:inline-block;
     border-left:1px black solid;
@@ -74,7 +74,7 @@
     background-color:#dddddd;
 }
 
-.firstContentFooter {
+.firstFooterCont {
     border-left:0px;
 }
 
@@ -87,13 +87,13 @@
     margin-right:2px;
 }
 
-/*
+
 .textCont{
-    border:1px solid blue;
+    border:0px solid blue;
     padding:2px;
-    margin-left:102px;
+    //margin-left:102px;
 }
-*/
+
 .contentCont, .firstContentCont{
     border-left:1px solid green;
     width:420px;

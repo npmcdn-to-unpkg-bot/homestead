@@ -106,6 +106,8 @@ class TwitterAdapter
                 $replyLink.= "</reply> ";
                 $text = $replyLink . $text;
             }
+            
+            $created_at = date("Y-m-d H:m:i", strtotime($obj->created_at));
 
             $socialMediaArr[] = [
                 'memberSocialId' => $memberSocialId,
@@ -116,7 +118,8 @@ class TwitterAdapter
                 'mediaUrl' => $mediaUrl,
                 'mediaHeight' => $mediaHeight,
                 'mediaWidth' => $mediaWidth,
-                'source' => 'twitter'
+                'source' => 'twitter',
+                'created_at' => $created_at
             ];
             
         }
