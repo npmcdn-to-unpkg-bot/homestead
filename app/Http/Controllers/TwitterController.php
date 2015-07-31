@@ -1,18 +1,20 @@
 <?php
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
-
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
+
 use App\TwitterAdapter;
 use App\MemberSocial;
+use App\SocialMedia;
 
 class TwitterController extends Controller
 {
     
     public function __construct()
     {
-        $this->memberSocialObj = new MemberSocial('nba', 'twitter');
+        // TODO set these objects and their params via route and pass in
+        $this->socialMediaObj = new SocialMedia('nba', 'twitter');
         $this->twitterAdapter = new TwitterAdapter('nbablvd');
     }
     
@@ -20,9 +22,10 @@ class TwitterController extends Controller
     {
         
         if (($socialMediaArr = $this->twitterAdapter->addStatus()) !== false) {
-            $this->memberSocialObj->addSocialMedia($socialMediaArr);
+            $this->socialMediaObj->addSocialMedia($socialMediaArr);
         }
-
+        printR($socialMediaArr);
+        exit('done');
     }
     
     public function addFriends()
@@ -35,7 +38,7 @@ class TwitterController extends Controller
         
         // operate on the formatted twitter feed
         if (count($this->twitterAdapter->getMemberArr()) >0 ) {
-            $this->memberSocialObj->addNewMembers($this->twitterAdapter->getMemberArr());
+            $this->socialMediaObj->addNewMembers($this->twitterAdapter->getMemberArr());
         }
         
         exit('asfd');

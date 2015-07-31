@@ -1,130 +1,332 @@
 <?php
+
 namespace App;
+
 use Illuminate\Database\Eloquent\Model;
+use Twitter;
+use DB;
+use App\Scraper;
+use App\Category;
+use App\SocialMediaEntity;
+use App\MemberSocial;
+
 /**
- * 
+ * Model for saving parsed social media feeds
  *
  * @author matt
  */
-class SocialMedia extends Model{
+class SocialMedia extends ModelNA{
+
     
-    protected $fillable = array('id', 'member_id', 'social_id', 'member_social_id','text', 'created_at', 'media_url', 'media_height', 'media_width', 'link', 'source');
-
-    public $id;
-    public $member_id;
-    public $social_id;
-    public $member_social_id;
-    /* @var string $text */
-    public $text;        
-    public $media_url;
-    public $media_height;
-    public $media_width;
-    public $link;
-    public $source;
-    
-
-    function setId($id) {
-        $this->id = $id;
-        return $this;
-    }
-
-    function setMemberId($member_id) {
-        $this->member_id = $member_id;
-        return $this;
-    }
-
-    function setSocialId($social_id) {
-        $this->social_id = $social_id;
-        return $this;
-    }
-
-    function setMemberSocialId($member_social_id) {
-        $this->member_social_id = $member_social_id;
-        return $this;
-    }
-
-    function setText($text) {
-
-        $text = preg_replace("~\\n|\\r~", " ", $text);
-        $text = trim($text); 
-        // remove non-ascii chars
-        //$text = preg_replace('/[^(\x20-\x7F)]*/','', $text);
-        $this->text = $this->convertQuotes($text);
-        //$this->text = iconv("UTF-8", "UTF-8//IGNORE", $text);
-        //$this->text = mb_convert_encoding(trim($text), 'UTF-8', 'UTF-8');;
-        return $this;
-    }
-
-    function setMediaUrl($media_url) {
-        $this->media_url = $media_url;
-        return $this;
-    }
-
-    function setMediaHeight($media_height) {
-        $this->media_height = $media_height;
-        return $this;
-    }
-
-    function setMediaWidth($media_width) {
-        $this->media_width = $media_width;
-        return $this;
-    }
-
-    function setLink($link) {
-        $this->link = $link;
-        return $this;
-    }
-
-    function setSource($source) {
-        $this->source = $source;
-        return $this;
-    }
-    
-    public function convertMS($text)
-    {
-    	$search = array(chr(145), chr(146), chr(147), chr(148), chr(151), chr(133));
-    
-    	$replace = array("'", "'", '"', '"', '-', '...');
-    
-    	return str_replace($search, $replace, $text);
-    
-    }
-    
-    public function convertQuotes($text)
+    public function __construct($keyword, $socialSite)
     {
         
-    	$chr_map = array(
-            // Windows codepage 1252
-            "\xC2\x82" => "'", // U+0082->U+201A single low-9 quotation mark
-            "\xC2\x84" => '"', // U+0084->U+201E double low-9 quotation mark
-            "\xC2\x8B" => "'", // U+008B->U+2039 single left-pointing angle quotation mark
-            "\xC2\x91" => "'", // U+0091->U+2018 left single quotation mark
-            "\xC2\x92" => "'", // U+0092->U+2019 right single quotation mark
-            "\xC2\x93" => '"', // U+0093->U+201C left double quotation mark
-            "\xC2\x94" => '"', // U+0094->U+201D right double quotation mark
-            "\xC2\x9B" => "'", // U+009B->U+203A single right-pointing angle quotation mark
+        $this->socialSite = $socialSite;
+        $this->keyword = $keyword;
+        $this->memberSocialObj = new MemberSocial();
+        $this->categoryObj = new Category();
+        $this->scraperObj = new Scraper($keyword);
+        $this->categoriesArr = DB::table('categories')->get();
+        // catPCArr category parent and child array where child_id is index and parent_id is value
+        $this->catPCArr = DB::table('category_parent_and_children')->lists('parent_id', 'child_id');
+        
+    }
+    
+    public static function getSocialIdSiteArr()
+    {
+        
+        return array(
+            'twitter' => 'Twitter',
+            'instagram' => 'Instagram',
+            'facebook' => 'Facebook',
+            'yelp' => 'Yelp',
+            'youtube' => 'Youtube',	
+            'pinterest' => 'Pinterest',
+            'foursquare' => 'Foursquare',
+        );
+        
+    }
 
-            // Regular Unicode     // U+0022 quotation mark (")
-            // U+0027 apostrophe     (')
-            "\xC2\xAB"     => '"', // U+00AB left-pointing double angle quotation mark
-            "\xC2\xBB"     => '"', // U+00BB right-pointing double angle quotation mark
-            "\xE2\x80\x98" => "'", // U+2018 left single quotation mark
-            "\xE2\x80\x99" => "'", // U+2019 right single quotation mark
-            "\xE2\x80\x9A" => "'", // U+201A single low-9 quotation mark
-            "\xE2\x80\x9B" => "'", // U+201B single high-reversed-9 quotation mark
-            "\xE2\x80\x9C" => '"', // U+201C left double quotation mark
-            "\xE2\x80\x9D" => '"', // U+201D right double quotation mark
-            "\xE2\x80\x9E" => '"', // U+201E double low-9 quotation mark
-            "\xE2\x80\x9F" => '"', // U+201F double high-reversed-9 quotation mark
-            "\xE2\x80\xB9" => "'", // U+2039 single left-pointing angle quotation mark
-            "\xE2\x80\xBA" => "'", // U+203A single right-pointing angle quotation mark
-    	);
-    	$chr = array_keys  ($chr_map); // but: for efficiency you should
-    	$rpl = array_values($chr_map); // pre-calculate these two arrays
-    	$text = str_replace($chr, $rpl, html_entity_decode($text, ENT_QUOTES, "UTF-8"));
+    public function addNewMembers(array $membersArr)
+    {
         
-    	return $text;
+        // checks for members not in member_social_ids table 
+        // TODO problem: add twitter users and instagram users and get dups in members table
+        $membersArr = $this->getMemberSocialIdsNotInDB($membersArr);
         
-    } 
+        foreach($membersArr as $memberSocialId => $memberObj) {
+                            
+            //TODO transaction 
+            //TODO use exceptions
+            $memberObj = $this->addMember($memberObj);
+            $addCatSuccess = $this->addCategories($memberObj);
+            if ($addCatSuccess == false) {
+                echo "<p>scraping for: " . $memberObj->name . "</p>";
+                $team = $this->scraperObj->scrapeTeam($memberObj, $this->keyword);
+                if ($team) {
+                    $memberObj->setDescription($team);
+                    $addCatSuccess = $this->addCategories($memberObj);
+                }
+            }
+
+            if ($addCatSuccess) {
+                echo "succeeded: " . $memberObj->name."<br>";
+            } else {
+                echo "<br>failed: " . $memberObj->name . "<br>"; 
+                $this->insertMemberCategory($memberObj, 0);
+                echo " setting as Uncategorized<br><br>";
+            }
+
+            // transaction commit or rollback
+  
+        }
+
+    }
+
+    
+    // TODO move avatar to member_social_ids and make selectable
+    // TODO make avatar updatable
+    protected function addMember($memberObj)
+    {
+
+        $memberObj->id = DB::table('members')->insertGetId([
+            'name' => $memberObj->name,
+            'avatar' => $memberObj->avatar
+        ]);
+        
+        $memberSocialIdArr = $memberObj->getMemberSocialIdArr();
+        foreach($memberSocialIdArr as $memberSocialId) {
+            DB::table('member_social_ids')
+                    ->where('member_social_id', '=', $memberSocialId)
+                    ->where('social_site', '=', $this->socialSite)
+                    ->delete();
+
+            DB::table('member_social_ids')->insert([
+                'member_id' => $memberObj->id,
+                'social_site' => $this->socialSite,
+                'member_social_id' => $memberSocialId
+            ]);
+        }
+        
+        return $memberObj;
+        
+    }
+    
+    /*
+     * Try and add them to a category
+     * 
+     */
+    protected function addCategories($memberObj)
+    {
+        
+        $categoriesArr = $this->categoriesArr;
+        /* eg. Array(
+            [0] => stdClass Object
+                (
+                    [id] => 18
+                    [name] => Atlantic
+                    [display_name] => Atlantic
+                    [slug] => atlantic
+                    [created_at] => 2015-07-26 15:42:55
+                    [updated_at] => 2015-07-26 15:42:55
+                )
+        */
+
+        // child_id's pointing to their parent_id's
+        $catPCArr = $this->catPCArr;
+        /* eg.  Array(
+            [18] => 0
+            [19] => 0
+            ...
+            [49] => 18
+            ...
+            [44] => 19
+            [45] => 19
+        */
+
+        // look for the category in the description
+        $catSetArr = array();
+        $childIdFound = false;
+        $parentIdFound = false;
+        foreach($this->categoriesArr as $catObj) {
+            
+            $memberObj = $this->setChildParentIds($catObj->display_name, $memberObj, $catObj);
+                       
+            // If we have the childId, we have the parentId and can stop looking
+            if ($memberObj->childId >0 ) {
+                $this->saveChildParentIds($memberObj);
+                break;
+            }
+         
+        }
+        
+        if ($memberObj->childId >0 ) {
+            return true;
+        }
+        
+        
+        // break up category name, if possible, and search for each
+        // word greater than 3 characters in the member description
+        foreach($this->categoriesArr as $catObj) {
+            
+            $arr = explode(" ", $catObj->display_name);
+            if (count($arr) == 1 ) {
+                continue;
+            }
+            
+            // reverse array since most significant part is last eg. Los Angeles Lakers, 
+            // Lakers is most significant part and will avoid conflicts with Los Angeles Clippers
+            $arr = array_reverse($arr);
+            
+            foreach($arr as $word) {
+                
+                $word = trim($word);
+                if (strlen($word) < 3 ) {
+                    continue;
+                }
+                
+                $memberObj = $this->setChildParentIds($word, $memberObj, $catObj);
+                // If we have the childId, we have the parentId and can stop looking
+                if ($memberObj->childId >0 ) {
+                    break;
+                }
+                
+            }
+        }
+
+        if ($memberObj->childId >0 || $memberObj->parentId >0 ) {
+            $this->saveChildParentIds($memberObj);
+            return true;
+        }
+        
+        return false;
+        
+    }
+    
+    protected function saveChildParentIds($memberObj) 
+    {
+        if ($memberObj->childId >0 ) {
+            $this->insertMemberCategory($memberObj, $memberObj->childId);
+        }
+        if ($memberObj->parentId >0 ) {
+            $this->insertMemberCategory($memberObj, $memberObj->parentId);
+        }
+    }
+    
+    protected function setChildParentIds($text, $memberObj, $catObj)
+    {
+    
+        // eg. if 'Los Angeles Lakers' text is in description
+        if (stristr($memberObj->description, $text)) {
+            if ($this->isChildId($catObj)) {
+                $memberObj->childId = $catObj->id;
+                $memberObj->parentId = $this->catPCArr[$memberObj->childId];
+            } else if ($this->isParentId($catObj)) {
+                $memberObj->parentId = $catObj->id;
+            } 
+            
+        }
+        
+        return $memberObj;
+        
+    }
+
+    /*
+     * $this->catPCArr is a lookup array with childId as index and parentId as value
+     * Array values of 0 given an index value means the given index value is a parent
+     */
+    private function isParentId($catObj) 
+    {
+        return (isset($this->catPCArr[$catObj->id]) && $this->catPCArr[$catObj->id] == 0 ) ? true : false;
+    }
+    
+    /* $this->catPCArr is a lookup array with childId as index and parentId as value
+     * Array values greater than zero given and index means the given index value has a parent and is thus a child 
+     */
+    private function isChildId($catObj)
+    {
+        return (isset($this->catPCArr[$catObj->id]) && $this->catPCArr[$catObj->id] > 0 ) ? true : false;        
+    }
+        
+    private function insertMemberCategory($memberObj, $catId)
+    {
+        
+        $r = DB::table('member_categories')->select()
+                ->where('member_id', '=', $memberObj->id)
+                ->where('category_id', '=', $catId);
+
+        if ($r->count() == 0) {
+            DB::table('member_categories')->insert([
+                'member_id' => $memberObj->id,
+                'category_id' => $catId
+            ]);
+            // delete any 'uncategorized' row
+            if ($catId >0 ) {
+                DB::table('member_categories')
+                    ->where('member_id', '=', $memberObj->id)
+                    ->where('category_id', '=', '0')
+                    ->delete();
+            }
+        }
+    }
+    
+    // get members not added to the database already    
+    protected function getMemberSocialIdsNotInDB($membersArr)      
+    {
+
+        $memberSocialIdDBArr = DB::table('member_social_ids')
+            ->whereIn('member_social_id', array_keys($membersArr))
+            ->where('social_site', '=', $this->socialSite)
+            ->select('member_social_id')
+            ->get();
+
+        foreach($memberSocialIdDBArr as $key => $memberSocialIdDB) {
+            unset($membersArr[strtolower($memberSocialIdDB->member_social_id)]);
+        }
+        
+        if (is_null($membersArr)) {
+            return array();
+        }
+        
+        return $membersArr;
+
+    }
+    
+    public function addSocialMedia(array $socialMediaArr) 
+    {
+  
+        $memberSocialIdArr = array();
+        foreach($socialMediaArr as $key => $val) {
+            $memberSocialIdArr[] = $val['memberSocialId'];
+        }
+
+        $memberSocialIdMemberIdArr = $this->memberSocialObj->getMemberIdsWithMemberSocialIds($memberSocialIdArr, $this->socialSite);
+
+        foreach($socialMediaArr as $val) {
+            
+            $memberId = $memberSocialIdMemberIdArr[$val['memberSocialId']];
+
+            $socialMediaEnt = new SocialMediaEntity();            
+            $socialMediaEnt->setMemberSocialId($val['memberSocialId'])
+                    ->setMemberId($memberId)
+                    ->setSocialId($val['socialId'])
+                    ->setText($val['text'])
+                    ->setLink($val['link'])
+                    ->setMediaUrl($val['mediaUrl'])
+                    ->setMediaHeight($val['mediaHeight'])
+                    ->setMediaWidth($val['mediaWidth'])
+                    ->setSource($val['source']);
+            
+            $r = DB::table("social_media")
+                ->where('member_social_id', '=', $val['memberSocialId'])
+                ->where('social_id', '=', $val['socialId']);
+            
+            if ($r->count() ==0 ) {
+                $socialMediaEnt->create(get_object_vars($socialMediaEnt));
+            }
+  
+        }
+
+    }    
     
 }

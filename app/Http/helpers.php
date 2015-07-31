@@ -14,6 +14,22 @@ if (!function_exists('str_slug')) {
     }
 }
 
+function renderCategoryPath($catPathArr, $route = '/socialmedia/')
+{
+    
+    if (count($catPathArr) >0 ) {
+
+        foreach($catPathArr as $key => $obj) {
+            if ($key >0 ) {
+                echo " &raquo; ";
+            }
+            echo "<a href='" . $route . $obj->slug . "'>" . $obj->display_name . "</a>";
+        }
+        echo "<br>";
+    }
+    
+}
+
 /**
  * View helper for formating category hierarchies with ul/li
  * 

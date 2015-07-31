@@ -7,7 +7,6 @@
 	<title>NowArena.com</title>
 
 	<link href="/css/app.css" rel="stylesheet">
-	<link href="/css/general.css" rel="stylesheet">
 	
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>	
 	
@@ -28,6 +27,10 @@
 		<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
 		<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 	<![endif]-->
+    
+    <link href="/css/nowarena.css" rel="stylesheet">
+
+    
 </head>
 <body>
 	<nav class="navbar navbar-default">

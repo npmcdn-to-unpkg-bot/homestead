@@ -9,16 +9,7 @@
         <?php
         
         // category navigation
-        if (count($catPathArr) >0 ) {
-            
-            foreach($catPathArr as $key => $obj) {
-                if ($key >0 ) {
-                    echo " &raquo; ";
-                }
-                echo "<a href='/members/" . $obj->slug . "'>" . $obj->display_name . "</a>";
-            }
-            echo "<br>";
-        }
+        renderCategoryPath($catPathArr);
 
         // page number navigation
         if ($prev !== false) {

@@ -2,12 +2,12 @@
 
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
-use App\SocialMedia;
-use App\Category;
 use Input;
 use Redirect;
-
 use Illuminate\Http\Request;
+
+use App\MemberSocial;
+use App\Category;
 
 class SocialMediaController extends Controller {
 
@@ -19,100 +19,34 @@ class SocialMediaController extends Controller {
 	public function index($slug)
 	{
         
+        // TODO enable 'disable' of member's social_id so social_media is not selected for that social_id and member 
+        
         $catObj = Category::whereSlug($slug)->first();
        //printR($catObj);//exit;
         $catPathArr = $catObj->getCategoryPath($slug);
         
         // Check to see if we're getting members within single category
         // or members within groups of categories
-        // eg. member within groups of categories = members of the Pacific division and the teams they're on
-        // eg. member within single category = members (Blake Griffin et al) of the Clippers 
+        // eg. members within groups of categories = members of the Pacific division and the teams they're on
+        // eg. members within single category = members (Blake Griffin et al) of the category Clippers 
+        // Members in single category gets all members displayed unconcealed on page
+        // Members in groups of categories get members concealed and scrollable within categories on page
         $getMembersWithinSingleCategory = false;
         foreach($catPathArr as $obj) {
-            if ($obj->child_id == $catObj->id) {
+            if ($obj->child_id == $catObj->id && $obj->parent_id >0 ) {
                 $getMembersWithinSingleCategory = true;
                 break;
             }
         }
- 
-        $memberSocialObj = new \App\MemberSocial();
-        if ($getMembersWithinSingleCategory) {
-            //echo $catObj->id."|";
-            $contentArr = $memberSocialObj->getMembersAndSocialMediaWithinSingleCategory($catObj);
-            return view('socialmedia.child', compact('contentArr', 'catPathArr'));
 
+        $memberSocialObj = new MemberSocial();
+        if ($getMembersWithinSingleCategory) {
+            $memberArr = $memberSocialObj->getMembersWithinSingleCategory($catObj);
+            $contentArr = $memberSocialObj->getSocialMediaWithMemberIds($memberArr);
+            return view('socialmedia.child', compact('memberArr', 'contentArr', 'catPathArr'));
 
         }
         
-        
-
-	}
-
-	/**
-	 * Show the form for creating a new resource.
-	 *
-	 * @return Response
-	 */
-	public function create()
-	{
-		//
-	}
-
-	/**
-	 * Store a newly created resource in storage.
-	 *
-	 * @return Response
-	 */
-	public function store()
-	{
-		//
-	}
-
-	/**
-	 * Display the specified resource.
-	 *
-	 * @param Category $category
-	 * @return Response
-	 */
-	public function show(Category $category)
-	{
-
-	    
-	    
-	    
-	}
-
-	/**
-	 * Show the form for editing the specified resource.
-	 *
-	 * @param  int  SocialMedia $SocialMedia
-	 * @return Response
-	 */
-	public function edit(SocialMedia $SocialMedia)
-	{
-		//
-	}
-
-	/**
-	 * Update the specified resource in storage.
-	 *
-	 * @param  int  SocialMedia $SocialMedia
-	 * @return Response
-	 */
-	public function update(SocialMedia $SocialMedia)
-	{
-		//
-	}
-
-	/**
-	 * Remove the specified resource from storage.
-	 *
-	 * @param  int  SocialMedia $SocialMedia
-	 * @return Response
-	 */
-	public function destroy(SocialMedia $SocialMedia)
-	{
-		//
 	}
 
 }

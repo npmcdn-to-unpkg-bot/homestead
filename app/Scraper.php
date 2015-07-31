@@ -7,11 +7,18 @@ use App\ModelNA;
  *
  * @author matt
  */
+
+// TODO use factory to generate and set local values, eg. getTeamFromWiki regex
 class Scraper extends ModelNA {
     
-    public function scrapeTeam($memberObj, $keyword)
+    public function __construct($keyword) 
     {
-        $r = $this->scrapeGoogleResult($memberObj, $keyword);
+        $this->keyword = $keyword;
+    }
+    
+    public function scrapeTeam($memberObj)
+    {
+        $r = $this->scrapeGoogleResult($memberObj, $this->keyword);
         if ($wikiPageUrl = $this->getWikipageFromGoogleResult($r)) {
             $r = $this->scrapeWikipage($wikiPageUrl);
             return $this->getTeamFromWiki($r);
@@ -31,10 +38,10 @@ class Scraper extends ModelNA {
         return $r;
     }
     
-    protected function scrapeGoogleResult($memberObj, $keyword)
+    protected function scrapeGoogleResult($memberObj)
     {
         
-        $name = urlencode($memberObj->name . " " . $keyword);
+        $name = urlencode($memberObj->name . " " . $this->keyword);
         $url = "https://www.google.com/search?q=" . $name . "&ie=utf-8&oe=utf-8";
         //echo "<br><br>".$url;
         $r = $this->callCurl($url);

@@ -3,15 +3,17 @@
 use App\ModelNA;
 //use Illuminate\Database\Eloquent\Model;
 use DB;
+
 use App\CategoryParentAndChildren;
 use App\Category;
+use App\SocialMedia;
 
 class Member extends ModelNA {
     
     protected $guarded = [];
         
     protected $fillable = array('name', 'slug', 'avatar');
-
+    
     /*
      * Get category_ids member belongs to
      * 
@@ -24,22 +26,7 @@ class Member extends ModelNA {
         return $memberCategoryIdArr;
         
     }
-        
-    public function getSocialIdSiteArr()
-    {
-        
-        return array(
-            'twitter' => 'Twitter',
-            'instagram' => 'Instagram',
-            'facebook' => 'Facebook',
-            'yelp' => 'Yelp',
-            'youtube' => 'Youtube',	
-            'pinterest' => 'Pinterest',
-            'foursquare' => 'Foursquare',
-        );
-        
-    }
-    
+
     public  function saveMemberCategoryIds($categoryIdArr, $memberId)
     {
         
@@ -168,7 +155,7 @@ class Member extends ModelNA {
      * 
      * returns array in format:
      * ['twitter'] = array('name' => 'Twitter', 'memberSocialId' => '3r9230rj23rj', 'disabled' => 1),
-     * ['instagram'] = etc
+     * ['instagram'] = array('name' => etc
      */
     public function getMemberSocialIdArr($memberId)
     {
@@ -179,7 +166,7 @@ class Member extends ModelNA {
                 ->get();
 
         // get array of social sites and set member's social ids for each site
-        $socialIdSiteArr = $this->getSocialIdSiteArr();
+        $socialIdSiteArr = SocialMedia::getSocialSiteIdArr();
         $fullMemberSocialIdArr = array();
         foreach($socialIdSiteArr as $socialId => $socialSite) {
             $memberSocialId = '';
@@ -205,9 +192,10 @@ class Member extends ModelNA {
     public  function saveMemberSocialIds($siteArr, $memberId)
     {
         
-        $socialIdSiteArr = $this->getSocialIdSiteArr();
+        $socialIdSiteArr = SocialMedia::getSocialSiteIdArr();
 
         // TODO: transaction
+        // 
         // delete existing parent-child relationships in table
         DB::table('member_social_ids')->where('member_id', $memberId)->delete(); 
 

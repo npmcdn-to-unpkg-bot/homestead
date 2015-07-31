@@ -26,7 +26,7 @@ class TwitterAdapter
                 'include_entities' => 1,
                 'since_id' => $since_id
             ];
-            printR($paramArr);
+            //printR($paramArr);
             $r = \Twitter::getHomeTimeline($paramArr);
             
         } else {
@@ -54,8 +54,10 @@ class TwitterAdapter
             return false;
         }
                 
-        return $this->parseStatus($r);
+        $socialMediaArr = $this->parseStatus($r);
 
+        return $socialMediaArr;
+        
     }
         
     public function parseStatus($r)
@@ -191,16 +193,13 @@ class TwitterAdapter
         
         foreach($r->users as $obj) {
 
-            //TODO make into an entity instead of an stdClass
-            $mem = new \stdClass();
-            // $text = iconv("UTF-8", "UTF-8//IGNORE", $text);
-            // http://stackoverflow.com/questions/1401317/remove-non-utf8-characters-from-string
-            $mem->name = mb_convert_encoding(trim($obj->name), 'UTF-8', 'UTF-8');
-            $mem->memberSocialId = $obj->screen_name;
-            $mem->avatar = $obj->profile_image_url;
-            $mem->description = $obj->description;
-            $mem->childId = 0;
-            $mem->parentId = 0;
+            $mem = new \App\MemberEntity();
+            $mem->setName($obj->name)
+                ->setMemberSocialIdArr($obj->screen_name, 'twitter')
+                ->setAvatar($obj->profile_image_url)
+                ->setDescription($obj->description)
+                ->setChildId(0)
+                ->setParentId(0);
             $this->memberArr[strtolower($obj->screen_name)] = $mem;
             
         }
