@@ -71,7 +71,7 @@ class MemberSocial extends ModelNA
         
     }
     
-    public function getSocialMediaWithMemberIds(array $memberArr, $offset = 0, $limit = 3)
+    public function getSocialMediaWithMemberIds(array $memberArr, $offset = 0, $limit = 6)
     {
         if (count($memberArr) ==0 ) {
             return array();
@@ -91,7 +91,19 @@ class MemberSocial extends ModelNA
                 ->skip($offset)
                 ->take($limit)
                 ->get();
-            //printR($r);exit;
+            foreach($r as $i => $rowObj) {
+                $inReplyToText = '';
+                $text = ($rowObj->text);
+                preg_match("~&lt;reply&gt;&lt;(.*?)&lt;/reply&gt;~is", $text, $arr);
+                if (isset($arr[0])) {
+                    $inReplyToText = $arr[0];
+                    $text = str_replace($inReplyToText, "", $text);
+                }
+                $text = Twitter::linkify($text);
+                $text = html_entity_decode($inReplyToText) . " " . $text;
+                $r[$i]->text = $text;
+            }
+
             $contentArr[$obj->id] = $r;
             //printR($contentArr);exit;
             /*

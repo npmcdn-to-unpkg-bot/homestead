@@ -8,7 +8,7 @@ renderCategoryPath($catPathArr);
 
 echo "<br>";
 
-foreach($memberArr as $obj) {
+foreach($memberArr as $i => $obj) {
     
     $memberId = $obj->id;
     $name = $obj->name;
@@ -24,7 +24,7 @@ foreach($memberArr as $obj) {
 
     echo "<div class='headerTextLeft'>";
     echo "<span class='memberName'>";
-    echo $name . " | " . $memberId;
+    echo $name . " | " . $memberId . " | " . count($contentArr[$memberId]);
     echo "</span>";
     echo "</div>";
 
@@ -114,46 +114,144 @@ printR($contentArr);
     
 $(document).ready(function() {
     
-    for(var memberId in contentArr) {
-        console.log('memberId: ' + memberId);
+    var numMediaDisplayed = 3;
+    var memberIdSocialIdArr = [];
+    
+    displayMedia(contentArr);
+    
+    function displayMedia(contentArr) {
 
-        for(var j in contentArr[memberId]) {
-            
-            var idStr = memberId + "_" + (parseInt(j) + 1);
-            console.log('content key: ' + j);
-            console.log('idStr: ' + idStr);
-            var obj = contentArr[memberId][j];
-            text = obj['text'];
-            link = obj['link'];
-            $("#textCont_" + idStr).html(text);
-            if (obj['media_url'] != '') {
-                $("#thumbCont_" + idStr).show();
-                media_url = obj['media_url'];
-                if (obj['source'] == 'twitter') {
-                    media_url = media_url + ":thumb";
+        for(var memberId in contentArr) {
+
+            //console.log('memberId: ' + memberId);
+            memberIdSocialIdArr[memberId] = {lastSocialId: 0};
+            memberIdSocialIdArr[memberId].firstSocialId = 0;
+
+            if (contentArr[memberId].length == 0) {
+                $("#textCont_" + memberId + "_1").html('End of feed reached');
+                continue;
+            }
+
+            for(var j in contentArr[memberId]) {
+                
+                j = parseInt(j);
+
+                // firstSocialId
+                if (j === 0) {
+                    memberIdSocialIdArr[memberId].firstSocialId = contentArr[memberId][j]['social_id'];
                 }
-                $("#thumbCont_" + idStr + " > a").attr("href", link);
-                $("#thumbCont_" + idStr + " > a >.thumb").attr("src", media_url);
+                
+                var obj = contentArr[memberId][j];
+        
+                displayMediaBlock(obj, memberId, j);
+
+                //console.log(footerContent);
+
+                // lastSocialId
+                if (j !==0 && (j % (numMediaDisplayed - 1)  === 0)) {
+                    // eg. j is position '2' and there are 5 social media content for memberId and numMediaDisplayed is 3
+                    memberIdSocialIdArr[memberId].lastSocialId = obj['social_id'];
+                    break;
+                } else if (j === contentArr[memberId].length - 1 ) {// && contentArr[memberId].length < numMediaDisplayed) {
+                    // eg. j is position '0' and there is 1 social media content for memberId 
+                    memberIdSocialIdArr[memberId].lastSocialId = obj['social_id'];
+                    $("#textCont_" + memberId + "_" + (j+2)).html('End of feed reached');
+                }
 
             }
-            
-            onLink = "<a target='_blank' href='" + link + "'>on " + obj['source'] + "&raquo;</a>";
-            footerContent = obj['formatted_created_at'] + " " + onLink;
-            $("#footerCont_" + idStr).html(footerContent);
-            console.log(footerContent);
-            
         }
+    
+    }
+    
+    function displayMediaBlock(obj, memberId, j) {
+        
+        var idStr = memberId + "_" + (j + 1);
+                       
+        text = obj['social_id'] +" : " + obj['text'];
+        link = obj['link'];
+        $("#textCont_" + idStr).html(text);
+        if (obj['media_url'] !== '') {
+            $("#thumbCont_" + idStr).show();
+            media_url = obj['media_url'];
+            if (obj['source'] == 'twitter') {
+                media_url = media_url + ":thumb";
+            }
+            $("#thumbCont_" + idStr + " > a").attr("href", link);
+            $("#thumbCont_" + idStr + " > a >.thumb").attr("src", media_url);
+            $("#thumbCont_" + idStr).show(); 
+        } else {
+            $("#thumbCont_" + idStr).hide(); 
+        }
+
+        onLink = "<a target='_blank' href='" + link + "'>on " + obj['source'] + "&raquo;</a>";
+        footerContent = obj['formatted_created_at'] + " " + onLink;
+        $("#footerCont_" + idStr).html(footerContent);
+        
+        return obj;
+                
+    }
+    
+    /*
+     * Set array of member's social media for display
+     */
+    function displaySubContentArr(subMemberArr, memberId) {
+        
+        subContentArr = [];
+        subContentArr[memberId] = subMemberArr;
+
+        if (subContentArr[memberId].length >0 ) {
+            displayMedia(subContentArr);
+        }       
+        
     }
 
     $(".navRight").click(function() {
 
-       console.log($(this).attr('id'));
+        var hasMediaNotDisplayed = false;
+        
+        memberId = $(this).attr('id').substring(6);
+        // see if there is any more social media already loaded but not displayed
+        if (contentArr[memberId].length > numMediaDisplayed) {
+            subMemberArr = [];
+            lastSocialId = memberIdSocialIdArr[memberId].lastSocialId;
+            for(j in contentArr[memberId]) {
+                obj = contentArr[memberId][j];
+                if (obj['social_id'] == lastSocialId) {
+                    hasMediaNotDisplayed = true;
+                    subMemberArr = contentArr[memberId].slice(parseInt(j) + 1, j + numMediaDisplayed);
+                    break;
+                }
+            }
 
+        }
+        
+
+        if (hasMediaNotDisplayed) {
+            displaySubContentArr(subMemberArr, memberId);
+        } else {
+            //get from server
+        }
 
 
     });
 
+    $(".navLeft").click(function() {
 
+        memberId = $(this).attr('id').substring(5);
+        console.log('member_id:'+memberId);
+        // can we nav left
+        canNavLeft = false;
+        if (memberIdSocialIdArr[memberId].firstSocialId > 0) {
+            for(var j in contentArr[memberId]) {
+                if (contentArr[memberId][j]['social_id'] == memberIdSocialIdArr[memberId].firstSocialId) {
+                    subMemberArr = contentArr[memberId].slice(parseInt(j) - numMediaDisplayed, numMediaDisplayed);
+                    displaySubContentArr(subMemberArr, memberId);
+                }
+            }
+        }
+
+
+    });
 
 });
 
