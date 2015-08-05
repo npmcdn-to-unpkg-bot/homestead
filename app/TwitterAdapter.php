@@ -20,12 +20,14 @@ class TwitterAdapter
         if (1) {
             
             $since_id = \DB::table('social_media')->orderBy('social_id', 'DESC')->take(1)->pluck('social_id');
-          
+
             $paramArr = [
                 'count' => 200,
-                'include_entities' => 1,
-                'since_id' => $since_id
+                'include_entities' => 1
             ];
+            if ($since_id) {
+                $paramArr['since_id'] = $since_id;
+            }
             //printR($paramArr);
             $r = \Twitter::getHomeTimeline($paramArr);
             
@@ -80,7 +82,7 @@ class TwitterAdapter
                     $mediaWidth = $media[0]->sizes->thumb->w;
                 }
             }
-            
+
             // replace shortened urls with full urls
             $text = $obj->text;
             if (!empty($obj->entities->urls)) {
@@ -106,8 +108,8 @@ class TwitterAdapter
                 $replyLink.= "</reply> ";
                 $text = $replyLink . $text;
             }
-            
-            $created_at = date("Y-m-d H:m:i", strtotime($obj->created_at));
+
+            $written_at = date("Y-m-d H:m:i", strtotime($obj->created_at));
 
             $socialMediaArr[] = [
                 'memberSocialId' => $memberSocialId,
@@ -119,7 +121,7 @@ class TwitterAdapter
                 'mediaHeight' => $mediaHeight,
                 'mediaWidth' => $mediaWidth,
                 'source' => 'twitter',
-                'created_at' => $created_at
+                'written_at' => $written_at
             ];
             
         }

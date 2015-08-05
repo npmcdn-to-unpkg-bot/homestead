@@ -17,19 +17,19 @@ class MemberSocial extends ModelNA
     public function getMembersWithinSingleCategory(Category $catObj)
     {
         $q = "SELECT tmp_table.id, tmp_table.name, tmp_table.avatar, ";
-        $q.= "DATE_FORMAT(tmp_table.created_at, '%b %d, %Y %h:%i %p') as created_at ";
+        $q.= "DATE_FORMAT(tmp_table.written_at, '%b %d, %Y %h:%i %p') as written_at ";
         //$q.= ", tmp_table.text, tmp_table.social_id ";
         $q.= "FROM ";
         $q.="(";
-        $q.= "SELECT members.id, members.name, members.avatar, social_media.created_at ";
+        $q.= "SELECT members.id, members.name, members.avatar, social_media.written_at ";
         //$q.= ", social_media.text, social_media.social_id ";
         $q.= "FROM members ";
         $q.= "INNER JOIN member_categories ON members.id = member_categories.member_id ";
         $q.= "AND category_id = " . $catObj->id . " ";
         $q.= "LEFT JOIN social_media ON members.id = social_media.member_id AND social_media.unpublish = 0 ";
-        $q.= "ORDER BY social_media.created_at DESC ";      
+        $q.= "ORDER BY social_media.written_at DESC ";      
         $q.= ") ";
-        $q.= "AS tmp_table GROUP BY tmp_table.id  ORDER BY created_at DESC";
+        $q.= "AS tmp_table GROUP BY tmp_table.id  ORDER BY written_at DESC";
 
         $r = DB::select($q);   
         return $r;
@@ -42,7 +42,7 @@ class MemberSocial extends ModelNA
         $q.= "";
         $q.= "WHERE member_id IN ('" . implode("',' ", $memberIdArr) . "') ";
         $q.= "AND unpublish = 0 ";
-        $q.= "ORDER BY created_at DESC";
+        $q.= "ORDER BY written_at DESC";
         $q.= ") ";
         $q.= "AS tmp_table GROUP BY member_id";
         $r = DB::select($q);
@@ -55,7 +55,7 @@ class MemberSocial extends ModelNA
                         ->where('member_categories.category_id', '=', $catObj->id);
             })
             ->leftJoin('social_media', 'social_media.member_id' ,'=', 'members.id')
-            ->orderBy('social_media.created_at', 'DESC')
+            ->orderBy('social_media.written_at', 'DESC')
             ->get();
         
         if (count($r) ==0 ) {
@@ -71,29 +71,38 @@ class MemberSocial extends ModelNA
         
     }
     
-    public function getSocialMediaWithMemberIds(array $memberArr, $offset = 0, $limit = 6)
+    public function getSocialMediaWithMemberIds(array $memberArr, $socialMediaId = false, $offset = 0, $limit = 6)
     {
         if (count($memberArr) ==0 ) {
             return array();
         }
-        
+
         // TODO skip 'disabled' social_ids per member
         $contentArr = array();
-        $memberIdcreatedAtArr = array();
         foreach($memberArr as $obj) {
 
             $r = DB::table('social_media')
-                ->select('social_media.*', DB::raw("DATE_FORMAT(social_media.created_at, '%b %d, %Y %h:%i %p') as formatted_created_at"))
+                ->select('social_media.*')
                 ->join('member_social_ids', 'member_social_ids.member_id', '=', 'social_media.member_id')
                 ->where('social_media.member_id', '=', $obj->id)
-                ->where('disabled', '=', '0')
-                ->orderBy('social_media.created_at', 'DESC')
+                ->where('disabled', '=', '0');
+                
+            if ($socialMediaId) {
+                // get 'older' aka smaller id's
+                $r = $r->where('social_media.id', '<', $socialMediaId);
+            }
+
+            $r = $r->orderBy('social_media.id', 'DESC')
                 ->skip($offset)
                 ->take($limit)
                 ->get();
+
             foreach($r as $i => $rowObj) {
+                
+                // format links
                 $inReplyToText = '';
-                $text = ($rowObj->text);
+                $text = is_object($rowObj) ? $rowObj->text : '';
+                // TODO check save setting in laravel for not decoding html
                 preg_match("~&lt;reply&gt;&lt;(.*?)&lt;/reply&gt;~is", $text, $arr);
                 if (isset($arr[0])) {
                     $inReplyToText = $arr[0];
@@ -102,6 +111,10 @@ class MemberSocial extends ModelNA
                 $text = Twitter::linkify($text);
                 $text = html_entity_decode($inReplyToText) . " " . $text;
                 $r[$i]->text = $text;
+                
+                // set age of post
+                $age = $this->getAge($rowObj->written_at);
+                $r[$i]->age = $age;
             }
 
             $contentArr[$obj->id] = $r;

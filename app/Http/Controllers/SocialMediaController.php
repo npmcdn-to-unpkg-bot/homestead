@@ -10,6 +10,15 @@ use App\MemberSocial;
 use App\Category;
 
 class SocialMediaController extends Controller {
+    
+    protected $rules = [
+		'member_id' => ['required'],
+		'social_media_id' => ['required']
+	];
+    
+    public function __construct() {
+        $this->memberSocialObj = new MemberSocial();
+    }
 
 	/**
 	 * Display a listing of the resource.
@@ -18,10 +27,15 @@ class SocialMediaController extends Controller {
 	 */
 	public function index($slug)
 	{
-        
-        // TODO enable 'disable' of member's social_id so social_media is not selected for that social_id and member 
-        
+
+        if ($slug == '') {
+            exit('Slug cannot be empty');
+        }
         $catObj = Category::whereSlug($slug)->first();
+        
+        if (is_null($catObj)) {
+            exit('not finding category for that slug');
+        }
        //printR($catObj);//exit;
         $catPathArr = $catObj->getCategoryPath($slug);
         
@@ -39,14 +53,38 @@ class SocialMediaController extends Controller {
             }
         }
 
-        $memberSocialObj = new MemberSocial();
+
         if ($getMembersWithinSingleCategory) {
-            $memberArr = $memberSocialObj->getMembersWithinSingleCategory($catObj);
-            $contentArr = $memberSocialObj->getSocialMediaWithMemberIds($memberArr);
+            
+            $memberArr = $this->memberSocialObj->getMembersWithinSingleCategory($catObj);
+            $contentArr = $this->memberSocialObj->getSocialMediaWithMemberIds($memberArr);
             return view('socialmedia.child', compact('memberArr', 'contentArr', 'catPathArr'));
 
+        } else {
+            
+            
+            
         }
         
 	}
+    
+    /*
+     * ajax call to get member's social media
+     */
+    public function getMemberSocialMedia( Request $request) 
+    {
+  
+        $this->validate($request, $this->rules);	    
+    	$input = Input::all();
+        $obj = new \stdClass();
+        $obj->id = $input['member_id'];
+        $socialMediaId = $input['social_media_id'];
+        $memberArr = array('id' => $obj);
+        $memberContentArr = $this->memberSocialObj->getSocialMediaWithMemberIds($memberArr, $socialMediaId);
+        return response()->json(['memberContentArr' => $memberContentArr]);
+    	
+        
+    }
+   
 
 }

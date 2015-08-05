@@ -10,17 +10,63 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ModelNA extends Model{
     
+    
+    /*
+     * Use this method along with usort() to sort an array with a 'date' value 
+     * eg. usort($arr, array($this, 'sortByTime'));
+     *       
+     */
+    public function sortByWrittenAt($a, $b)
+    {
+       return strtotime($a['written_at']) - strtotime($b['written_at']);  
+    }
+    
+    
+    public function setDatetime($date) 
+    {
+        
+        if (strstr($date, "-") || strstr($date, "/") || strstr($date, '\\') || strlen($date) == 8)  {
+            return new \DateTime($date);
+        } else {
+            return new \DateTime(date("Y-M-d H:i:s", $date));
+        }
+        
+    }
+    
+    public function pluralize( $count, $text ) 
+    { 
+        return $count . ( ( $count == 1 ) ? ( " $text" ) : ( " ${text}s" ) );
+    }
+    
+    public function getAge( $datetime )
+    {
+        
+        $datetime = $this->setDatetime($datetime);
+        
+        $interval = date_create('now')->diff( $datetime );
+        $suffix = ( $interval->invert ? ' ago' : '' );
+        if ( $v = $interval->y >= 1 ) return $this->pluralize( $interval->y, 'yr' ) . $suffix;
+        if ( $v = $interval->m >= 1 ) return $this->pluralize( $interval->m, 'mnth' ) . $suffix;
+        if ( $v = $interval->d >= 1 ) return $this->pluralize( $interval->d, 'dy' ) . $suffix;
+        if ( $v = $interval->h >= 1 ) return $this->pluralize( $interval->h, 'hr' ) . $suffix;
+        if ( $v = $interval->i >= 1 ) return $this->pluralize( $interval->i, 'min' ) . $suffix;
+        return $this->pluralize( $interval->s, 'second' ) . $suffix;
+    }
+    
     public function getQuery($r)
     {
 
-        $execute = $r->get();
-        $q = $r->toSql();
+        if (!is_array($r)) {
+            $execute = $r->get();
+            $q = $r->toSql();           
+        }
+
         $arr = $r->getBindings();
         $pdo = \DB::connection()->getPdo();
 
         foreach($arr as $val) {
             //echo $pdo->quote($val)."|<br>"; preg_match('~= \?~', '= ' . $pdo->quote($val), $arr);printR($arr);
-            $q = preg_replace('~= \?~', '= ' . $pdo->quote($val), $q, 1);
+            $q = preg_replace('~(<=|>=|=|<|!=) \?~', '= ' . $pdo->quote($val), $q, 1);
         }
 
         return $q;
@@ -54,16 +100,63 @@ class ModelNA extends Model{
     {
         
         $text = trim($text);
+        //echo "<hr>A:<br>";
         $text = preg_replace("~\\n|\\r~", " ", $text);
+        
+        //echo $text;
+        
+        //echo "<br>A.5:<br>";
+        // TODO enable utf8mb4 in mysql to store emojis
+        $text = $this->removeEmoji($text);
+        //echo $text;
+        //echo "<Br>A.6:<br>";
+        //$text = preg_replace('/\xEE[\x80-\xBF][\x80-\xBF]|\xEF[\x81-\x83][\x80-\xBF]/', '', $text);
+        //echo $text;
+        //echo "<br>B:<Br>";
         $text = $this->convertMS($text);
+        //echo $text;
         $text = $this->convertQuotes($text);
-        $pattern = '~&([a-z]{1,2})(acute|cedil|circ|grave|lig|orn|ring|slash|th|tilde|uml);~i';
-        $text = preg_replace($pattern, '$1', htmlentities($text, ENT_COMPAT, 'UTF-8'));
-        $text = mb_convert_encoding($text, 'UTF-8', 'UTF-8');
-        $text = iconv("UTF-8", "UTF-8//IGNORE", $text);
+        //echo "<BR>C:<Br>";
+        //echo $text;
+        
+        //$pattern = '~&([a-z]{1,2})(acute|cedil|circ|grave|lig|orn|ring|slash|th|tilde|uml);~i';
+        //$text = preg_replace($pattern, '$1', htmlentities($text, ENT_COMPAT, 'UTF-8'));
+        //echo "<br>D:<bR>";
+        //$text = mb_convert_encoding($text, 'UTF-8', 'UTF-8');
+        //echo $text;
+        //echo "<br>E:<br>";
+        //$text = iconv("UTF-8", "UTF-8//IGNORE", $text);
+        //echo $text;
         
         return $text;
         
+    }
+    
+    public function removeEmoji($text) {
+
+        $clean_text = "";
+
+        // Match Emoticons
+        $regexEmoticons = '/[\x{1F600}-\x{1F64F}]/u';
+        $clean_text = preg_replace($regexEmoticons, '', $text);
+
+        // Match Miscellaneous Symbols and Pictographs
+        $regexSymbols = '/[\x{1F300}-\x{1F5FF}]/u';
+        $clean_text = preg_replace($regexSymbols, '', $clean_text);
+
+        // Match Transport And Map Symbols
+        $regexTransport = '/[\x{1F680}-\x{1F6FF}]/u';
+        $clean_text = preg_replace($regexTransport, '', $clean_text);
+
+        // Match Miscellaneous Symbols
+        $regexMisc = '/[\x{2600}-\x{26FF}]/u';
+        $clean_text = preg_replace($regexMisc, '', $clean_text);
+
+        // Match Dingbats
+        $regexDingbats = '/[\x{2700}-\x{27BF}]/u';
+        $clean_text = preg_replace($regexDingbats, '', $clean_text);
+
+        return $clean_text;
     }
         
     public function convertMS($text)

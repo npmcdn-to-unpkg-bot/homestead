@@ -10,7 +10,7 @@ class SocialMediaEntity extends ModelNA{
     
     protected $table = 'social_media';
     
-    protected $fillable = array('id', 'member_id', 'social_id', 'member_social_id','text', 'created_at', 'media_url', 'media_height', 'media_width', 'link', 'source');
+    protected $fillable = array('id', 'member_id', 'social_id', 'member_social_id','text', 'written_at', 'media_url', 'media_height', 'media_width', 'link', 'source');
 
     public $id;
     public $member_id;
@@ -23,11 +23,11 @@ class SocialMediaEntity extends ModelNA{
     public $media_width;
     public $link;
     public $source;//twitter
-    public $created_at;
+    public $written_at;
     
-    public function setCreatedAt($created_at)
+    public function setWrittenAt($written_at)
     {
-        $this->created_at = $created_at;
+        $this->written_at = $written_at;
         return $this;
     }
 

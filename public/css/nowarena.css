@@ -1,10 +1,3 @@
-@media (min-width: 1900px) {
-    .container {
-        width: 1340px;
-        margin:0px auto;
-    }
-}
-
 .memberName {
     font-weight:bold;
 }
@@ -15,10 +8,49 @@
 }
 .rowCont {
     width:1778px; //4 columns;
-    width:1336px;
+    width:1336px; //3 columns;
+    //width:914px;  //2 columns;
+    //width:494px;
+    margin:0px auto;
     border:1px solid black;
+    border-top-right-radius:25px;
+    border-bottom-right-radius: 25px;
 
 }
+
+.rowContentCont {
+    //width:1260px;
+    //width:900px;
+    width:100%;
+    height:104px;
+    float:left;
+}
+.contentNav {
+    float:left;
+    position:relative;
+    text-align:center;
+}
+
+.contentNavInner {
+    z-index:2;
+    height:178px;
+    width:74px;
+    top:-54px;
+    left:-74px;
+    position:absolute;
+    border-left:0px solid black;
+    border-top:0px solid black;
+    background-color:#c4e3f3; 
+    border-top-right-radius:25px;
+    border-bottom-right-radius: 25px;
+}
+
+.navButton {
+    font-weight:bold;
+    font-size:48px;
+    line-height: 1.2;
+}
+
 .memberCont {
     width:100%;
     border:1px solid black;        
@@ -26,6 +58,10 @@
 
 .header{
     background-color: #dddddd;
+    border:0px solid black;
+    border-top-left-radius:0px;
+    border-top-right-radius:25px;
+    padding-left:0px;
 }
 .avatarCont {
     border:1px solid black;
@@ -37,28 +73,6 @@
 }
 .avatar{
     width:48px;
-}
-
-.contentNav {
-    float:left;
-    position:relative;
-    text-align:center;
-}
-
-.contentNavInner {
-    z-index:2;
-    height:124px;
-    width:74px;
-    position:absolute;
-    border-left:0px solid black;
-    border-top:0px solid black;
-    background-color:#c4e3f3; 
-}
-
-.navButton {
-    font-weight:bold;
-    font-size:36px;
-    line-height: 1.2;
 }
 
 .footerCont, .firstFooterCont {
@@ -79,6 +93,7 @@
 }
 
 .thumbCont{
+    display:none;
     float:left;
     width:100px;
     height:100px;
@@ -107,9 +122,29 @@
 .firstContentCont {
     border-left:0px;
 }
+@media (max-width:640px) {
 
-.rowContentCont {
-    width:1260px;
-    height:104px;
-    float:left;
+    .contentNavInner {    
+            left:-74px;
+    }
+    .rowCont {
+        width:494px;
+    }
 }
+
+@media (max-width:1024) {
+    .contentNavInner {
+        left:-74px;
+    }
+    .rowCont{
+        width:914px;
+    }
+}
+
+@media (max-width: 1900px) {
+
+}
+
+
+
+

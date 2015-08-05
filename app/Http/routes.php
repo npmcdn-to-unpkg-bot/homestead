@@ -10,8 +10,11 @@
 | and give it the controller to call when that URI is requested.
 |
 */
+
 Route::get('members/{slug?}', 'MembersController@index');
+Route::get('socialmedia/getmembersocialmedia', 'SocialMediaController@getmembersocialmedia');
 Route::get('socialmedia/{slug?}', 'SocialMediaController@index');
+
 Route::get('/', 'WelcomeController@index');
 Route::get('twitter', 'TwitterController@index');
 Route::get('twitter/addfriends', 'TwitterController@addfriends');

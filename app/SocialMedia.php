@@ -32,6 +32,9 @@ class SocialMedia extends ModelNA{
         
     }
     
+    /*
+     * Static so this method may be called without triggering the dependencies in the constructor
+     */
     public static function getSocialIdSiteArr()
     {
         
@@ -127,8 +130,7 @@ class SocialMedia extends ModelNA{
                     [name] => Atlantic
                     [display_name] => Atlantic
                     [slug] => atlantic
-                    [created_at] => 2015-07-26 15:42:55
-                    [updated_at] => 2015-07-26 15:42:55
+                    [written_at] => 2015-07-26 15:42:55
                 )
         */
 
@@ -302,6 +304,9 @@ class SocialMedia extends ModelNA{
 
         $memberSocialIdMemberIdArr = $this->memberSocialObj->getMemberIdsWithMemberSocialIds($memberSocialIdArr, $this->socialSite);
 
+        // sort by time so that social_media.id will be in order with date
+        usort($socialMediaArr, array($this, 'sortByWrittenAt'));
+
         foreach($socialMediaArr as $val) {
             
             $memberId = $memberSocialIdMemberIdArr[$val['memberSocialId']];
@@ -315,7 +320,7 @@ class SocialMedia extends ModelNA{
                     ->setMediaUrl($val['mediaUrl'])
                     ->setMediaHeight($val['mediaHeight'])
                     ->setMediaWidth($val['mediaWidth'])
-                    ->setCreatedAt($val['created_at'])
+                    ->setWrittenAt($val['written_at'])
                     ->setSource($val['source']);
             
             $r = DB::table("social_media")
