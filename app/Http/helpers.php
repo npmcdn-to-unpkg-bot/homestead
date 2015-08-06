@@ -19,11 +19,12 @@ function renderCategoryPath($catPathArr, $route = '/socialmedia/')
     
     if (count($catPathArr) >0 ) {
 
+        echo "<a class='catPath' href='/'>NowArena</a> &raquo; ";
         foreach($catPathArr as $key => $obj) {
             if ($key >0 ) {
                 echo " &raquo; ";
             }
-            echo "<a href='" . $route . $obj->slug . "'>" . $obj->display_name . "</a>";
+            echo "<a class='catPath' href='" . $route . $obj->slug . "'>" . $obj->display_name . "</a>";
         }
         echo "<br>";
     }

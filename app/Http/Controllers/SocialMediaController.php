@@ -39,30 +39,40 @@ class SocialMediaController extends Controller {
        //printR($catObj);//exit;
         $catPathArr = $catObj->getCategoryPath($slug);
         
-        // Check to see if we're getting members within single category
-        // or members within groups of categories
-        // eg. members within groups of categories = members of the Pacific division and the teams they're on
-        // eg. members within single category = members (Blake Griffin et al) of the category Clippers 
+        // Check to see if we're getting children - members within single category
+        // or parent - members within groups of categories 
+        // eg. parent = members within groups of categories = members of the Pacific division and the teams they're on
+        // eg. children = members within single category = members (Blake Griffin et al) of the category Clippers 
         // Members in single category gets all members displayed unconcealed on page
         // Members in groups of categories get members concealed and scrollable within categories on page
-        $getMembersWithinSingleCategory = false;
+        $getChildren = false;
         foreach($catPathArr as $obj) {
             if ($obj->child_id == $catObj->id && $obj->parent_id >0 ) {
-                $getMembersWithinSingleCategory = true;
+                $getChildren = true;
                 break;
             }
         }
 
 
-        if ($getMembersWithinSingleCategory) {
+        if ($getChildren) {
             
-            $memberArr = $this->memberSocialObj->getMembersWithinSingleCategory($catObj);
+            $memberArr = $this->memberSocialObj->getMembersWithinSingleCategory($catObj->id);
             $contentArr = $this->memberSocialObj->getSocialMediaWithMemberIds($memberArr);
+
             return view('socialmedia.child', compact('memberArr', 'contentArr', 'catPathArr'));
 
         } else {
-            
-            
+            $parentArr['contentArr'] = [];
+            $childrenArr = $catObj->getChildren($catObj->id);
+            foreach($childrenArr as $childId => $childName) {
+                $memberArr = $this->memberSocialObj->getMembersWithinSingleCategory($childId);
+                $contentArr = $this->memberSocialObj->getSocialMediaWithMemberIds($memberArr);
+                $parentArr['memberArr'][$childId] = $memberArr;
+                $parentArr['contentArr'] = $parentArr['contentArr'] + $contentArr;
+
+            }
+
+            return view('socialmedia.parent', compact('parentArr', 'childrenArr', 'catPathArr'));
             
         }
         

@@ -15,7 +15,7 @@ use App\MemberSocial;
  *
  * @author matt
  */
-class SocialMedia extends ModelNA{
+class SocialMedia extends ModelNA {
 
     
     public function __construct($keyword, $socialSite)
@@ -32,10 +32,7 @@ class SocialMedia extends ModelNA{
         
     }
     
-    /*
-     * Static so this method may be called without triggering the dependencies in the constructor
-     */
-    public static function getSocialIdSiteArr()
+    public static function getSocialSiteIdArr()
     {
         
         return array(
@@ -308,6 +305,11 @@ class SocialMedia extends ModelNA{
         usort($socialMediaArr, array($this, 'sortByWrittenAt'));
 
         foreach($socialMediaArr as $val) {
+            
+            // addfriend may not have been called
+            if (!isset($memberSocialIdMemberIdArr[$val['memberSocialId']])) {
+                continue;
+            }
             
             $memberId = $memberSocialIdMemberIdArr[$val['memberSocialId']];
 

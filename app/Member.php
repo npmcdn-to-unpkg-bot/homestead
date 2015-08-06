@@ -14,6 +14,9 @@ class Member extends ModelNA {
         
     protected $fillable = array('name', 'slug', 'avatar');
     
+
+
+    
     /*
      * Get category_ids member belongs to
      * 

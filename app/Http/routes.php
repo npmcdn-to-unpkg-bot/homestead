@@ -11,7 +11,7 @@
 |
 */
 
-Route::get('members/{slug?}', 'MembersController@index');
+
 Route::get('socialmedia/getmembersocialmedia', 'SocialMediaController@getmembersocialmedia');
 Route::get('socialmedia/{slug?}', 'SocialMediaController@index');
 
@@ -57,3 +57,4 @@ Route::resource('members', 'MembersController');
 Route::resource('categories', 'CategoriesController');
 Route::resource('socialmedia', 'SocialMediaController');
 Route::resource('twitter', 'TwitterController');
+Route::get('members/{slug?}', 'MembersController@index');

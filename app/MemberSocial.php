@@ -14,7 +14,7 @@ class MemberSocial extends ModelNA
     /*
      * Get members within a category and order members from most recent social media post to oldest
      */
-    public function getMembersWithinSingleCategory(Category $catObj)
+    public function getMembersWithinSingleCategory($catId)
     {
         $q = "SELECT tmp_table.id, tmp_table.name, tmp_table.avatar, ";
         $q.= "DATE_FORMAT(tmp_table.written_at, '%b %d, %Y %h:%i %p') as written_at ";
@@ -25,7 +25,7 @@ class MemberSocial extends ModelNA
         //$q.= ", social_media.text, social_media.social_id ";
         $q.= "FROM members ";
         $q.= "INNER JOIN member_categories ON members.id = member_categories.member_id ";
-        $q.= "AND category_id = " . $catObj->id . " ";
+        $q.= "AND category_id = " . $catId . " ";
         $q.= "LEFT JOIN social_media ON members.id = social_media.member_id AND social_media.unpublish = 0 ";
         $q.= "ORDER BY social_media.written_at DESC ";      
         $q.= ") ";

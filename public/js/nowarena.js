@@ -1,126 +1,3 @@
-@extends('app')
-
-@section('content')
-
-<?php
-
-$numCols = 3;
-
-renderCategoryPath($catPathArr);
-
-echo "<br>";
-
-foreach($memberArr as $i => $obj) {
-    
-    $memberId = $obj->id;
-    $name = $obj->name;
-    $avatar = $obj->avatar;
-    
-    echo "\n\n<div id = 'rowCont_" . $memberId . "' class='rowCont'>\n";
-    
-    echo "<div class='header'>\n";
-
-    echo "<div class='avatarCont'>";
-    echo "<img id='avatar_" . $memberId . "' src='" . $avatar . "' class='avatar'>";
-    echo "</div>\n";
-
-    echo "<div class='headerTextLeft'>";
-    echo "<span class='memberName'>";
-    echo $name . " | " . $memberId;
-    echo "</span>";
-    echo " | <span id='contentCount_" . $memberId . "'></span>";
-    echo "</div>\n";
-
-    echo "<div style='clear:both;'></div>\n";
-
-    echo "</div>\n"; // close header
-
-    echo "<div style='clear:both;'></div>\n";
-    
-    echo "<div class='rowContentCont'>";// maintains correct width even if member doesn't have content
-    
-    for($i=1; $i<=$numCols; $i++) {
-        
-        echo "<div class='contentCont";
-        if ($i == 1) {
-            echo " firstContentCont";
-        } else if ($i == 2) {
-            echo " secondContentCont";
-        } else {
-            echo " thirdContentCont";
-        }
-        echo "'>\n"; 
-        
-        echo "<div  id='thumbCont_" . $memberId . "_" . $i . "' class='thumbCont'>";
-        echo "<a target='_blank' href=''>";
-        echo "<img class='thumb' ";
-        echo "src='' ";
-        //echo "width='" . $obj->media_width . "' ";
-        //echo "height='" . $obj->media_height . "'";
-        echo "width='100' ";
-        //echo "height='100'";
-        echo ">";
-        echo "</a>";
-        echo "</div>\n";
-        
-        echo "<div id='textCont_" . $memberId . "_" . $i . "' class='textCont'></div>\n";
-        
-        echo "</div>\n";// close contentCont
-                
-    }
-
-    echo "<div style='clear:both;'></div>\n";
-    echo "</div>\n";//close rowContentContainer
-    
-    echo "<div class='contentNav' id='contentNav_" . $memberId . "'>\n";
-    echo "<div class='contentNavInner'>\n";
-        echo "<a class='navRight' href='javascript:void(0);' id='right_" . $memberId . "'>";
-        echo "<span class='navButton'>&raquo;</span>";
-        echo "</a>";
-        echo "<br>";
-        echo "<a class='navLeft' href='javascript:void(0);' id='left_" . $memberId . "'>";
-        echo "<span class='navButton'>&laquo;</span>";
-        echo "</a>";
-        echo "<Br>";
-        echo "<a class='navReload' href='javascript:void(0);' id='reload_" . $memberId . "'>";        
-        echo "<span class='navButton'>&#8634;</span>";
-        echo "</a>\n";
-    echo "</div>\n";
-    echo "</div>\n";
-    
-    for($i=1; $i<=$numCols; $i++) {
-
-        echo "<div class='footerCont";
-        if ($i == 1) {
-            echo " firstFooterCont";
-        } else if ($i == 2) {
-            echo " secondFooterCont";
-        } else {
-            echo " thirdFooterCont";
-        }
-        
-        echo "' id = 'footerCont_" . $memberId . "_" . $i . "'>";
-        echo " &nbsp; ";
-        echo "</div>";
-
-    }
-        
-    echo "</div>\n";//close rowCont
-    
-    //echo "<hr>\n";
-   
-}
-
-//printR($catPathArr);
-printR($memberArr);
-printR($contentArr);
-
-?>
-
-<script>
-
-<?php echo 'contentArr=' . json_encode($contentArr); ?>
-    
 $(document).ready(function() {
     
     width = $(window).width();
@@ -215,7 +92,8 @@ $(document).ready(function() {
         
         var idStr = memberId + "_" + (j + 1);
                        
-        text = 'social_media.id: ' + obj['id'] + ' | social_id: ' + obj['social_id'] +" | " + obj['text'];
+        //text = 'social_media.id: ' + obj['id'] + ' | social_id: ' + obj['social_id'] +" | " + obj['text'];
+        text = obj['text'];
         link = obj['link'];
         $("#textCont_" + idStr).html(text);
         if (obj['media_url'] !== '') {
@@ -350,10 +228,78 @@ $(document).ready(function() {
         getJson(memberId, 0);
 
     });
+    
+    //
+    // Prev and Next navigation in parent layout
+    //
+       
+    $(".childNext, .childPrev").click(function() {
+        
+        id = $(this).attr('id');
+        childId = id.substr(6);
+        clickAction = $(this).attr('class');
+
+        // find the visible member
+        for(var i in displayArr[childId]) {
+            
+            i = parseInt(i);
+
+            if (displayArr[childId][i] == 'block') {
+                
+                // hide current visible member
+                memberId = memberIdArr[childId][i];
+                $("#stack_" + memberId).hide();
+                displayArr[childId][i] = 'none';
+                
+                if (clickAction == 'childNext') {
+                    // set childNext values
+                    if (typeof displayArr[childId][(i + 1)] != 'undefined') {
+                        // next member to be made visible
+                        newIndex = i + 1;
+                        // next member name in 'next' link to be made visible
+                        if (typeof displayArr[childId][(newIndex + 1)] != 'undefined') {
+                            nextLinkIndex = newIndex + 1;
+                        } else {
+                            nextLinkIndex = 0;
+                        }
+                    } else {
+                        newIndex = 0;
+                        nextLinkIndex = 1;
+                    }
+                } else {
+                    // set childPrev values
+                    if (typeof displayArr[childId][(i - 1)] != 'undefined') {
+                        // prev member to be made visible
+                        newIndex = i - 1;
+                        // prev member name in 'next' link to be made visible
+                        // NOTE 'prev' link is clicked, but there is no previous member name in previous link
+                        // only member name in 'next' link gets updated
+                        nextLinkIndex = i;
+                    } else {
+                        newIndex = displayArr[childId].length - 1;
+                        nextLinkIndex = 0;
+                    } 
+                }
+                newMemberId = memberIdArr[childId][newIndex];
+                $("#stack_" + newMemberId).show();
+                displayArr[childId][newIndex] = 'block';
+
+                memberName = memberNameArr[childId][nextLinkIndex];
+                $('.next_member_' + childId).text(memberName);
+                
+                break;
+            }
+        }
+
+    });
+    
+    for(var childId in memberNameArr) {
+        if (memberNameArr[childId].length == 1) {
+            continue;
+        }
+        $(".next_member_" + childId).html(memberNameArr[childId][1]);
+
+    }   
+    
 
 });
-
-</script>
-
-
-@endsection

@@ -17,6 +17,17 @@ class Category extends Model {
         return $arr;
         
     }
+    
+    public function getChildren($parentId)
+    {
+ 
+        $arr = $this->select()->join('category_parent_and_children', 'categories.id', '=', 'child_id')
+                ->where('parent_id', '=', $parentId)
+                ->lists('display_name', 'child_id');
+
+        return $arr;
+        
+    }
         
     public function getCategoryPath($slug)
     {
