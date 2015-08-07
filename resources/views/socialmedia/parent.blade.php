@@ -5,6 +5,9 @@
 <?php
 
 renderCategoryPath($catPathArr);
+
+if (!empty($parentArr['memberArr'])) {
+    
 ?>
 
 <script>
@@ -92,5 +95,10 @@ foreach($parentArr['memberArr'] as $childId => $memberArr) {
 <?php echo 'contentArr=' . json_encode($parentArr['contentArr']); ?>
 </script>    
 <script src='/js/nowarena.js'></script>
+
+<?php } else {
+    echo 'no content yet';
+}
+?>
 
 @endsection

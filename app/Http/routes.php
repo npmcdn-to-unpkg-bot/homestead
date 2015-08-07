@@ -10,12 +10,8 @@
 | and give it the controller to call when that URI is requested.
 |
 */
-
-
-Route::get('socialmedia/getmembersocialmedia', 'SocialMediaController@getmembersocialmedia');
-Route::get('socialmedia/{slug?}', 'SocialMediaController@index');
-
-Route::get('/', 'WelcomeController@index');
+Route::any("admin", array('as' => 'admin', 'uses' => "AdminController@index"));
+Route::get('/', 'SocialMediaController@welcome');
 Route::get('twitter', 'TwitterController@index');
 Route::get('twitter/addfriends', 'TwitterController@addfriends');
 Route::get('twitter/addstatus', 'TwitterController@addstatus');
@@ -52,9 +48,28 @@ Route::bind('categories', function($slug, $route) {
     // be retrieved via social media model or social media controller
 	return App\Category::whereSlug($slug)->first();
 });
-
+Route::get('members/{slug}', 'MembersController@index');
 Route::resource('members', 'MembersController');
+
 Route::resource('categories', 'CategoriesController');
-Route::resource('socialmedia', 'SocialMediaController');
+//Route::resource('socialmedia', 'SocialMediaController');
 Route::resource('twitter', 'TwitterController');
-Route::get('members/{slug?}', 'MembersController@index');
+
+Route::get('socialmedia/getmembersocialmedia', 'SocialMediaController@getmembersocialmedia');
+Route::get('socialmedia/{slug}', 'SocialMediaController@index');
+Route::get('socialmedia', 'SocialMediaController@categorylist');
+/*
+Route::group(array('domain' => '{subdomain}.nowarena.dev'), function()
+{
+
+
+    Route::get('/', function($subdomain)
+    {
+        dd(Route::input('subdomain'));
+        Route::get('/', 'SocialMediaController@categorylist');
+
+    });
+
+});
+ 
+ */

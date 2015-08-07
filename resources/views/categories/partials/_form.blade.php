@@ -49,5 +49,7 @@
 
 <br>
 {!! link_to_route('categories.index', '&laquo;Back to Categories') !!}
-&nbsp; &#183; &nbsp; 
-{!! link_to_route('categories.create', 'Create a Category&raquo;') !!}     
+ &#183; &nbsp; {!! link_to_route('admin', 'Admin') !!} &nbsp; &#183; 
+{!! link_to_route('categories.create', 'Create a Category&raquo;') !!}
+
+<script src='/js/admin.js'></script>

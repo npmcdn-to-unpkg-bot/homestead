@@ -10,6 +10,26 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ModelNA extends Model{
     
+    public function __construct(array $attributes = array())
+    {
+
+        parent::__construct($attributes);
+        //$this->setConnection('nba');
+        
+   /*     
+        // determine which db to connect to based on the subdomain
+        // eg. nba.nowarena = nba db
+        // if a command line execution, first argument should be the db
+        if (PHP_SAPI == 'cli') {
+            
+        }
+        $this->setConnection('mysql');
+        var_dump(PHP_SAPI);
+dd($_SERVER);
+    * 
+    */
+    }
+    
     
     /*
      * Use this method along with usort() to sort an array with a 'date' value 

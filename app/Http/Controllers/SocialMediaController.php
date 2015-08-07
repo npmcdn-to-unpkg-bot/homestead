@@ -19,13 +19,28 @@ class SocialMediaController extends Controller {
     public function __construct() {
         $this->memberSocialObj = new MemberSocial();
     }
+    
+    public function welcome()
+    {
+        return view('welcome');
+    }
+    public function categorylist()
+    {
+        $categoryPAndCObj = new \App\CategoryParentAndChildren();
+        $category = new \App\Category;
+        $categoriesObj = $category->all();
+		$categoriesArr = $category->getCategoriesArr($categoriesObj);
+		$parentChildArr = $categoryPAndCObj->getHierarchy();
+		return view('socialmedia.categorylist', compact('categoriesObj', 'parentChildArr', 'categoriesArr'));
+
+    }
 
 	/**
 	 * Display a listing of the resource.
 	 *
 	 * @return Response
 	 */
-	public function index($slug)
+	public function index($slug )
 	{
 
         if ($slug == '') {
@@ -53,7 +68,7 @@ class SocialMediaController extends Controller {
             }
         }
 
-
+        // eg. get the teammates on the Lakers, don't get teams in the Pacific Coast division
         if ($getChildren) {
             
             $memberArr = $this->memberSocialObj->getMembersWithinSingleCategory($catObj->id);

@@ -47,7 +47,7 @@ class SocialMedia extends ModelNA {
         
     }
 
-    public function addNewMembers(array $membersArr)
+    public function addNewMembers(array $membersArr, $scrape = false)
     {
         
         // checks for members not in member_social_ids table 
@@ -60,7 +60,8 @@ class SocialMedia extends ModelNA {
             //TODO use exceptions
             $memberObj = $this->addMember($memberObj);
             $addCatSuccess = $this->addCategories($memberObj);
-            if ($addCatSuccess == false) {
+            if ($addCatSuccess == false  && $scrape) {
+                // TODO make scraping an overwritable method specific to subdomain's extending class
                 echo "<p>scraping for: " . $memberObj->name . "</p>";
                 $team = $this->scraperObj->scrapeTeam($memberObj, $this->keyword);
                 if ($team) {
@@ -324,13 +325,20 @@ class SocialMedia extends ModelNA {
                     ->setMediaWidth($val['mediaWidth'])
                     ->setWrittenAt($val['written_at'])
                     ->setSource($val['source']);
-            
+    
             $r = DB::table("social_media")
                 ->where('member_social_id', '=', $val['memberSocialId'])
                 ->where('social_id', '=', $val['socialId']);
             
             if ($r->count() ==0 ) {
-                $socialMediaEnt->create(get_object_vars($socialMediaEnt));
+                echo '<br>adding ' . $socialMediaEnt->member_social_id . ' status for id ';
+                echo $socialMediaEnt->social_id.'<br>';
+                $arr = get_object_vars($socialMediaEnt);
+                //printR($arr);
+                $socialMediaEnt->create($arr);
+            } else {
+                echo '<br>already added ';
+                echo $socialMediaEnt->member_social_id . ' status for id ' . $socialMediaEnt->social_id.'<br>';
             }
   
         }

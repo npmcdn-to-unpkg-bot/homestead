@@ -130,6 +130,7 @@ class CategoriesController extends Controller {
 	{
 	    
 	   $category->delete();
+       $this->categoryPAndCObj->where('child_id', '=', $category->id)->orWhere('parent_id', '=', $category->id);
  
 	   return Redirect::route('categories.index')->with('message', 'Category deleted.');
 	

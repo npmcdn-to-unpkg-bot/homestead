@@ -1,3 +1,23 @@
+.siteTitle {
+    font-weight:bold;
+    font-size:20px;
+    margin-bottom:8px;
+}
+
+.parentCatUl {
+    float:left;
+    width:260px;
+}
+
+.mainPageCategoryName {
+    font-weight:bold;
+    font-size:20px;
+}
+
+.parentCatUl > span > a {
+    font-weight:bold;
+}
+
 .memberName {
     font-weight:bold;
 }
@@ -195,6 +215,29 @@
     background-color:#cee3f8;
 }
 
+@media (max-width:1024px) {
+ 
+    .contentNav {
+        left:30px;
+        top:18px;
+    }
+    
+}
+
+@media (max-width:800px) {
+ 
+    .contentCont{
+        width:650px;
+    }
+    .footerCont{
+        width:650px;
+    }
+    .contentNav {
+        left:30px;
+        top:18px;
+    }  
+}
+
 @media (max-width:640px) {
         
     .contentNav {
@@ -207,6 +250,7 @@
     .footerCont{
         width:520px;
     }
+    
 }
 
 @media (max-width:360px) {
@@ -237,13 +281,10 @@
         margin-bottom:14px;
         margin-top:4px;
     }
-    
 
-    
 }
 
-
-@media (min-width:1200px) {
+@media (min-width:1152px) {
     .container{
         width:940px;
     }

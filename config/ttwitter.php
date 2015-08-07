@@ -1,5 +1,27 @@
 <?php
 
+// set the twitter keys per subdomain by retrieving them from the .env file and setting them here
+//
+use \App\Site;
+$subdomain = Site::getInstance()->getSubdomain();
+
+$consumerKey = '';
+$consumerSecret = '';
+$accessToken = '';
+$accessTokenSecret = '';
+    
+if ($subdomain == 'nba') {
+    $consumerKey = env('NBA_CONSUMER_KEY');
+    $consumerSecret = env('NBA_CONSUMER_SECRET');
+    $accessToken = env('NBA_ACCESS_TOKEN');
+    $accessTokenSecret = env('NBA_ACCESS_TOKEN_SECRET');
+} else if ($subdomain == 'abbotkinneyblvd') {
+    $consumerKey = env('AK_CONSUMER_KEY');
+    $consumerSecret = env('AK_CONSUMER_SECRET');
+    $accessToken = env('AK_ACCESS_TOKEN');
+    $accessTokenSecret = env('AK_ACCESS_TOKEN_SECRET');  
+}
+
 // You can find the keys here : https://apps.twitter.com/
 
 return [
@@ -13,9 +35,9 @@ return [
 	'ACCESS_TOKEN_URL'    => 'https://api.twitter.com/oauth/access_token',
 	'REQUEST_TOKEN_URL'   => 'https://api.twitter.com/oauth/request_token',
 	'USE_SSL'             => true,
-
-	'CONSUMER_KEY'        => 'kP7ijQC3UaERosARgTguMV7eb',
-	'CONSUMER_SECRET'     => 'LvuxJg8IhmNE70fNsbI9mfn3llle8JuMceOpFrD7zQCJJEigsA',
-	'ACCESS_TOKEN'        => '2687949613-UDYdwO4ufZCy0gE1QwGsakdIhKKbXxYzhCT22Lm',
-	'ACCESS_TOKEN_SECRET' => 'r2eKvfCVUBVnzqmg2VOxPEucp3TgTJXds3d094nXWb0v8',
+    
+	'CONSUMER_KEY'        => $consumerKey,
+	'CONSUMER_SECRET'     => $consumerSecret,
+	'ACCESS_TOKEN'        => $accessToken,
+	'ACCESS_TOKEN_SECRET' => $accessTokenSecret,
 ];

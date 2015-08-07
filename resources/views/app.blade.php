@@ -1,10 +1,14 @@
+<?php
+use \App\Site;
+$site = Site::getInstance();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>NowArena.com</title>
+	<title><?php echo $site::getPageTitle(); ?></title>
 
 	<link href="/css/app.css" rel="stylesheet">
 	
@@ -34,13 +38,9 @@
 </head>
 <body>
     
-       <p align='left'>
-           <a href='/categories'>Categories</a> | <a href='/categories/create'>Create Category</a><Br><a href='/members'>Members</a> | 
-        <a href='/members/create'>Member Create</a> | 
-        </p>
+
 	
 	<div class='content'>
-       
 	
 	@if (Session::has('message'))
 		<div class="flash alert-info">
@@ -56,6 +56,10 @@
 	@endif
 
 	<div class='container'>
+        
+        <a href='http://<?php echo $site::$domain; ?>'><div class='siteTitle'>NowArena.com</div></a>
+        
+        
 	@yield('content')
 	</div>
 

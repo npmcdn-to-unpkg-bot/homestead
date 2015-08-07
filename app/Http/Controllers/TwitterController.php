@@ -7,15 +7,18 @@ use App\Http\Controllers\Controller;
 use App\TwitterAdapter;
 use App\MemberSocial;
 use App\SocialMedia;
+use App\Site;
 
 class TwitterController extends Controller
 {
     
     public function __construct()
     {
-        // TODO set these objects and their params via route and pass in
-        $this->socialMediaObj = new SocialMedia('nba', 'twitter');
-        $this->twitterAdapter = new TwitterAdapter('nbablvd');
+        $keyword = Site::getInstance()->getSubdomain();
+        $twitterScreenName = Site::getInstance()->getTwitterScreenName();
+
+        $this->socialMediaObj = new SocialMedia($keyword, 'twitter');
+        $this->twitterAdapter = new TwitterAdapter($twitterScreenName);
     }
     
     public function addStatus()

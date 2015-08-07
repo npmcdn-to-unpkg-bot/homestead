@@ -59,8 +59,10 @@
 
 
 <br>
-<a href='javascript:void(0);' onclick='history.go(-1);'>&laquo;Back to Members</a>
+<a href='javascript:void(0);' onclick='history.go(-1);'>&laquo;Back</a>
 &nbsp; &#183; &nbsp; 
+<a href='/members/uncategorized'>Uncategorized Members</a>
+&nbsp; &#183; &nbsp;
 {!! link_to_route('members.create', 'Add a Member&raquo;') !!}
 
 </div>
@@ -81,3 +83,5 @@ foreach($parentChildArr as $itemArr) {
         width:80px;
     } 
 </style>
+
+<script src='/js/admin.js'></script>

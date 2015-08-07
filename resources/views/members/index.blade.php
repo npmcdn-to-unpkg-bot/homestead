@@ -2,7 +2,7 @@
 
 @section('content')
 
-    <div class='left_col'>
+    <div class='left_col' style='margin-right:60px;'>
 
       <div style='width:340px;text-align:center;margin-bottom:10px;'>
 
@@ -48,7 +48,7 @@
 
     </div>
 
-    <div class='right_col'>
+    <div class='right_col' style='float:none;margin-top:-20px;'>
         
        <h2>Browse by Category</h2>
        &#183; <a href='/members/nochild'>Browse no child</a>

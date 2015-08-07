@@ -10,7 +10,9 @@ class SocialMediaEntity extends ModelNA{
     
     protected $table = 'social_media';
     
-    protected $fillable = array('id', 'member_id', 'social_id', 'member_social_id','text', 'written_at', 'media_url', 'media_height', 'media_width', 'link', 'source');
+    public $fillable = array('id', 'member_id', 'social_id', 'member_social_id','text', 'written_at', 'media_url', 'media_height', 'media_width', 'link', 'source');
+    
+    public $guarded = null;
 
     public $id;
     public $member_id;
@@ -24,6 +26,10 @@ class SocialMediaEntity extends ModelNA{
     public $link;
     public $source;//twitter
     public $written_at;
+    
+    public function __construct(array $attributes = array()){
+        parent::__construct($attributes);
+    }
     
     public function setWrittenAt($written_at)
     {

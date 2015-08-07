@@ -1,5 +1,7 @@
 <?php
 
+use \App\Site;
+
 if (!function_exists('str_slug')) {
     /**
      * Generate a URL friendly "slug" from a given string.
@@ -16,10 +18,11 @@ if (!function_exists('str_slug')) {
 
 function renderCategoryPath($catPathArr, $route = '/socialmedia/')
 {
-    
+
+    $nameShort = Site::getInstance()->getNameShort();
+    echo "<a class='catPath' href='" . url() . "/socialmedia'>" . $nameShort . "</a> &raquo; ";
     if (count($catPathArr) >0 ) {
 
-        echo "<a class='catPath' href='/'>NowArena</a> &raquo; ";
         foreach($catPathArr as $key => $obj) {
             if ($key >0 ) {
                 echo " &raquo; ";
@@ -43,7 +46,7 @@ function renderItem($itemArr, $categoriesArr, $route, $slug = '')
     $out.= '/' . $route . '/' . $slug;
     $out.= "'>";
     $out.= $categoriesArr[$id]['display_name'];
-    $out.= "</a></span>";
+    $out.= "</a></span><br>";
  
     if (isset($itemArr['children'])) {
         $out.= "<ul class='category_ul'>";
@@ -53,8 +56,7 @@ function renderItem($itemArr, $categoriesArr, $route, $slug = '')
         }
         $out.= "</ul>";
     }
-    
-    
+
     return $out;
     
 }
@@ -68,7 +70,9 @@ function renderTree($parentChildArr, $categoriesArr, $route = 'socialmedia')
         //printR($itemArr);       
         //printR($parentChildArr);        
         //printR($categoriesArr);
+        echo "<ul class='parentCatUl'>";
         echo renderItem($itemArr, $categoriesArr, $route, $slug);
+        echo "</ul>";
     }
 }
 
@@ -85,7 +89,7 @@ function renderCheckboxItem($itemArr, $categoriesArr, $memberCategoryIdArr)
     
     if (isset($categoriesArr[$id])) {
 
-        $out = "<span class='category_name'>";
+        $out = "<div class='category_name'>";
 
         $checked = '';
         if (in_array($id, $memberCategoryIdArr)) {
@@ -96,7 +100,7 @@ function renderCheckboxItem($itemArr, $categoriesArr, $memberCategoryIdArr)
         $out.= "<input type='checkbox' name='category_id[]' value='$id' $checked> ";
 
         $out.= $categoriesArr[$id]['display_name'];
-        $out.= "</span>";
+        $out.= "</div>";
 
         if (isset($itemArr['children'])) {
             $out.= "<ul class='category_ul'>";
