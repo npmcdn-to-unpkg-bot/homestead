@@ -12,7 +12,9 @@ class AdminController extends Controller {
 	 */
 	public function __construct()
 	{
+ 
         //$this->categoryPAndCObj = new CategoryParentAndChildren();
+        $this->middleware('auth');
     }
 
 	/**

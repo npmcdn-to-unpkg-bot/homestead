@@ -18,7 +18,11 @@ foreach($subdomainArr as $key => $arr) {
         continue;
     }
 
-    echo "<li><a href='" . $arr['baseUrl'] . "/socialmedia'>";
+    echo "<li><a href='" . $arr['baseUrl'] . "/socialmedia";
+    if ($arr['categoryDepth'] < 3) {
+        echo '/all';
+    }
+    echo "'>";
     echo "<span class='mainPageCategoryName'>";
     echo $arr['nameShort'];
     echo "</span>";

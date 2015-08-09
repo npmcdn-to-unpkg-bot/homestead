@@ -14,11 +14,11 @@ class Site {
     public static $subdomainArr = array();
     public static $domain = '';
     
-    public static function getInstance($subdomain = '')
+    public static function getInstance($domain = false, $subdomain = false)
     {
         if (static::$instance === null ) {
             $instance = new static;
-            $instance::setDomains();            
+            $instance::setDomains($domain, $subdomain);            
             $instance::setSubdomainArr();
             
             // TODO check for invalid subdomain
@@ -26,27 +26,22 @@ class Site {
         return $instance;
     }
     
-    private static function setDomains()
+    /*
+     * Set the domain and subdomain
+     */
+    private static function setDomains($domain = false, $subdomain = false)
     {
-        // determine database connection when a command line/cron
-        if (PHP_SAPI == 'cli') {
-
+        
+        if ($domain !== false && $subdomain !== false ) {
+            // set domain and subdomain manually
+            self::$domain = $domain;
+            self::$subdomain = $subdomain;
         } else {
-            $arr = explode('.', $_SERVER['HTTP_HOST']);
-            if (count($arr) ==2 ) {
-                // if the array is only a length of 2, that means it is the domain name plus extension,
-                // eg. nowarena.com, so no subdomain
-                self::$subdomain = '';
-                self::$domain = strtolower($_SERVER['HTTP_HOST']);
-            } else {
-                self::$subdomain = strtolower($arr[0]);
-                unset($arr[0]);
-                self::$domain = strtolower(implode('.', $arr));
-            }
-
-//            preg_match("~([a-z0-9_]+)\.[a-z0-9_.]+~i", $_SERVER['HTTP_HOST'], $arr);
-//            self::$subdomain = isset($arr[1]) ? strtolower($arr[1]) : '';
+            // set values based on what was determined in config/app.php
+            self::$domain = config('app.domain');
+            self::$subdomain = config('app.subdomain');
         }
+       
 
     }
     
@@ -82,7 +77,8 @@ class Site {
                 'pageTitle' => 'NowArena.com : Latest social media from the NBA',
                 'baseUrl' => 'http://nba.' . self::$domain,
                 'description' => 'Lebron posts some dank memes, Griffin goes camping, Kobe prepares his legacy and more.', 
-                'twitterScreenName' => 'nbablvd'
+                'twitterScreenName' => 'nbablvd',
+                'categoryDepth' => 3
             ),
             'abbotkinneyblvd' => array(
                 'name' => 'Abbot Kinney',
@@ -92,7 +88,8 @@ class Site {
                 'pageTitle' => "NowArena.com : Latest social media about what's going down and coming up on Abbot Kinney Blvd.",
                 'baseUrl' => 'http://abbotkinneyblvd.' . self::$domain,
                 'description' => "Food, fashion, cocktails, pop culture, street art from the denizens and curators of the premiere boulevard in Venice Beach, California.",
-                'twitterScreenName' => 'abbotkinneybl'
+                'twitterScreenName' => 'abbotkinneybl',
+                'categoryDepth' => 2
             )
         );
         
@@ -143,6 +140,11 @@ class Site {
     public static function getTwitterScreenName()
     {
         return self::$subdomainArr['twitterScreenName'];
+    }
+    
+    public static function getCategoryDepth()
+    {
+        return self::$subdomainArr['categoryDepth'];
     }
     
     private function __construct() {}

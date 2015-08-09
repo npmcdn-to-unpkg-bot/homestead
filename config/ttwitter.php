@@ -2,8 +2,7 @@
 
 // set the twitter keys per subdomain by retrieving them from the .env file and setting them here
 //
-use \App\Site;
-$subdomain = Site::getInstance()->getSubdomain();
+$subdomain = config('app.subdomain');
 
 $consumerKey = '';
 $consumerSecret = '';
@@ -20,6 +19,13 @@ if ($subdomain == 'nba') {
     $consumerSecret = env('AK_CONSUMER_SECRET');
     $accessToken = env('AK_ACCESS_TOKEN');
     $accessTokenSecret = env('AK_ACCESS_TOKEN_SECRET');  
+} else {
+    /*
+    print_r(get_included_files());
+    var_dump($subdomain);
+    var_dump(Site::getInstance()->getSubdomainArr());
+    //dd("subdomain not set");
+    */
 }
 
 // You can find the keys here : https://apps.twitter.com/

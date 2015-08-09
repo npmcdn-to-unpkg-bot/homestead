@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 
 use App\MemberSocial;
 use App\Category;
+use App\Site;
 
 class SocialMediaController extends Controller {
     
@@ -24,6 +25,7 @@ class SocialMediaController extends Controller {
     {
         return view('welcome');
     }
+    
     public function categorylist()
     {
         $categoryPAndCObj = new \App\CategoryParentAndChildren();
@@ -43,30 +45,43 @@ class SocialMediaController extends Controller {
 	public function index($slug )
 	{
 
-        if ($slug == '') {
-            exit('Slug cannot be empty');
-        }
-        $catObj = Category::whereSlug($slug)->first();
-        
-        if (is_null($catObj)) {
-            exit('not finding category for that slug');
-        }
-       //printR($catObj);//exit;
-        $catPathArr = $catObj->getCategoryPath($slug);
-        
-        // Check to see if we're getting children - members within single category
-        // or parent - members within groups of categories 
-        // eg. parent = members within groups of categories = members of the Pacific division and the teams they're on
-        // eg. children = members within single category = members (Blake Griffin et al) of the category Clippers 
-        // Members in single category gets all members displayed unconcealed on page
-        // Members in groups of categories get members concealed and scrollable within categories on page
         $getChildren = false;
-        foreach($catPathArr as $obj) {
-            if ($obj->child_id == $catObj->id && $obj->parent_id >0 ) {
-                $getChildren = true;
-                break;
+        if ($slug != 'all') {
+            
+            $catObj = Category::whereSlug($slug)->first();
+            if (is_null($catObj)) {
+                exit('not finding category for that slug');
             }
+            $catPathArr = $catObj->getCategoryPath($slug);
+            $catArr = $catObj->getChildren($catObj->id);
+
+            if (Site::getCategoryDepth() == 2) {
+                // if it is just a collection of parents without children (and we're not getting 'all'),
+                // treat parent as child and use child layout
+                $getChildren = true;
+            } else {
+                // Check to see if we're getting children - members within single category
+                // or parent - members within groups of categories 
+                // eg. parent = members within groups of categories = members of the NBA Pacific div and the teams they're on
+                // eg. children = members within single category = members (Blake Griffin et al) of the category Clippers 
+                // Members in single category gets all members displayed unconcealed on page
+                // Members in groups of categories get members concealed and navigable within categories on page
+                foreach($catPathArr as $obj) {
+                    if ($obj->child_id == $catObj->id && $obj->parent_id >0 ) {
+                        $getChildren = true;
+                        break;
+                    }
+                }
+            }
+            
+        } else {
+            $catPathArr = array();
+            $catObj = new Category();
+            $catArr = $catObj->getParents();
+            
         }
+        
+
 
         // eg. get the teammates on the Lakers, don't get teams in the Pacific Coast division
         if ($getChildren) {
@@ -77,17 +92,17 @@ class SocialMediaController extends Controller {
             return view('socialmedia.child', compact('memberArr', 'contentArr', 'catPathArr'));
 
         } else {
+            
             $parentArr['contentArr'] = [];
-            $childrenArr = $catObj->getChildren($catObj->id);
-            foreach($childrenArr as $childId => $childName) {
-                $memberArr = $this->memberSocialObj->getMembersWithinSingleCategory($childId);
+            foreach($catArr as $catId => $catName) {
+                $memberArr = $this->memberSocialObj->getMembersWithinSingleCategory($catId);
                 $contentArr = $this->memberSocialObj->getSocialMediaWithMemberIds($memberArr);
-                $parentArr['memberArr'][$childId] = $memberArr;
+                $parentArr['memberArr'][$catId] = $memberArr;
                 $parentArr['contentArr'] = $parentArr['contentArr'] + $contentArr;
 
             }
 
-            return view('socialmedia.parent', compact('parentArr', 'childrenArr', 'catPathArr'));
+            return view('socialmedia.parent', compact('parentArr', 'catArr', 'catPathArr'));
             
         }
         

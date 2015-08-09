@@ -43,8 +43,8 @@ foreach($parentArr['memberArr'] as $childId => $memberArr) {
     
     echo "<div class='parentTitleCont' style='float:left;'>";
         echo "<span class='parentTitle'>";
-        echo "<a href='/socialmedia/" . str_slug($childrenArr[$childId], "_") . "'>";
-        echo $childrenArr[$childId];
+        echo "<a href='/socialmedia/" . str_slug($catArr[$childId], "_") . "'>";
+        echo $catArr[$childId];
         echo "</a></span>";
     echo "</div>";
     

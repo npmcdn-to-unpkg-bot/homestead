@@ -20,7 +20,11 @@ function renderCategoryPath($catPathArr, $route = '/socialmedia/')
 {
 
     $nameShort = Site::getInstance()->getNameShort();
-    echo "<a class='catPath' href='" . url() . "/socialmedia'>" . $nameShort . "</a> &raquo; ";
+    echo "<a class='catPath' href='" . url() . "/socialmedia";
+    if (Site::getCategoryDepth() <3 ) {
+        echo '/all';
+    }
+    echo "'>" . $nameShort . "</a> &raquo; ";
     if (count($catPathArr) >0 ) {
 
         foreach($catPathArr as $key => $obj) {
@@ -29,6 +33,8 @@ function renderCategoryPath($catPathArr, $route = '/socialmedia/')
             }
             echo "<a class='catPath' href='" . $route . $obj->slug . "'>" . $obj->display_name . "</a>";
         }
+        echo "<br>";
+    } else {
         echo "<br>";
     }
     

@@ -7,6 +7,9 @@ use Validator;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\ThrottlesLogins;
 use Illuminate\Foundation\Auth\AuthenticatesAndRegistersUsers;
+use App\AuthenticateUser;
+use Illuminate\Http\Request;
+use Laravel\Socialite\Contracts\Factory as Socialite; 
 
 class AuthController extends Controller
 {
@@ -22,7 +25,7 @@ class AuthController extends Controller
     */
 
     use AuthenticatesAndRegistersUsers, ThrottlesLogins;
-
+ 
     /**
      * Create a new authentication controller instance.
      *
@@ -31,6 +34,43 @@ class AuthController extends Controller
     public function __construct()
     {
         $this->middleware('guest', ['except' => 'getLogout']);
+    }
+   
+    public function login(AuthenticateUser $authenticateUser, Request $request, $provider = null) 
+    {
+
+        return $authenticateUser->execute($request->all(), $this, $provider);
+       
+    }
+    
+    public function userHasLoggedIn($user) {
+        
+        \Session::flash('message', 'Welcome, ' . $user->name);
+        return redirect('/admin');
+    
+    }
+       
+    /**
+     * Redirect the user to the facebook authentication page.
+     *
+     * @return Response
+     */
+    public function redirectToProvider()
+    {
+        return Socialite::driver('facebook')->redirect();
+    }
+    
+     /**
+     * Obtain the user information from facebook.
+     *
+     * @return Response
+     */
+    public function handleProviderCallback()
+    {
+        $user = Socialite::driver('facebook')->user();
+        //dd($user);
+//return $user;
+        //return $user->token;
     }
 
     /**
@@ -62,4 +102,18 @@ class AuthController extends Controller
             'password' => bcrypt($data['password']),
         ]);
     }
+    
+    /**
+     * Handle an authentication attempt.
+     *
+     * @return Response
+     */
+    public function authenticate()
+    {
+        if (Auth::attempt(['email' => $email, 'password' => $password]))
+        {
+            return redirect()->intended('dashboard');
+        }
+    }    
+    
 }

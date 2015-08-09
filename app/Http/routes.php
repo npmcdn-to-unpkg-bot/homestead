@@ -10,48 +10,46 @@
 | and give it the controller to call when that URI is requested.
 |
 */
-Route::any("admin", array('as' => 'admin', 'uses' => "AdminController@index"));
+
 Route::get('/', 'SocialMediaController@welcome');
 Route::get('twitter', 'TwitterController@index');
 Route::get('twitter/addfriends', 'TwitterController@addfriends');
 Route::get('twitter/addstatus', 'TwitterController@addstatus');
 
-/*
+
+Route::get('login/{provider?}', 'Auth\AuthController@login');
+
+
+Route::group(['middleware' => 'auth'], function () {
+    
+    Route::any("admin", array('as' => 'admin', 'uses' => "AdminController@index"));
+    Route::get('members/create', 'MembersController@create');
+    Route::get('members/{slug}', 'MembersController@index');
+    Route::resource('members', 'MembersController');
+    Route::resource('categories', 'CategoriesController');
+    Route::bind('members', function($value, $route) {
+        return App\Member::where('id', $value)->first();
+    });
+    Route::bind('categories', function($slug, $route) {
+        // pass category to social media controller
+        // members in the category and their social media can subsequently 
+        // be retrieved via social media model or social media controller
+        return App\Category::whereSlug($slug)->first();
+    });
+    
+});
 
 Route::controllers([
 	'auth' => 'Auth\AuthController',
 	'password' => 'Auth\PasswordController',
 ]);
-*/
 
-// Provide controller methods with object instead of ID
 Route::model('tasks', 'Task');
 Route::model('projects', 'Project');
 Route::model('categories', 'Category');
-//Route::model('socialmedia', 'Category');
-//Route::model('member', 'Member');
 
-/*
-Route::bind('socialmedia', function($value, $route) {
-	$obj = App\Category::whereSlug($value)->first();
-    //printR($obj);
-    return $obj;
-});
-*/
-Route::bind('members', function($value, $route) {
-	return App\Member::where('id', $value)->first();
-});
 
-Route::bind('categories', function($slug, $route) {
-    // pass category to social media controller
-    // members in the category and their social media can subsequently 
-    // be retrieved via social media model or social media controller
-	return App\Category::whereSlug($slug)->first();
-});
-Route::get('members/{slug}', 'MembersController@index');
-Route::resource('members', 'MembersController');
 
-Route::resource('categories', 'CategoriesController');
 //Route::resource('socialmedia', 'SocialMediaController');
 Route::resource('twitter', 'TwitterController');
 

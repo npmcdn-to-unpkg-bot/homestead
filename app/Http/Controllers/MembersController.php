@@ -17,6 +17,7 @@ class MembersController extends Controller {
     
     public function __construct()
     {
+        $this->middleware('auth');
         $this->categoryObj = new Category();
         $this->categoryPAndCObj = new CategoryParentAndChildren();
         $this->memberObj = new Member();
@@ -73,6 +74,7 @@ class MembersController extends Controller {
 	 */
 	public function create(Member $memberObj)
 	{
+
 	    $memberObj->id = 0;
 	    $memberSocialIdArr = $memberObj->getMemberSocialIdArr($memberObj->id);
 	    

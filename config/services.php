@@ -34,5 +34,10 @@ return [
         'key'    => '',
         'secret' => '',
     ],
+    'facebook' => [
+        'client_id' => env('FACEBOOK_CLIENT_ID'),
+        'client_secret' => env('FACEBOOK_SECRET'),
+        'redirect' => 'http://' . config('app.domain') . '/login/facebook',
+    ],
 
 ];

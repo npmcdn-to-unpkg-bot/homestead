@@ -1,6 +1,10 @@
 @extends('app')
 
 @section('content')
+<?php if (true) { ?>
+    <a href='http://<?php echo config('app.domain');?>/login/facebook'>Login with Facebook</a> 
+<?php }else{ ?>
+
 <div class="container-fluid">
 	<div class="row">
 		<div class="col-md-8 col-md-offset-2">
@@ -60,4 +64,7 @@
 		</div>
 	</div>
 </div>
+    
+<?php } ?>    
+    
 @endsection

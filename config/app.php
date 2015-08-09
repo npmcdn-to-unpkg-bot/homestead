@@ -1,6 +1,68 @@
 <?php
 
+// Domain and subdomain values may be needed before app is loaded, so setting them here
+
+// Determine the domain
+if (env('APP_ENV') == 'local') {
+    $domain = 'nowarena.dev';
+} else {
+    $domain = 'nowarena.com';
+}
+
+// Determine the subdomain
+if (PHP_SAPI == 'cli') {
+
+    // set subdomain when executing command line/cron
+    $argv = $_SERVER['argv'];
+
+    $subdomain = '';
+    $domain = 'nowarena.com';
+    /* TODO use argument key instead of --env, if this is ever used
+    foreach($argv as $key => $val) {
+        if (stristr($val, '--env')) {
+            $subdomain = strtolower(substr($val, 6));
+            unset($_SERVER['argv'][$key]);
+            $_SERVER['argc']--;
+        }
+    }
+    */
+} else {
+    
+    //parse the actual url
+    $arr = explode('.', $_SERVER['HTTP_HOST']);
+    if (count($arr) ==2 ) {
+        // if the array is only a length of 2, that means it is the domain name plus extension,
+        // eg. nowarena.com, so no subdomain
+        $subdomain = '';
+        $domain = strtolower($_SERVER['HTTP_HOST']);
+    } else {
+        $subdomain = strtolower($arr[0]);
+        unset($arr[0]);
+        $domain = strtolower(implode('.', $arr));
+    }
+
+}
+
+$url = 'http://';
+if ($subdomain) {
+    $url = $url . $subdomain . '.';
+}
+$url = $url . $domain;
+
 return [
+    
+    /*
+    |--------------------------------------------------------------------------
+    | Set domain and subdomain
+    |--------------------------------------------------------------------------
+    |
+    | These need to be set as soon as possible so that all subsequent files
+    | may make use of them via Site() singleton class as well as being
+    | able to connect to the proper database
+    */
+    
+    'domain' => $domain,
+    'subdomain' => $subdomain,
  
     /*
     |--------------------------------------------------------------------------
@@ -13,7 +75,7 @@ return [
     |
     */
 
-    'debug' => env('APP_DEBUG', false),
+    'debug' => env('APP_DEBUG', true),
 
     /*
     |--------------------------------------------------------------------------
@@ -26,7 +88,7 @@ return [
     |
     */
 
-    'url' => 'http://localhost',
+    'url' => $url,
 
     /*
     |--------------------------------------------------------------------------
@@ -146,7 +208,9 @@ return [
 
         Collective\Html\HtmlServiceProvider::class,
         
-        Thujohn\Twitter\TwitterServiceProvider::class
+        Thujohn\Twitter\TwitterServiceProvider::class,
+        
+        Laravel\Socialite\SocialiteServiceProvider::class,        
 
         
     ],
@@ -198,7 +262,8 @@ return [
         'View'      => Illuminate\Support\Facades\View::class,
         'Form'      => Collective\Html\FormFacade::class,
         'Html'      => Collective\Html\HtmlFacade::class,
-        'Twitter' => Thujohn\Twitter\Facades\Twitter::class
+        'Twitter' => Thujohn\Twitter\Facades\Twitter::class,
+        'Socialite' => Laravel\Socialite\Facades\Socialite::class,
 
 
 

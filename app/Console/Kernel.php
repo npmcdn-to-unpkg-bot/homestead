@@ -5,6 +5,8 @@ namespace App\Console;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
+use App\Site;
+
 class Kernel extends ConsoleKernel
 {
     /**
@@ -14,6 +16,8 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         \App\Console\Commands\Inspire::class,
+        \App\Console\Commands\GetNBATweets::class,
+        \App\Console\Commands\GetAKTweets::class,
     ];
 
     /**
@@ -25,6 +29,10 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
 
-        $schedule->call('TwitterController@addStatus')->everyFiveMinutes();
+        //Site::getInstance('nowarena.dev', 'abbotkinneyblvd');
+        //$schedule->call('TwitterController@addstatus')->everyMinute();//->everyMinute();
+        //$schedule->call('twitter@addstatus')->everyMinute();
+        $schedule->command('getnbatweets:run')->everyFiveMinutes()->sendOutputTo('/tmp/cronlog.txt');
+        $schedule->command('getaktweets:run')->everyTenMinutes()->sendOutputTo('/tmp/cronlog.txt');
     }
 }
