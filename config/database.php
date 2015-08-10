@@ -67,8 +67,8 @@ return [
 		],
         'users' => [
 			'driver'    => 'mysql',
-			'host'      => env('DB_HOST', 'localhost'),
-			'database'  => env('DB_DATABASE_USERS', ''),
+			'host'      => 'localhost',
+			'database'  => 'nowarenausers',
 			'username'  => env('DB_USERNAME', ''),
 			'password'  => env('DB_PASSWORD', ''),
 			'charset'   => 'utf8',

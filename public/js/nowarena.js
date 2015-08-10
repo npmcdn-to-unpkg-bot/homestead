@@ -1,26 +1,47 @@
 $(document).ready(function() {
     
-    width = $(window).width();
-
-    if (width >= 1900) {
-        var numMediaDisplayed = 3;
-    } else if (width >= 1000) {
-        var numMediaDisplayed = 2;
-        $(".thirdContentCont").hide();
-        $(".thirdFooterCont").hide();
-    } else {
-        var numMediaDisplayed = 1;
-        $(".secondContentCont").hide();
-        $(".secondFooterCont").hide();        
-        $(".thirdContentCont").hide();
-        $(".thirdFooterCont").hide();
-    }
-    
+    var numMediaDisplayed = 3;
     var memberIdSocialIdArr = [];
+    // contentArr is set in body of page
+    // currentContentArr is set here as well as inside displayMedia() method so
+    // as to have an array of content that is currently displayed so that it
+    // maybe be redisplayed (and layout resized) when browser is resized
+    var currentContentArr = contentArr;
+    $( window ).resize(function() {
+        $(".firstDisplay").hide();//hide content as it might get jumbled on
+        // slower devices while resizing
+        displayMedia(currentContentArr);
+        $(".firstDisplay").show();
+    });
     
     displayMedia(contentArr);
     
     function displayMedia(contentArr) {
+        
+        currentContentArr = contentArr;
+        
+        width = $(window).width();
+        //console.log('width:' + width);
+        if (width >= 1900) {
+             numMediaDisplayed = 3;
+        } else if (width >= 1000) {
+            numMediaDisplayed = 2;
+            $(".thirdDisplay").hide();
+        } else {
+            numMediaDisplayed = 1;
+            $(".secondDisplay").hide();
+            $(".thirdDisplay").hide();
+            // if it's only one column being displayed, contentAndFooterCont is
+            // about 100px less then the width
+            if (width < 740 && width >= 270) {
+                resizedWidth = width-100;
+                if (resizedWidth < 200) {
+                    resizedWidth = 200;
+                }
+                //console.log('resizing:'+resizedWidth);
+                $(".contentAndFooterCont").css('width', resizedWidth);
+            }
+        }
         
         for(var memberId in contentArr) {
 
@@ -293,13 +314,14 @@ $(document).ready(function() {
 
     });
     
-    for(var childId in memberNameArr) {
-        if (memberNameArr[childId].length == 1) {
-            continue;
-        }
-        $(".next_member_" + childId).html(memberNameArr[childId][1]);
+    if ($(".childNext").length ) {
+        for(var childId in memberNameArr) {
+            if (memberNameArr[childId].length == 1) {
+                continue;
+            }
+            $(".next_member_" + childId).html(memberNameArr[childId][1]);
 
-    }   
-    
+        }   
+    }
 
 });

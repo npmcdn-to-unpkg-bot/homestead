@@ -26,17 +26,21 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('members/create', 'MembersController@create');
     Route::get('members/{slug}', 'MembersController@index');
     Route::resource('members', 'MembersController');
-    Route::resource('categories', 'CategoriesController');
+
     Route::bind('members', function($value, $route) {
         return App\Member::where('id', $value)->first();
     });
+    
     Route::bind('categories', function($slug, $route) {
         // pass category to social media controller
         // members in the category and their social media can subsequently 
         // be retrieved via social media model or social media controller
         return App\Category::whereSlug($slug)->first();
     });
-    
+
+     
+    //Route::model('categories', 'Category');
+     Route::resource('categories', 'CategoriesController');   
 });
 
 Route::controllers([
@@ -44,9 +48,9 @@ Route::controllers([
 	'password' => 'Auth\PasswordController',
 ]);
 
-Route::model('tasks', 'Task');
-Route::model('projects', 'Project');
-Route::model('categories', 'Category');
+//Route::model('tasks', 'Task');
+//Route::model('projects', 'Project');
+
 
 
 

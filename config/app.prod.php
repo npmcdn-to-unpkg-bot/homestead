@@ -1,19 +1,13 @@
 <?php
 
-// Domain and subdomain values may be needed before app is loaded, so setting them here
+$domain = 'nowarena.com';
 
-// Determine the domain
-if (env('APP_ENV') == 'local') {
-    $domain = 'nowarena.dev';
-} else {
-    $domain = 'nowarena.com';
-}
 
 // Determine the subdomain
 if (PHP_SAPI == 'cli' || !isset($_SERVER['HTTP_HOST'])) {
 
     // set subdomain when executing command line/cron
-    //$argv = $_SERVER['argv'];
+    //$argv = $_SERVER['argv']; 
 
     $subdomain = '';
     $domain = 'nowarena.com';
@@ -30,7 +24,7 @@ if (PHP_SAPI == 'cli' || !isset($_SERVER['HTTP_HOST'])) {
     
     //parse the actual url
     $arr = explode('.', $_SERVER['HTTP_HOST']);
-    if (count($arr) == 2) {
+    if (count($arr) ==2 ) {
         // if the array is only a length of 2, that means it is the domain name plus extension,
         // eg. nowarena.com, so no subdomain
         $subdomain = '';
@@ -75,7 +69,7 @@ return [
     |
     */
 
-    'debug' => env('APP_DEBUG'),
+    'debug' => env('APP_DEBUG', false),
 
     /*
     |--------------------------------------------------------------------------

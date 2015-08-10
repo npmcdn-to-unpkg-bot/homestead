@@ -105,10 +105,17 @@ class Site {
         return $subdomainData[$subdomain];
         
     }
-    
+    /*
+     * db on prod have 'nowarena' prefix
+     */
     public static function getDatabase() 
     {
-        return self::$subdomainArr['database'];
+        $db = self::$subdomainArr['database'];
+        if (env('APP_ENV') != 'local') {
+            $db = 'nowarena' . $db;
+        }
+        return $db;
+        
         
     }
     

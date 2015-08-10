@@ -11,31 +11,27 @@ echo "\n\n<div id = 'rowCont_" . $memberId . "' class='rowCont'>\n";
 // avatar
 echo "<div class='leftBar'>";
     echo "<div class='avatarHolder'>";
-    echo "<img id='avatar_" . $memberId . "' src='" . $avatar . "' class='avatar'>";
-echo "</div>\n";
-
+        echo "<img id='avatar_" . $memberId . "' src='" . $avatar . "' class='avatar'>";
+    echo "</div>\n";
 echo "</div>";
 
 // member name
 echo "<div class='headerTextLeft'>";
-echo "<span class='memberName'>";
-echo $name;// . " | " . $memberId;
-echo "</span>";
-echo " <span style='display:none;' id='contentCount_" . $memberId . "'></span>";
+    echo "<span class='memberName'>";
+    echo $name;// . " | " . $memberId;
+    echo "</span>";
+    echo " <span style='display:none;' id='contentCount_" . $memberId . "'></span>";
+echo "</div>\n"; // close headerTextLeft
 
-echo "</div>\n";
+//echo "<div class='rowContentCont'>";// maintains correct width even if member doesn't have content
 
-echo "<div class='rowContentCont'>";// maintains correct width even if member doesn't have content
-
+$displayArr = array(1 => 'firstDisplay', 2 => 'secondDisplay', 3 => 'thirdDisplay');
 for($i=1; $i<=$numCols; $i++) {
 
-    echo "<div class='contentCont";
+    echo "<div class='contentAndFooterCont " . $displayArr[$i] . "'>";
+    echo "<div class='contentCont ";
     if ($i == 1) {
-        echo " firstContentCont";
-    } else if ($i == 2) {
-        echo " secondContentCont";
-    } else {
-        echo " thirdContentCont";
+        echo "firstContentCont";
     }
     echo "'>\n"; 
 
@@ -50,30 +46,18 @@ for($i=1; $i<=$numCols; $i++) {
     echo "<div id='textCont_" . $memberId . "_" . $i . "' class='textCont'></div>\n";
 
     echo "</div>\n";// close contentCont
-
-}
-
-//echo "<div style='clear:both;'></div>";
-
-for($i=1; $i<=$numCols; $i++) {
-
+    
     echo "<div class='footerCont";
     if ($i == 1) {
         echo " firstFooterCont";
-    } else if ($i == 2) {
-        echo " secondFooterCont";
-    } else {
-        echo " thirdFooterCont";
     }
 
     echo "' id = 'footerCont_" . $memberId . "_" . $i . "'>";
     echo " &nbsp; ";
     echo "</div>";
 
+    echo "</div>";
 }
-
-echo "</div>\n";//close rowContentContainer
-
 
 // feed nav
 echo "<div class='contentNav' id='contentNav_" . $memberId . "'>\n";
