@@ -1,6 +1,6 @@
 $(document).ready(function() {
     
-    var numMediaDisplayed = 3;
+    var numMediaDisplayed = 2;
     var memberIdSocialIdArr = [];
     // contentArr is set in body of page
     // currentContentArr is set here as well as inside displayMedia() method so
@@ -8,10 +8,10 @@ $(document).ready(function() {
     // maybe be redisplayed (and layout resized) when browser is resized
     var currentContentArr = contentArr;
     $( window ).resize(function() {
-        $(".firstDisplay").hide();//hide content as it might get jumbled on
+        //$(".firstDisplay").hide();//hide content as it might get jumbled on
         // slower devices while resizing
         displayMedia(currentContentArr);
-        $(".firstDisplay").show();
+        //$(".firstDisplay").show();
     });
     
     displayMedia(contentArr);
@@ -22,10 +22,14 @@ $(document).ready(function() {
         
         width = $(window).width();
         //console.log('width:' + width);
-        if (width >= 1900) {
-             numMediaDisplayed = 3;
-        } else if (width >= 1000) {
+        //if (width >= 1900) {
+             //numMediaDisplayed = 3;
+        //} else 
+        if (width >= 1000) {
             numMediaDisplayed = 2;
+            //remove any inline style set when column was single            
+            $(".contentAndFooterCont").css('style', '');           
+            $(".secondDisplay").css('display', 'inline-block');
             $(".thirdDisplay").hide();
         } else {
             numMediaDisplayed = 1;

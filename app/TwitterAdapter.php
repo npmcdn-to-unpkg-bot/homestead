@@ -19,7 +19,11 @@ class TwitterAdapter
         
         if (1) {
             
-            $since_id = \DB::table('social_media')->orderBy('social_id', 'DESC')->take(1)->pluck('social_id');
+            $since_id = \DB::table('social_media')
+                ->where('source', '=', 'twitter')
+                ->orderBy('social_id', 'DESC')
+                ->take(1)
+                ->pluck('social_id');
 
             $paramArr = [
                 'count' => 200,

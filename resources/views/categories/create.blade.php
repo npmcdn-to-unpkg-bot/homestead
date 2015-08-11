@@ -12,6 +12,8 @@
             ])
     {!! Form::close() !!}
 
+@include('admin/partials/_footer')
+
 <script src="/js/category_create.js"></script>    
 
 @endsection

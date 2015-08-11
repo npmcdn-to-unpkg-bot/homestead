@@ -80,8 +80,6 @@ class SocialMediaController extends Controller {
             $catArr = $catObj->getParents();
             
         }
-        
-
 
         // eg. get the teammates on the Lakers, don't get teams in the Pacific Coast division
         if ($getChildren) {

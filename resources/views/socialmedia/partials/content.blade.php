@@ -1,6 +1,6 @@
 <?php
 
-$numCols = 3;
+$numCols = 2;
 
 $memberId = $obj->id;
 $name = $obj->name;
@@ -18,12 +18,9 @@ echo "</div>";
 // member name
 echo "<div class='headerTextLeft'>";
     echo "<span class='memberName'>";
-    echo $name;// . " | " . $memberId;
+    echo $name;
     echo "</span>";
-    echo " <span style='display:none;' id='contentCount_" . $memberId . "'></span>";
 echo "</div>\n"; // close headerTextLeft
-
-//echo "<div class='rowContentCont'>";// maintains correct width even if member doesn't have content
 
 $displayArr = array(1 => 'firstDisplay', 2 => 'secondDisplay', 3 => 'thirdDisplay');
 for($i=1; $i<=$numCols; $i++) {
@@ -59,33 +56,23 @@ for($i=1; $i<=$numCols; $i++) {
     echo "</div>";
 }
 
-// feed nav
-echo "<div class='contentNav' id='contentNav_" . $memberId . "'>\n";
 
-    echo "<div>";
-    echo "<a class='navRight' href='javascript:void(0);' id='right_" . $memberId . "'>";
-    echo "<span class='navButton'>&raquo;</span>";
-    echo "</a>";
-    echo "<br>";
-    echo "</div>";
-    
-    echo "<div style='margin-top:-10px;'>";
-    echo "<a class='navLeft' href='javascript:void(0);' id='left_" . $memberId . "'>";
-    echo "<span class='navButton'>&laquo;</span>";
-    echo "</a>";
-    echo "</div>";
-    
-    echo "<div>";
-    echo "<a class='navReload' href='javascript:void(0);' id='reload_" . $memberId . "'>";        
-    echo "<span class='navButton' style='font-size:34px;'>&#8634;</span>";
-    echo "</a>\n";
-    echo "</div>";
-    
-echo "</div>\n";
 
 echo "</div>\n";//close rowCont
 
+// feed nav
+echo "<div class='contentNav' id='contentNav_" . $memberId . "'>\n";
 
+    echo "<a class='navRight' href='javascript:void(0);' id='right_" . $memberId . "'>";
+    echo "<div class='navButton'>&raquo;</div>";
+    echo "</a>";
 
+    echo "<a class='navLeft' href='javascript:void(0);' id='left_" . $memberId . "'>";
+    echo "<div class='navButton'>&laquo;</div>";
+    echo "</a>";
 
+    echo "<a class='navReload' href='javascript:void(0);' id='reload_" . $memberId . "'>";        
+    echo "<div class='navButton'>&#8634;</div>";
+    echo "</a>\n";
 
+echo "</div>\n";

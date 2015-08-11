@@ -48,7 +48,8 @@ function renderItem($itemArr, $categoriesArr, $route, $slug = '')
 {
 
     $id = $itemArr['child_id'];
-    $out = "<span class='category_name'><a href='";
+    $out = "<span class='category_name'>";
+    $out.="<a href='";
     $out.= '/' . $route . '/' . $slug;
     $out.= "'>";
     $out.= $categoriesArr[$id]['display_name'];
@@ -87,7 +88,7 @@ function renderTree($parentChildArr, $categoriesArr, $route = 'socialmedia')
  * View helper for formating category hierarchies as a form with checkboxes with ul/li
  * 
  */
-function renderCheckboxItem($itemArr, $categoriesArr, $memberCategoryIdArr) 
+function renderCheckboxItem($itemArr, $categoriesArr, $memberCategoryIdArr, $route = 'members') 
 {
 
     $out = '';
@@ -104,8 +105,11 @@ function renderCheckboxItem($itemArr, $categoriesArr, $memberCategoryIdArr)
 
         //$out.= {{ Form::checkbox('category_id[]', $id, $bool) }}
         $out.= "<input type='checkbox' name='category_id[]' value='$id' $checked> ";
-
+        $out.="<a href='";
+        $out.= '/' . $route . '/' . $categoriesArr[$id]['slug'];
+        $out.= "'>";
         $out.= $categoriesArr[$id]['display_name'];
+        $out.="</a>";
         $out.= "</div>";
 
         if (isset($itemArr['children'])) {

@@ -30,13 +30,21 @@ class MembersController extends Controller {
 	 */
 	public function index($slug = '')
 	{
-    
+
         $catPathArr = array();
         $inputArr = Input::all();
         $limit = 15;
         $next = isset($inputArr['next']) ? (int)$inputArr['next'] : false;
-
-        if ($slug == 'nochild') {
+        $search = '';
+        
+        if ($slug == 'search') {
+            $search = $inputArr['search'];
+            $membersObj = $this->memberObj->orderBy('created_at', 'desc')
+                ->where('name', 'like', '%' . $search . '%')
+                ->skip($next)
+                ->take($limit)
+                ->get();
+        }else if ($slug == 'nochild') {
             $membersObj = $this->memberObj->getNoChild($next, $limit);
         } else if ($slug == 'uncategorized') {
             $membersObj = $this->memberObj->getNoCategory($next, $limit);
@@ -63,7 +71,7 @@ class MembersController extends Controller {
         $categoriesArr = $this->categoryObj->getCategoriesArr($categoriesObj);
 		$parentChildArr = $this->categoryPAndCObj->getHierarchy();
         
-        return view('members.index', compact('membersObj', 'next', 'prev', 'parentChildArr', 'categoriesArr', 'catPathArr'));
+        return view('members.index', compact('search', 'membersObj', 'next', 'prev', 'parentChildArr', 'categoriesArr', 'catPathArr'));
  
 	}
 
@@ -170,8 +178,9 @@ class MembersController extends Controller {
         $memberObj->delete();
         \DB::table('member_categories')->where('member_id', '=', $memberObj->id)->delete();
         \DB::table('member_social_ids')->where('member_id', '=', $memberObj->id)->delete();
+        \DB::table('social_media')->where('member_id', '=', $memberObj->id)->delete();
  
-	   return Redirect::route('members.index')->with('message', 'Member deleted.');
+	    return Redirect::route('members.index')->with('message', 'Member deleted.');
 	}
 
 }

@@ -35,6 +35,8 @@
         $labelName = $arr['name'];
         if ($arr['name'] == 'Twitter' && $arr['memberSocialId'] != '') {
             $labelName = '<a target="_blank" href="https://twitter.com/' . $arr['memberSocialId'] . '">Twitter</a>';
+        } else if ($arr['name'] == 'Instagram' && $arr['memberSocialId'] != '') {
+            $labelName = '<a target="_blank" href="https://instagram.com/' . $arr['memberSocialId'] . '">Instagram</a>';
         }
     ?>
     
@@ -67,7 +69,7 @@
 
 </div>
 
-<div class='right_col'>
+<div class='right_col' style='margin-top:0px;margin-left:500px;'>
 
 <?php 
 foreach($parentChildArr as $itemArr) {
@@ -76,7 +78,6 @@ foreach($parentChildArr as $itemArr) {
 ?> 
 
 </div>
-
 
 <style>
     .site_label{

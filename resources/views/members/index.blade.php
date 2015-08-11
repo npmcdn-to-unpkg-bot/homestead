@@ -10,21 +10,29 @@
         
         // category navigation
         renderCategoryPath($catPathArr);
+        
+        echo "<form action='/members/search' style='text-align:center;'>";        
 
         // page number navigation
         if ($prev !== false) {
             echo "<a style='float:left;' href='" . Request::url() . "/?next=$prev'>&laquo; Prev $prev</a> ";
         }
+
+        echo "<input type='text' name='search' value='" . htmlentities($search) . "' style='width:100px;font-size:10px;'>";
+        echo "<input type='submit' value='Search'>";
+
         
         if ($next) {
             echo "<a style='float:right;' href='" . Request::url() . "/?next=$next'>Next $next &raquo;</a>";
         }
         
+        echo "</form>";        
+        
         ?>
     
     </div>
 
-    <br>        
+        
         
     @if ( !$membersObj->count() )
         No members 
@@ -60,6 +68,6 @@
        ?> 
     </div> 
     
-<script src="/js/form_index.js"></script>    
+@include('admin/partials/_footer')
 
 @endsection

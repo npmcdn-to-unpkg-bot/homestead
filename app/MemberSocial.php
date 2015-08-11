@@ -11,6 +11,9 @@ use App\SocialMediaEntity;
 
 class MemberSocial extends ModelNA
 {
+    
+    protected $table = 'member_social_ids';
+    
     /*
      * Get members within a category and order members from most recent social media post to oldest
      */
@@ -77,15 +80,19 @@ class MemberSocial extends ModelNA
             return array();
         }
 
-        // TODO skip 'disabled' social_ids per member
         $contentArr = array();
         foreach($memberArr as $obj) {
 
             $r = DB::table('social_media')
                 ->select('social_media.*')
-                ->join('member_social_ids', 'member_social_ids.member_id', '=', 'social_media.member_id')
+                ->join('member_social_ids', function($join)
+                {
+                    $join->on('member_social_ids.member_id', '=', 'social_media.member_id')
+                         ->on('social_media.source','=', 'member_social_ids.social_site');
+                })         
                 ->where('social_media.member_id', '=', $obj->id)
-                ->where('disabled', '=', '0');
+                ->where('social_media.unpublish', '=', '0')
+                ->where('member_social_ids.disabled', '=', '0');  
                 
             if ($socialMediaId) {
                 // get 'older' aka smaller id's
@@ -96,6 +103,8 @@ class MemberSocial extends ModelNA
                 ->skip($offset)
                 ->take($limit)
                 ->get();
+
+            //echo $this->getQuery($r);
 
             foreach($r as $i => $rowObj) {
                 
@@ -139,7 +148,7 @@ class MemberSocial extends ModelNA
             }
             */
         }
-        
+      
         return $contentArr;
         
         $memberIdArr = array_map(function($o) { return $o->id; }, $memberArr);
@@ -178,6 +187,64 @@ class MemberSocial extends ModelNA
     
         return array_change_key_case($arr);
         
+    }
+    
+    /*
+     * In order to link up the same person on different social sites, try and match the social member id
+     * without _ or numbers
+     * eg. twitter screenname is wanda_june123 and instagrame username is wandajune. Since both were selected 
+     * to be followed on both social sites, it is safe to say they're the same person
+     * Be sure they aren't already linked before calling this method
+     */
+    public function getMemberIdWithSimilarSocialId($memberSocialId, $socialSite)
+    {
+        
+        $memberSocialIdNoNumbers = preg_replace("~[0-9]~", "", $memberSocialId);
+        $memberSocialIdNoUnderscore = str_replace("_", "", $memberSocialId);
+        $memberSocialIdLettersOnly = preg_replace("~[0-9_]~", "", $memberSocialId);
+        $memberSocialIdShort = substr($memberSocialIdNoUnderscore, 2, 12);
+        
+        $q = "SELECT member_id,member_social_id ";
+        $q.= "FROM member_social_ids ";
+        $q.= "WHERE social_site = '" . $socialSite . "' ";
+        $q.= "AND (";
+        $q.= "member_social_id = '" . $memberSocialIdNoNumbers . "' ";
+        $q.= "OR ";
+        $q.= "REPLACE(member_social_id, '_', '') = '" . $memberSocialIdNoUnderscore . "' ";
+        $q.= "OR ";
+        $q.= "member_social_id = '" . $memberSocialIdLettersOnly . "' ";
+        $q.= ") ";
+        $q.= "GROUP BY member_id";
+        $r = DB::select($q);
+        
+        if (count($r) >0 ) {
+            return $r[0]->member_id;
+        }
+        
+        $q = "SELECT member_id,member_social_id ";
+        $q.= "FROM member_social_ids ";
+        $q.= "WHERE social_site = '" . $socialSite . "' ";
+        $q.= "AND ";
+        $q.= "member_social_id LIKE '" . $memberSocialIdShort . "%' ";
+        $q.= "GROUP BY member_id";
+        $r = DB::select($q);
+        
+        if (count($r) >0 ) {
+            return $r[0]->member_id;
+        }
+        
+        $q = "SELECT id as member_id ";
+        $q.= "FROM members ";
+        $q.= "WHERE REPLACE(name, ' ', '') LIKE '" . $memberSocialIdShort . "%' ";
+        $q.= "GROUP BY member_id";
+        $r = DB::select($q);
+        
+        if (count($r) >0 ) {
+            return $r[0]->member_id;
+        }
+        
+        return false;
+
     }
     
 }

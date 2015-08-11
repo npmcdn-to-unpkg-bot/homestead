@@ -73,13 +73,14 @@ dd($_SERVER);
         return $this->pluralize( $interval->s, 'second' ) . $suffix;
     }
     
+    /*
+     * Pass in query builder result neither ->get() nor ->toSql() called on it
+     */
     public function getQuery($r)
     {
 
-        if (!is_array($r)) {
-            $execute = $r->get();
-            $q = $r->toSql();           
-        }
+        $q = $r->toSql();
+        $rGet = $r->get();
 
         $arr = $r->getBindings();
         $pdo = \DB::connection()->getPdo();

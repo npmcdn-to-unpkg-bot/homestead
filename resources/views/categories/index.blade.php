@@ -33,6 +33,9 @@
         renderTree($parentChildArr, $categoriesArr);
        ?> 
     </div> 
+
+
+@include('admin/partials/_footer')
     
 <script src="/js/form_index.js"></script>    
 

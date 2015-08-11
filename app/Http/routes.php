@@ -15,7 +15,8 @@ Route::get('/', 'SocialMediaController@welcome');
 Route::get('twitter', 'TwitterController@index');
 Route::get('twitter/addfriends', 'TwitterController@addfriends');
 Route::get('twitter/addstatus', 'TwitterController@addstatus');
-
+Route::get('instagram/addfriends', 'InstagramController@addfriends');
+Route::get('instagram/addstatus', 'InstagramController@addstatus');
 
 Route::get('login/{provider?}', 'Auth\AuthController@login');
 
@@ -56,6 +57,7 @@ Route::controllers([
 
 //Route::resource('socialmedia', 'SocialMediaController');
 Route::resource('twitter', 'TwitterController');
+Route::resource('instagram', 'InstagramController');
 
 Route::get('socialmedia/getmembersocialmedia', 'SocialMediaController@getmembersocialmedia');
 Route::get('socialmedia/{slug}', 'SocialMediaController@index');

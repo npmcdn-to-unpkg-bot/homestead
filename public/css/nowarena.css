@@ -46,25 +46,39 @@
 
 .contentNav {
     border:0px solid black;
-    float:left;
     margin-top:30px;
     margin-left:-20px;
     text-align:center;
     width:30px;
     position:absolute;
-    top:0px;
+    top:-5px;
+    z-index:2;
+    right:-35px;
+
 }
 
 .navButton {
     font-weight:bold;
     font-size:48px;
     line-height: 1;
+
 }
 
-.navButtonCont {
-    width:30px;
-    clear:both;
+.navReload > .navButton {
+    height:35px;
+    margin-top:10px;
+    font-size:34px;
 }
+.navRight > .navButton {
+    margin-top:-5px;
+}
+
+.navLeft > .navButton {
+    margin-top:-10px;
+    height:40px;
+}
+
+
 
 .header {
     background-color: #dddddd;
@@ -78,7 +92,7 @@
     background-color:#cccccc;
     width:54px;
     float:left;
-    height:170px;
+    height:151px;
 }
 
 .avatarHolder {
@@ -111,7 +125,7 @@
 .contentCont, .firstContentCont {
     border-left:1px solid #cccccc;
     width:100%;
-    height:122px;
+    height:103px;
     overflow:hidden;
     padding:1px;
     float:left;
@@ -123,7 +137,7 @@
 
 .contentAndFooterCont {
     width:420px;
-    height:137px;
+    //height:137px;
     border:0px solid black;
     display:inline-block;
 }
@@ -139,13 +153,13 @@
     height:100px;
     overflow:hidden;
     border:1px solid black;
-    margin-right:2px;
+    margin-right:3px;
     
 }
 
 .textCont {
     border:0px solid blue;
-    padding:2px;
+    padding-left:2px;
     //margin-left:102px;
 }
 
@@ -184,14 +198,16 @@
 .childrenHolderBlock {
     display:block;
 }
-
+.childHolder {
+    position:relative;
+}
 .parentCont {
     margin:0px auto;
 }
 
 .parentHolder {
     position:relative;
-    height:170px;
+    height:150px;
 }
 
 .parentTitle {
@@ -211,11 +227,22 @@
     background-color:#cee3f8;
 }
 
-@media (max-width:1152px) {
+.secondDisplay {
+    display:none;
+}
+
+@media (min-width:992px) {
  
-    .contentNav {
-        left:30px;
-        top:18px;
+    .container {
+        width:940px;
+    }
+    
+}
+
+@media (min-width:1200px) {
+ 
+    .container {
+        width:940px;
     }
     
 }
@@ -225,19 +252,11 @@
     .contentAndFooterCont {
         width:650px;
     }
-    
-    .contentNav {
-        left:30px;
-        top:18px;
-    }  
+
 }
 
 @media (max-width:640px) {
-        
-    .contentNav {
-        left:30px;
-        top:18px;
-    }
+
     .contentAndFooterCont {
         width:450px;
     }
@@ -260,10 +279,6 @@
 
 @media (max-width:540px) {
         
-    .contentNav {
-        left:30px;
-        top:18px;
-    }
     .contentAndFooterCont {
         width:320px;
     }
@@ -335,15 +350,31 @@
 
 }
 
-@media (min-width:1152px) {
-    .container{
-        width:940px;
-    }
+@media (min-width:270px) and (max-width:800px) {
     .contentNav {
-        left:940px;
+        left:30px;
+        top:18px;
     }
+    
+    .navReload > .navButton {
+        height:35px;
+        margin-top:10px;
+        font-size:34px;
+    }
+    .navRight > .navButton {
+        margin-top:-5px;
+        font-size:40px;
+    }
+
+    .navLeft > .navButton {
+        margin-top:-5px;
+        height:30px;
+        font-size:40px;
+    }
+
 }
 
+/*
 @media (min-width: 1900px) {
     .container{
         width:1366px;
@@ -352,7 +383,7 @@
         left:1360px;
     }
 }
-
+*/
 .content {
     margin-top:10px;
     margin-bottom:40px;

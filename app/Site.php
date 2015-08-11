@@ -76,8 +76,9 @@ class Site {
                 'database' => 'nba',
                 'pageTitle' => 'NowArena.com : Latest social media from the NBA',
                 'baseUrl' => 'http://nba.' . self::$domain,
-                'description' => 'Lebron posts some dank memes, Griffin goes camping, Kobe prepares his legacy and more.', 
+                'description' => 'Lebron, Griffin, Kobe and more.', 
                 'twitterScreenName' => 'nbablvd',
+                
                 'categoryDepth' => 3
             ),
             'abbotkinneyblvd' => array(
@@ -87,8 +88,10 @@ class Site {
                 'database' => 'abbotkinney',
                 'pageTitle' => "NowArena.com : Latest social media about what's going down and coming up on Abbot Kinney Blvd.",
                 'baseUrl' => 'http://abbotkinneyblvd.' . self::$domain,
-                'description' => "Food, fashion, cocktails, pop culture, street art from the denizens and curators of the premiere boulevard in Venice Beach, California.",
+                'description' => "Food, fashion, cocktails, pop culture, street art from the premiere boulevard in Venice Beach, California.",
                 'twitterScreenName' => 'abbotkinneybl',
+                'instagramScreenName' => 'abbotkinneybl',
+                'instagramAccessToken' => env('AK_INSTAGRAM_ACCESS_TOKEN'),
                 'categoryDepth' => 2
             )
         );
@@ -147,6 +150,16 @@ class Site {
     public static function getTwitterScreenName()
     {
         return self::$subdomainArr['twitterScreenName'];
+    }
+    
+    public static function getInstagramScreenName()
+    {
+        return self::$subdomainArr['instagramScreenName'];
+    }
+    
+    public static function getInstagramAccessToken()
+    {
+        return self::$subdomainArr['instagramAccessToken'];
     }
     
     public static function getCategoryDepth()

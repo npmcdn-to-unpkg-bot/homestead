@@ -12,5 +12,5 @@
             'memberCategoryIdArr' => $memberCategoryIdArr
             ])
     {!! Form::close() !!}
-
+@include('admin/partials/_footer')
 @endsection

@@ -27,8 +27,7 @@ $(document).ready(function() {
    console.log('len:'+ulArr.length);
    if (ulArr.length == 0) {
        $(".right_col").width(220);
-       $(".right_col").css("float", "left");
-       $(".right_col").css("margin-top", '0px');
+
    }
     
 });

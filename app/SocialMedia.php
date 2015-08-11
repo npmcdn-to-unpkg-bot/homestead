@@ -46,7 +46,15 @@ class SocialMedia extends ModelNA {
         );
         
     }
-
+    
+    /*
+     * Add a member (eg. twitter follower) to members table and try to categorize them
+     * based on words in their description matching category words and/or scrape wikipedia page
+     * TODO this should be in twitter model as the profiles of the twitter users being followed 
+     * is being used to create this site's members profile data
+     * TODO break out adding member_social_ids to it's own method and adding member profile to 
+     * this site in another method and adding categorize member to another method
+     */
     public function addNewMembers(array $membersArr, $scrape = false)
     {
         
@@ -270,8 +278,8 @@ class SocialMedia extends ModelNA {
         }
     }
     
-    // get members not added to the database already    
-    protected function getMemberSocialIdsNotInDB($membersArr)      
+    // get members whose social id (twitter screename or whichever site) has not added to the database already    
+    public function getMemberSocialIdsNotInDB($membersArr)      
     {
 
         $memberSocialIdDBArr = DB::table('member_social_ids')
