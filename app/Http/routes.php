@@ -13,10 +13,10 @@
 
 Route::get('/', 'SocialMediaController@welcome');
 Route::get('twitter', 'TwitterController@index');
-Route::get('twitter/addfriends', 'TwitterController@addfriends');
-Route::get('twitter/addstatus', 'TwitterController@addstatus');
-Route::get('instagram/addfriends', 'InstagramController@addfriends');
-Route::get('instagram/addstatus', 'InstagramController@addstatus');
+Route::get('twitter/getfriends', 'TwitterController@getfriends');
+Route::get('twitter/getfeed', 'TwitterController@getfeed');
+Route::get('instagram/getfriends', 'InstagramController@getfriends');
+Route::get('instagram/getfeed', 'InstagramController@getfeed');
 
 Route::get('login/{provider?}', 'Auth\AuthController@login');
 

@@ -3,16 +3,19 @@
 @section('content')
 
 <?php
+  
+if (isset($errorArr['error'])) {
+    
+    echo $errorArr['error'];
 
-if (isset($notOnSiteArr) && count($notOnSiteArr) >0 ) {
-    
-    if (isset($notOnSiteArr['error'])) {
-        echo $notOnSiteArr['error'];
-        return;
-    }
-    
+} else if (count($noMemberIdArr) > 0) {
+
     echo "<table border='0' cellpadding='4' cellspacing='0'>";
-    foreach($notOnSiteArr as $username => $name) {
+    foreach($noMemberIdArr as $obj) {
+
+        $username = $obj->getMemberSocialId();
+        $name = $obj->getName();
+        
         echo "<tr>";
         echo "<td>";
         echo "<a target='_blank' href='/members/search?search=" . $username . "'>$username</a> &nbsp; "; 
@@ -29,7 +32,7 @@ if (isset($notOnSiteArr) && count($notOnSiteArr) >0 ) {
         }
         echo "</td>";
         echo "<td>";
-        if ($socialSite == 'instagram') {
+        if ($obj->getSource() == 'instagram') {
             echo "On instagram: <a target='_blank' href='http://instagram.com/" . $username . "'>$username</a>";
         }
         echo "</td>";

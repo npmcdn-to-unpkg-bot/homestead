@@ -17,28 +17,43 @@ class InstagramController extends Controller
         $keyword = Site::getInstance()->getSubdomain();
         $instagramScreenName = Site::getInstance()->getInstagramScreenName();
         $instagramAccessToken = Site::getInstance()->getInstagramAccessToken();
-
-        $this->socialMediaObj = new SocialMedia($keyword, 'instagram');
+        
+        $scrapeObj = false;
+        if ($keyword == 'nba') {
+            $scrapeObj = new Scraper($keyword);
+        }
+        $this->socialMediaObj = new SocialMedia($keyword, 'instagram', $scrapeObj);
         $this->instagramAdapter = new InstagramAdapter($instagramScreenName, $instagramAccessToken, $this->socialMediaObj);
     }
     
-    public function addStatus()
+    public function getFeed()
     {
         
-        if (($socialMediaArr = $this->instagramAdapter->addStatus()) !== false) {
+        if (($socialMediaArr = $this->instagramAdapter->getFeed()) !== false) {
             $this->socialMediaObj->addSocialMedia($socialMediaArr);
         }
         printR($socialMediaArr);
         exit('done');
     }
     
-    public function addFriends()
+    public function getFriends()
     {
-    
-        $socialSite = 'instagram';
-        $notOnSiteArr = $this->instagramAdapter->parseMembers();
 
-        return view('admin.notonsite', compact('notOnSiteArr', 'socialSite'));
+        $noMemberIdArr = array();
+        
+        $errorArr = $this->instagramAdapter->getFriends();
+        $friendsArr = $this->instagramAdapter->getFriendsArr();
+        
+        if (count($errorArr) == 0 && count($friendsArr) > 0 ) {
+            
+            $addToMembersTable = false; 
+            $matchToSimiliarSocialIds = true; 
+            $categorize = true;
+            $noMemberIdArr = $this->socialMediaObj->addNewMembers($friendsArr, $addToMembersTable, $matchToSimiliarSocialIds, $categorize);
+            
+        }
+        
+        return view('admin.getfriends', compact('noMemberIdArr', 'errorArr'));
         
     }
   

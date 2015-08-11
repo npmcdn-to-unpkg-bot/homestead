@@ -4,14 +4,14 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 
-class GetAKTweets extends Command
+class GetAKInstagram extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'getaktweets:run';
+    protected $signature = 'getakinstagram:run';
 
     /**
      * The console command description.
@@ -39,6 +39,6 @@ class GetAKTweets extends Command
     {
         //
         // see GetNBATweets for notes
-        file_get_contents('http://abbotkinneyblvd.' . config('app.domain') . '/twitter/getfeed');
+        file_get_contents('http://abbotkinneyblvd.' . config('app.domain') . '/instagram/getfeed');
     }
 }

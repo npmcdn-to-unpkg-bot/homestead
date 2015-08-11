@@ -14,14 +14,20 @@ class TwitterController extends Controller
     
     public function __construct()
     {
+        
         $keyword = Site::getInstance()->getSubdomain();
         $twitterScreenName = Site::getInstance()->getTwitterScreenName();
 
-        $this->socialMediaObj = new SocialMedia($keyword, 'twitter');
+        $scrapeObj = false;
+        if ($keyword == 'nba') {
+            $scrapeObj = new Scraper($this->keyword);
+        }
+        $this->socialMediaObj = new SocialMedia($keyword, 'twitter', $scrapeObj);
         $this->twitterAdapter = new TwitterAdapter($twitterScreenName);
+        
     }
     
-    public function addStatus()
+    public function getFeed()
     {
         
         if (($socialMediaArr = $this->twitterAdapter->addStatus()) !== false) {
@@ -31,17 +37,25 @@ class TwitterController extends Controller
         exit('done');
     }
     
-    public function addFriends()
+    public function getFriends()
     {
 
         $cursor = -1;
         do {
-            $cursor = $this->twitterAdapter->parseMembers($cursor);
+            $cursor = $this->twitterAdapter->getFriends($cursor);
         } while($cursor > 0);
         
         // operate on the formatted twitter feed
-        if (count($this->twitterAdapter->getMemberArr()) >0 ) {
-            $this->socialMediaObj->addNewMembers($this->twitterAdapter->getMemberArr());
+        $friendsArr = $this->twitterAdapter->getFriendsArr();
+        if (count($friendsArr) >0 ) {
+
+            $addToMembersTable = false; 
+            $matchToSimiliarSocialIds = false; // use twitter account as main source of ids
+            $categorize = true;
+            $this->socialMediaObj->addNewMembers($friendsArr, $addToMembersTable, $matchToSimiliarSocialIds, $categorize);
+            
+        } else {
+            echo "No new Twitter followers to add.";
         }
         
         exit('asfd');
@@ -111,14 +125,5 @@ class TwitterController extends Controller
     {
         //
     }
-    
-    public function getFriendsIds()
-    {
-
-        $r = Twitter::getFriendsIds(['screen_name' => 'nbablvd', 'count' => 20, 'format' => 'json']);
-        $obj = json_decode($r);
-        $idArr = $obj->ids;
-        $r = Twitter::getFriends($idArr);
-        print_r($r);
-    }    
+        
 }

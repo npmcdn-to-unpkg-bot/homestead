@@ -44,26 +44,6 @@ class CategoryParentAndChildren extends Model {
                     ->lists('display_name', 'parent_id');
     }
 
-    /*
-     * don't allow selecting the current id as a parent id by removing it from
-     * list of parentIds
-     */
-    /* not used - done in makeDDArr as it is only specific to that
-    public static function removeIds($parentIdArr, $currentId)
-    {
-
-        foreach($parentIdArr as $key => $val) {
-            if ($key != 0 && $key == $currentId) {
-                unset($parentIdArr[$key]);
-            }
-        }
-        
-        return ($parentIdArr);
-        
-    }
-    */
-
-
     /**
      * Make array of id=>name for select drop down menu for associating a category with a parent
      * Don't allow the current category id be selectable as a parent
@@ -133,7 +113,7 @@ class CategoryParentAndChildren extends Model {
             $tmp = $obj->getAttributes();
             $parentChildArr[] = array('parent_id' => $tmp['parent_id'], 'child_id' => $tmp['child_id']);
         }
-//printR($parentChildArr);exit;
+
         $tree = $this->buildTree($parentChildArr);
 
         return $tree;

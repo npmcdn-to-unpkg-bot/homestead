@@ -16,7 +16,7 @@ if (PHP_SAPI == 'cli' || !isset($_SERVER['HTTP_HOST'])) {
     //$argv = $_SERVER['argv'];
 
     $subdomain = '';
-    $domain = 'nowarena.com';
+    //$domain = 'nowarena.com';
     /* TODO use argument key instead of --env, if this is ever used
     foreach($argv as $key => $val) {
         if (stristr($val, '--env')) {
@@ -34,11 +34,11 @@ if (PHP_SAPI == 'cli' || !isset($_SERVER['HTTP_HOST'])) {
         // if the array is only a length of 2, that means it is the domain name plus extension,
         // eg. nowarena.com, so no subdomain
         $subdomain = '';
-        $domain = strtolower($_SERVER['HTTP_HOST']);
+        //$domain = strtolower($_SERVER['HTTP_HOST']);
     } else {
         $subdomain = strtolower($arr[0]);
-        unset($arr[0]);
-        $domain = strtolower(implode('.', $arr));
+        //unset($arr[0]);
+        //$domain = strtolower(implode('.', $arr));
     }
 
 }

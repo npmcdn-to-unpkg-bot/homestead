@@ -5,7 +5,7 @@ namespace App;
 
 class TwitterAdapter
 {
-    protected $memberArr = array();
+    protected $friendsArr = array();
     
     public function __construct($screenName)
     {
@@ -14,7 +14,7 @@ class TwitterAdapter
         
     }
     
-    public function addStatus()
+    public function getFeed()
     {
         
         if (1) {
@@ -60,13 +60,13 @@ class TwitterAdapter
             return false;
         }
                 
-        $socialMediaArr = $this->parseStatus($r);
+        $socialMediaArr = $this->parseFeed($r);
 
         return $socialMediaArr;
         
     }
         
-    public function parseStatus($r)
+    public function parseFeed($r)
     {
         
         $socialMediaArr = [];
@@ -134,7 +134,7 @@ class TwitterAdapter
 
     }
 
-    public function parseMembers($nextCursor = -1)
+    public function getFriends($nextCursor = -1)
     {
 
         // get members being followed on twitter
@@ -191,43 +191,33 @@ class TwitterAdapter
             exit ('users is not a property of twitter result $r');
         }
         
-        $this->setMemberArr($r);
+        $this->setFriendArr($r);
                
         return $r->next_cursor_str;
         
     }
     
-    protected function setMemberArr($r)
+    protected function parseFriends($twitterFriendsObj)
     {
-        
-        foreach($r->users as $obj) {
+        $this->friendsArr = [];
+        foreach($twitterFriendsObj->users as $obj) {
 
-            $mem = new \App\MemberEntity();
-            $mem->setName($obj->name)
-                ->setMemberSocialIdArr($obj->screen_name, 'twitter')
-                ->setAvatar($obj->profile_image_url)
-                ->setDescription($obj->description)
-                ->setChildId(0)
-                ->setParentId(0);
-            $this->memberArr[strtolower($obj->screen_name)] = $mem;
+            $this->friendsArr[] = [
+                'name' => $obj->name,
+                'member_social_id' => $obj->screen_name,
+                'source' => 'twitter',
+                'avatar' => $obj->profile_image_url,
+                'description' => $obj->description,
+            ];
             
         }
         
     }
+
     
-    public function getMemberArr()
+    public function getFriendsArr()
     {
-        return $this->memberArr;
-    }
-
-    private function getFriendsIds($count = 2, $format = 'json')
-    {
-
-        $paramArr = ['screen_name' => $this->screenName, 'count' => $count, 'format' => $format, 'stringify_ids' => 1];
-        $r = Twitter::getFriendsIds($paramArr);
-        $obj = json_decode($r);
-        return $obj->ids;
-        
+        return $this->friendsArr;
     }
      
 }

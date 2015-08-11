@@ -10,13 +10,34 @@ use App\SocialMedia;
 
 class Member extends ModelNA {
     
-    protected $guarded = [];
+    //protected $guarded = [];
         
     protected $fillable = array('name', 'slug', 'avatar');
     
+        
+    /*
+     * Get members within a category and order members from most recent social media post to oldest
+     */
+    public function getMembersWithinSingleCategory($catId)
+    {
+        $q = "SELECT tmp_table.id, tmp_table.name, tmp_table.avatar, ";
+        $q.= "DATE_FORMAT(tmp_table.written_at, '%b %d, %Y %h:%i %p') as written_at ";
+        $q.= "FROM ";
+        $q.="(";
+        $q.= "SELECT members.id, members.name, members.avatar, social_media.written_at ";
+        $q.= "FROM members ";
+        $q.= "INNER JOIN member_categories ON members.id = member_categories.member_id ";
+        $q.= "AND category_id = " . $catId . " ";
+        $q.= "LEFT JOIN social_media ON members.id = social_media.member_id AND social_media.unpublish = 0 ";
+        $q.= "ORDER BY social_media.written_at DESC ";      
+        $q.= ") ";
+        $q.= "AS tmp_table GROUP BY tmp_table.id  ORDER BY written_at DESC";
 
+        $r = DB::select($q);   
+        return $r;
+        
+    }
 
-    
     /*
      * Get category_ids member belongs to
      * 
@@ -71,17 +92,7 @@ class Member extends ModelNA {
             ->havingRaw('num < 2')
             ->skip($next)->take($limit)
             ->get();
-//            ->toSql();
-//exit($r);
-        return $r;
-        
-        $r = $this->select('members.*', DB::raw('count(*) as num'))
-                ->join('member_categories as mc', 'mc.member_id', '=', 'members.id')
-                ->groupBy('mc.member_id')
-                ->havingRaw('num < 2')
-                ->skip($next)->take($limit)
-                ->get();
-        
+
         return $r;
         
     }
@@ -94,26 +105,10 @@ class Member extends ModelNA {
             ->where('mc.category_id', '=', 0)
             ->skip($next)->take($limit)
             ->get();
-        return $r;
-        
-        $r = $this->select('members.*')
-                ->leftJoin('member_categories as mc', 'mc.member_id', '=', 'members.id')
-                ->whereNull('mc.category_id')
-                ->skip($next)->take($limit)
-                ->get();
-        
-        return $r;               
+        return $r;                  
         
     }
     
-    /*
-     * Get members and their child category using slug to query with
-     */
-    public function getMembersAndChildCategoryWithSlug($slug, $next = 0, $limit = 15)
-    {
-        
-    }
-
     /*
      * Get members that belong to a category
      */
@@ -130,25 +125,9 @@ class Member extends ModelNA {
                         ->where('categories.slug', '=', $slug);
             })
             ->skip($next)->take($limit);
-       /*
-        $r = $this->select() 
-                ->join('member_categories', 'members.id', '=', 'member_categories.member_id')
-                ->join('categories', 'categories.id', '=', 'member_categories.category_id')
-                ->where('categories.slug', '=', $slug)
-                ->skip($next)->take($limit);
-        */
-        /*$r = DB::table('categories') 
-                ->join('member_categories', 'member_categories.category_id', '=', 'categories.id')
-                ->join('members', 'members.id', '=', 'member_categories.member_id')
-                ->where('categories.slug', '=', $slug)
-                ->skip($next)->take($limit);
-         * 
-         */
-        if (0) {
-            echo $this->getQuery($r);
-        } else {
-            return $r->get();
-        }
+
+        return $r->get();
+
         
     }
 

@@ -4,21 +4,27 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 
-class GetAKTweets extends Command
+use App\Site;
+use App\TwitterAdapter;
+use App\SocialMedia;
+use DB;
+use Twitter;
+
+class GetNBAInstagram extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'getaktweets:run';
+    protected $signature = 'getnbainstagram:run';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Get tweets from abbotkinneybl home timeline.';
+    protected $description = 'Command description.';
 
     /**
      * Create a new command instance.
@@ -37,8 +43,8 @@ class GetAKTweets extends Command
      */
     public function handle()
     {
-        //
-        // see GetNBATweets for notes
-        file_get_contents('http://abbotkinneyblvd.' . config('app.domain') . '/twitter/getfeed');
+
+        file_get_contents('http://nba.' . config('app.domain') . '/instagram/getfeed');
+
     }
 }

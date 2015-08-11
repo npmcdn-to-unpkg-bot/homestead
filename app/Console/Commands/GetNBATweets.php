@@ -49,7 +49,7 @@ class GetNBATweets extends Command
         // couldn't get the twitter keys/tokens to reconfigure below,
         // so just call the url so that subdomain may be used to set proper twitter keys/tokens. 
         // see config/ttwitter.php
-        file_get_contents('http://nba.' . config('app.domain') . '/twitter/addstatus');
+        file_get_contents('http://nba.' . config('app.domain') . '/twitter/getfeed');
         /*
         Site::getInstance('nowarena.dev', 'nba');
         DB::setDefaultConnection('nba');

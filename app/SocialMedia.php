@@ -12,37 +12,47 @@ use App\MemberSocial;
 
 /**
  * Model for saving parsed social media feeds
+ * Don't use for retrieving data and presenting to public site, only for retrieving feed data
+ * and saving to db
+ * There shouldn't be anything that applies only to a specific social site in this class 
  *
  * @author matt
  */
 class SocialMedia extends ModelNA {
 
     
-    public function __construct($keyword, $socialSite)
+    /* 
+     * Each instance of this class is tied to the 'keyword' and 'socialsite' passed in
+     */
+    public function __construct($keyword, $socialSite, $scrapeObj = false)
     {
-        
+
+        $this->scrapeObj = $scrapeObj;
         $this->socialSite = $socialSite;
         $this->keyword = $keyword;
         $this->memberSocialObj = new MemberSocial();
         $this->categoryObj = new Category();
-        $this->scraperObj = new Scraper($keyword);
         $this->categoriesArr = DB::table('categories')->get();
         // catPCArr category parent and child array where child_id is index and parent_id is value
         $this->catPCArr = DB::table('category_parent_and_children')->lists('parent_id', 'child_id');
         
     }
     
+    /*
+     * See 'getSimiliarSocialIds() when adding to this array
+     */
     public static function getSocialSiteIdArr()
     {
         
         return array(
             'twitter' => 'Twitter',
             'instagram' => 'Instagram',
-            'facebook' => 'Facebook',
-            'yelp' => 'Yelp',
-            'youtube' => 'Youtube',	
-            'pinterest' => 'Pinterest',
-            'foursquare' => 'Foursquare',
+            
+//            'facebook' => 'Facebook',
+//            'yelp' => 'Yelp',
+//            'youtube' => 'Youtube',	
+//            'pinterest' => 'Pinterest',
+//            'foursquare' => 'Foursquare',
         );
         
     }
@@ -54,70 +64,213 @@ class SocialMedia extends ModelNA {
      * is being used to create this site's members profile data
      * TODO break out adding member_social_ids to it's own method and adding member profile to 
      * this site in another method and adding categorize member to another method
+     * 
      */
-    public function addNewMembers(array $membersArr, $scrape = false)
+    public function addNewMembers(array $membersArr, $addToMembers = false, $matchToSimiliarSocialIds = false, $categorize = false)
     {
-        
-        // checks for members not in member_social_ids table 
-        // TODO problem: add twitter users and instagram users and get dups in members table
+
+        // set member_social_id to lowercase and set member_social_id as key in members array
+        $newMembersArr = [];
+        foreach($membersArr as $key => $arr) {
+            $arr['member_social_id'] = strtolower($arr['member_social_id']);
+            $newMembersArr[$arr['member_social_id']] = $arr;
+        }
+        $membersArr = $newMembersArr;
+
+        /*// set to member_social_id to lowercase 
+        array_walk($membersArr, function(&$m) {
+            $m['member_social_id'] = strtolower($m['member_social_id']);
+        });
+         */
+
+        // only returns members with no matching member_social_id in member_social_id table
+        // members in this membersArr will have no id from member table
         $membersArr = $this->getMemberSocialIdsNotInDB($membersArr);
+
+        $noMemberIdArr = array();
+        foreach($membersArr as $key => $arr) {
+ 
+            $memberObj = new \App\MemberEntity($arr);
+         
+            if ($matchToSimiliarSocialIds) {
+                $memberObj->setId($this->getMemberIdWithSocialId($memberObj));
+            } 
+
+            // Add to main member table
+            if ($addToMembers && $memberObj->getId() == 0) {
+                // no member id for this member, insert them into the member table and assign an id
+                $memberObj->insertMember();
+            }
+            
+            // if member does not have a member id it is because a similar social id was not found
+            // or $addToMembers was false, so build an array of not found so that member
+            // may be added manually
+            if ($memberObj->getId() ==0 ) {
+                $noMemberIdArr[] = $memberObj;
+                continue;
+            }
+            
+            // reminder: getMemberSocialIdsNotInDB() allows only members without member_social_ids to be here
+            $this->insertMemberSocialId($memberObj);
+
+            if ($categorize) {
+                $this->categorizeMember($memberObj);
+            }
+
+        }
         
-        foreach($membersArr as $memberSocialId => $memberObj) {
-                            
-            //TODO transaction 
-            //TODO use exceptions
-            $memberObj = $this->addMember($memberObj);
-            $addCatSuccess = $this->addCategories($memberObj);
-            if ($addCatSuccess == false  && $scrape) {
-                // TODO make scraping an overwritable method specific to subdomain's extending class
-                echo "<p>scraping for: " . $memberObj->name . "</p>";
-                $team = $this->scraperObj->scrapeTeam($memberObj, $this->keyword);
-                if ($team) {
-                    $memberObj->setDescription($team);
-                    $addCatSuccess = $this->addCategories($memberObj);
-                }
-            }
+        return $noMemberIdArr;
 
-            if ($addCatSuccess) {
-                echo "succeeded: " . $memberObj->name."<br>";
-            } else {
-                echo "<br>failed: " . $memberObj->name . "<br>"; 
-                $this->insertMemberCategory($memberObj, 0);
-                echo " setting as Uncategorized<br><br>";
-            }
+    }
+    
+    protected function categorizeMember($memberObj) 
+    {
 
-            // transaction commit or rollback
-  
+        // If they already have a category, skip
+        $r = DB::table('member_categories')->select()->where('member_id', '=', $memberObj->id);
+        if ($r->count() > 0) {
+            return false;
+        }
+
+        $addCatSuccess = $this->addCategories($memberObj);
+        if ($addCatSuccess == false  && $this->scrapeObj) {
+
+            // TODO make scraping an overwritable method specific to subdomain's extending class
+            echo "<p>scraping for: " . $memberObj->name . "</p>";
+            $team = $this->scraperObj->scrapeTeam($memberObj, $this->keyword);
+            if ($team) {
+                echo "scrapted and found $team<br>";
+                $memberObj->setDescription($team);
+                $addCatSuccess = $this->addCategories($memberObj);
+            }
+        }
+
+        if ($addCatSuccess) {
+            echo "succeeded: " . $memberObj->name."<br>";
+        } else {
+            echo "<br>failed: " . $memberObj->name . "<br>"; 
+            $this->insertMemberCategory($memberObj, 0);
+            echo " setting as Uncategorized<br><br>";
         }
 
     }
 
+    /*
+     * see if they have the same username as an existing account in member_social_id table,
+     * if so, use the member id associated with it 
+     * if not, try and find a simliar member_social_id and use that
+     */
+    public function getMemberIdWithSocialId($memberObj)
+    {
+
+        // for now only do for instagram and twitter. could be made into a loop
+        $memberSocialId = $memberObj->getMemberSocialId();
+        foreach(self::getSocialSiteIdArr() as $socialSiteKey => $socialSiteName) {
+            
+            // Get member id for SAME social id but different from source member came from
+            if ($socialSiteKey != $memberObj->getSource()) {
+                // eg. if 'twitter' != 'instagram'
+                // eg. if current member is from instagram, look for same memberSocialId from twitter
+                $arr = $this->memberSocialObj->getMemberIdsWithMemberSocialIds(array($memberSocialId), $socialSiteKey);
+                if (count($arr) == 1) {
+                    return array_shift($arr);
+                }
+                
+                // Get member id with SIMILAR social id
+                $memberId = $this->getMemberIdWithSimilarSocialId($memberSocialId, $socialSiteKey);
+                if ($memberId) {
+                    return $memberId;
+                }                
+                
+            }
+
+        }
+
+        return 0;
+
+    }
+    
+    /*
+     * In order to link up the same person on different social sites, try and match the social member id
+     * without _ (underscore) or numbers
+     * eg. twitter screenname is wanda_june123 and instagrame username is wandajune. Since both were selected 
+     * to be followed on both social sites, it is safe to say they're the same person
+     * NOTE: these queries make use of 'social_site' column, so if it's an instagram user,
+     * you may want to pass in 'twitter' to looke for similar social_id's associated with a twitter account
+     */
+    protected function getMemberIdWithSimilarSocialId($memberSocialId, $socialSite)
+    {
+        
+        $memberSocialIdNoNumbers = preg_replace("~[0-9]~", "", $memberSocialId);
+        $memberSocialIdNoUnderscore = str_replace("_", "", $memberSocialId);
+        $memberSocialIdLettersOnly = preg_replace("~[0-9_]~", "", $memberSocialId);
+        $endPos = strlen($memberSocialId);
+        if ($endPos >= 12) {
+            $endPos = $endPos - 4; 
+        }
+        $memberSocialIdShort = substr($memberSocialId, 0, $endPos);
+        
+        $q = "SELECT member_id,member_social_id ";
+        $q.= "FROM member_social_ids ";
+        $q.= "WHERE social_site = '" . $socialSite . "' ";
+        $q.= "AND (";
+        $q.= "member_social_id = '" . $memberSocialIdNoNumbers . "' ";
+        $q.= "OR ";
+        $q.= "REPLACE(member_social_id, '_', '') = '" . $memberSocialIdNoUnderscore . "' ";
+        $q.= "OR ";
+        $q.= "member_social_id = '" . $memberSocialIdLettersOnly . "' ";
+        $q.= ") ";
+        $q.= "GROUP BY member_id";
+        $r = DB::select($q);
+        
+        if (count($r) > 0) {
+            echo "<p>matched: ". $q . "</p>";
+            return $r[0]->member_id;
+        }
+        
+        $q = "SELECT member_id,member_social_id ";
+        $q.= "FROM member_social_ids ";
+        $q.= "WHERE social_site = '" . $socialSite . "' ";
+        $q.= "AND ";
+        $q.= "member_social_id LIKE '" . $memberSocialIdShort . "%' ";
+        $q.= "GROUP BY member_id";
+        $r = DB::select($q);
+        
+        if (count($r) >0 ) {
+            echo "<p>matched: ". $q . "</p>";
+            return $r[0]->member_id;
+        }
+        
+        $q = "SELECT name, id as member_id ";
+        $q.= "FROM members ";
+        $q.= "WHERE REPLACE(name, ' ', '') LIKE '" . $memberSocialIdShort . "%' ";
+        $q.= "GROUP BY member_id";
+        $r = DB::select($q);
+        
+        if (count($r) > 0) {
+            echo "<p>matched: ". $q . "</p>";
+            return $r[0]->member_id;
+        }
+        
+        return 0;
+
+    }
     
     // TODO move avatar to member_social_ids and make selectable
     // TODO make avatar updatable
-    protected function addMember($memberObj)
+    protected function insertMemberSocialId($memberObj)
     {
-
-        $memberObj->id = DB::table('members')->insertGetId([
-            'name' => $memberObj->name,
-            'avatar' => $memberObj->avatar
+/*
+        $r = DB::table('member_social_ids')
+                ->where('member_social_id', '=', $memberObj->getMemberSocialId())
+                ->where('social_site', '=', $this->socialSite)
+                ->get();
+*/
+        DB::table('member_social_ids')->insert([
+            'member_id' => $memberObj->id,
+            'social_site' => $this->socialSite,
+            'member_social_id' => $memberObj->getMemberSocialId()
         ]);
-        
-        $memberSocialIdArr = $memberObj->getMemberSocialIdArr();
-        foreach($memberSocialIdArr as $memberSocialId) {
-            DB::table('member_social_ids')
-                    ->where('member_social_id', '=', $memberSocialId)
-                    ->where('social_site', '=', $this->socialSite)
-                    ->delete();
-
-            DB::table('member_social_ids')->insert([
-                'member_id' => $memberObj->id,
-                'social_site' => $this->socialSite,
-                'member_social_id' => $memberSocialId
-            ]);
-        }
-        
-        return $memberObj;
         
     }
     
@@ -189,7 +342,7 @@ class SocialMedia extends ModelNA {
             foreach($arr as $word) {
                 
                 $word = trim($word);
-                if (strlen($word) < 3 ) {
+                if (strlen($word) < 4 ) {
                     continue;
                 }
                 
@@ -282,6 +435,8 @@ class SocialMedia extends ModelNA {
     public function getMemberSocialIdsNotInDB($membersArr)      
     {
 
+        //$memberSocialIdArr = array_map(function ($arr) {return $arr['member_social_id'];}, $membersArr);
+
         $memberSocialIdDBArr = DB::table('member_social_ids')
             ->whereIn('member_social_id', array_keys($membersArr))
             ->where('social_site', '=', $this->socialSite)
@@ -310,7 +465,7 @@ class SocialMedia extends ModelNA {
 
         $memberSocialIdMemberIdArr = $this->memberSocialObj->getMemberIdsWithMemberSocialIds($memberSocialIdArr, $this->socialSite);
 
-        // sort by time so that social_media.id will be in order with date
+        // sort by time so that social_media.id generated by db insert will be in order with date
         usort($socialMediaArr, array($this, 'sortByWrittenAt'));
 
         foreach($socialMediaArr as $val) {
