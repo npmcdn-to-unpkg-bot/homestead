@@ -4,7 +4,7 @@
 
     <h2>Add a Member</h2>
 
-    {!! Form::model($memberObj, ['route' => ['members.store', $memberObj->id]]) !!}
+    {!! Form::model($memberEnt, ['route' => ['members.store', $memberEnt->id]]) !!}
         @include('members/partials/_form', [
             'memberSocialIdArr' => $memberSocialIdArr,
             'parentChildArr' => $parentChildArr,

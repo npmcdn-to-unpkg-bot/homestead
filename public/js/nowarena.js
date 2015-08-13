@@ -141,6 +141,12 @@ $(document).ready(function() {
         // see if text overflows (parent div is set to overflow:hidden)
         if ($("#textCont_" + idStr).height() >  $("#textCont_" + idStr).parent().height()) {
             $("#footerCont_" + idStr + " > .expandLink").css('display', 'inline-block');
+            $("#footerCont_" + idStr + " > .shrinkLink").css('display', 'none');
+        } else {
+            $("#footerCont_" + idStr + " > .expandLink").css('display', 'none');
+            if ($("#textCont_" + idStr).parent().height() > 103) {
+                $("#footerCont_" + idStr + " > .shrinkLink").css('display', 'inline-block'); 
+            }
         }
 
     }
@@ -208,10 +214,11 @@ $(document).ready(function() {
     }
 
     $(".navRight").click(function() {
-
+        
         var hasMediaNotDisplayed = false;
         
         memberId = $(this).attr('id').substring(6);
+        
         // see if there is any more social media already loaded but not displayed
         if (contentArr[memberId].length > numMediaDisplayed) {
             subMemberArr = [];
@@ -240,18 +247,11 @@ $(document).ready(function() {
     $(".navLeft").click(function() {
 
         memberId = $(this).attr('id').substring(5);
-        //console.log('member_id:'+memberId);
-        //console.log('first:'+memberIdSocialIdArr[memberId].firstSocialMediaId);
         if (memberIdSocialIdArr[memberId].firstSocialMediaId > 0) {
             for(var j in contentArr[memberId]) {
-
-                if (contentArr[memberId][j]['id'] == memberIdSocialIdArr[memberId].firstSocialMediaId) {
-                //console.log('nav left:'+ j +'|id:'+contentArr[memberId][j]['id']);
-                //console.log('nav left first social media id:'+memberIdSocialIdArr[memberId].firstSocialMediaId);       
+                if (contentArr[memberId][j]['id'] == memberIdSocialIdArr[memberId].firstSocialMediaId) {    
                     j = parseInt(j);
-                    //console.log($("#textCont_" + memberId + "_1").text());
                     if ($("#textCont_" + memberId + "_1").text() == 'End of feed reached') {
-                        //console.log('length:'+contentArr[memberId].length);
                         // TODO redo this without relying on reading text
                         startPos=j;
                         endPos = j + numMediaDisplayed;
@@ -263,12 +263,7 @@ $(document).ready(function() {
                             endPos = startPos + numMediaDisplayed;    
                         }     
                     }
-                    //console.log('startPos:'+startPos);
-                    //console.log('endPos:'+endPos);
-                    
                     subMemberArr = contentArr[memberId].slice(startPos, endPos);
-                    //console.log('typeof content:' + typeof contentArr[memberId]);
-                    //console.log('typeof:'+typeof subMemberArr[memberId]);
                     displaySubContentArr(subMemberArr, memberId);
                 }
             }

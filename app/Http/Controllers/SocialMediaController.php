@@ -131,7 +131,8 @@ class SocialMediaController extends Controller {
         $obj->id = $input['member_id'];
         $socialMediaId = $input['social_media_id'];
         $memberArr = array('id' => $obj);
-        $memberContentArr = $this->memberSocialObj->getSocialMediaWithMemberIds($memberArr, $socialMediaId);
+        list($memberArr, $memberContentArr) = $this->memberSocialObj->getSocialMediaWithMemberIds($memberArr, $socialMediaId);
+        //printR($memberContentArr);
         return response()->json(['memberContentArr' => $memberContentArr]);
     	
         

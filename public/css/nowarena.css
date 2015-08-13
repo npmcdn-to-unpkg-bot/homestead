@@ -54,6 +54,10 @@
     border-bottom-right-radius: 25px;
     border-bottom:1px solid #cccccc;
     margin-bottom:6px;
+    
+    box-shadow: 0px 0px 5px #888888;
+    -webkit-box-shadow: 0px 5px 5px #888888;
+    -moz-box-shadow: 0px 5px 5px #888888;    
 }
 
 .contentNav {
@@ -213,6 +217,8 @@
 }
 .childHolder {
     position:relative;
+
+    margin-bottom:15px;
 }
 .parentCont {
     margin:0px auto;
@@ -221,6 +227,7 @@
 .parentHolder {
     position:relative;
     height:150px;
+
 }
 
 .parentTitle {
@@ -232,6 +239,8 @@
     border:0px solid black;
     border-top-right-radius:25px;
     border-top-left-radius: 25px;
+    -webkit-top-right-border-radius: 25px;
+    -moz-top-left-border-radius: 25px;   
     border-bottom:0px;
     padding-left:12px;
     padding-right:10px;

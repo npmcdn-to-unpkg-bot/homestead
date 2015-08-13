@@ -1,11 +1,15 @@
 <div class='left_col'>
 
-<div class="form-group">
+<div class="form-group" id='member'>
     {!! Form::label('name', 'Name:') !!}
     {!! Form::text('name') !!}
     <br><br>
     {!! Form::label('display_name', 'Display Name:') !!}
     {!! Form::text('display_name') !!}
+    <br><br>
+    {!! Form::label('website', 'Website:') !!}
+    {!! Form::text('website') !!}
+    
 </div>
     
     <!--
@@ -106,9 +110,13 @@ foreach($parentChildArr as $itemArr) {
 </div>
 
 <style>
-    .site_label{
-        width:80px;
-    } 
+    #member > label{
+        width:100px;
+    }
+    ul.form-group label {
+        margin-left:-30px;
+        width:130px;
+    }
 </style>
 
 <script src='/js/admin.js'></script>

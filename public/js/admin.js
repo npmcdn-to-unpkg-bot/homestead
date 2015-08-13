@@ -24,10 +24,31 @@ $(document).ready(function() {
    // so that a vertical list of categories is displayed
    // if a hierarchy has parent-children relationships, there will be ul li tags
    var ulArr = $(".right_col").find('ul');
-   console.log('len:'+ulArr.length);
+
    if (ulArr.length == 0) {
        $(".right_col").width(220);
 
    }
+   
+    /*
+     * Sortable categories
+     */
+    $(function() {
+        $("#sortable").sortable();
+        $("#sortable").disableSelection();
+        $('#sortable').sortable({
+            axis: 'y',
+            update: function (event, ui) {
+                var data = $(this).sortable('serialize');
+                // POST to server using $.post or $.ajax
+                $.ajax({
+                    data: data,
+                    type: 'POST',
+                    url: '/categories/sort'
+                });
+            }
+        });
+
+    });
     
 });

@@ -84,17 +84,17 @@ class MembersController extends Controller {
 	 *
 	 * @return Response
 	 */
-	public function create(Member $memberObj)
+	public function create(MemberEntity $memberEnt)
 	{
 
-	    $memberObj->id = 0;
-	    $memberSocialIdArr = $memberObj->getMemberSocialIdArr($memberObj->id);
+	    $memberEnt->id = 0;
+	    $memberSocialIdArr = $this->memberObj->getMemberSocialIdArr($memberEnt->id);
 	    
 	   	$parentChildArr = $this->categoryPAndCObj->getHierarchy();
 	    $categoriesArr = $this->categoryObj->getCategoriesArr();
 	    $memberCategoryIdArr = array();
 	    
-        return view('members.create', compact('memberObj', 'memberSocialIdArr', 'parentChildArr', 'categoriesArr', 'memberCategoryIdArr'));
+        return view('members.create', compact('memberEnt', 'memberSocialIdArr', 'parentChildArr', 'categoriesArr', 'memberCategoryIdArr'));
 	}
 
 	/**
@@ -102,23 +102,24 @@ class MembersController extends Controller {
 	 *
 	 * @return Response
 	 */
-	public function store(MemberEntity $memberObj)
+	public function store(MemberEntity $memberEnt)
 	{
-	 dd($memberObj);
+
     	$inputArr = Input::all();
+
     	$socialSiteArr = $inputArr['site'];
         $categoryIdArr = [];
         if (isset($inputArr['category_id'])) {
             $categoryIdArr = $inputArr['category_id'];
         }
     	$inputArr = array_except($inputArr, array('site', 'category_id'));
-    	$memberObj = $memberObj->create( $inputArr );
-    	$memberObj->saveMemberSocialIds($socialSiteArr, null, $memberObj->id);
+        $memberEnt = $memberEnt->init($inputArr)->insertMember();
+    	$this->memberObj->saveMemberSocialIds($socialSiteArr, null, $memberEnt->id);
         if (!empty($categoryIdArr)) {
-            $memberObj->saveMemberCategoryIds($categoryIdArr, $memberObj->id);
+            $this->memberObj->saveMemberCategoryIds($categoryIdArr, $memberEnt->id);
         }
         
-    	return Redirect::route('members.edit', [$memberObj->id])->with('message', 'Member added.');
+    	return Redirect::route('members.edit', [$memberEnt->id])->with('message', 'Member added.');
 		
 	}
 
@@ -185,13 +186,14 @@ class MembersController extends Controller {
 	 * @param  int  $id
 	 * @return Response
 	 */
-	public function destroy(Member $memberObj)
+	public function destroy(MemberEntity $memberEnt)
 	{
 
-        $memberObj->delete();
-        \DB::table('member_categories')->where('member_id', '=', $memberObj->id)->delete();
-        \DB::table('member_social_ids')->where('member_id', '=', $memberObj->id)->delete();
-        \DB::table('social_media')->where('member_id', '=', $memberObj->id)->delete();
+        \DB::table('member_categories')->where('member_id', '=', $memberEnt->id)->delete();
+        \DB::table('member_social_ids')->where('member_id', '=', $memberEnt->id)->delete();
+        \DB::table('social_media')->where('member_id', '=', $memberEnt->id)->delete();
+        
+        \DB::table('members')->where('id', '=', $memberEnt->id)->delete();
  
 	    return Redirect::route('members.index')->with('message', 'Member deleted.');
 	}

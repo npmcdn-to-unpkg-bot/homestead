@@ -40,9 +40,10 @@ Route::group(['middleware' => 'auth'], function () {
         return App\Category::whereSlug($slug)->first();
     });
 
-     
+          Route::get('categories/sort', 'CategoriesController@sort');
     //Route::model('categories', 'Category');
-     Route::resource('categories', 'CategoriesController');   
+     Route::resource('categories', 'CategoriesController');  
+
 });
 
 Route::controllers([

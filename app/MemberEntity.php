@@ -19,6 +19,7 @@ class MemberEntity extends ModelNA {
     public $updated_at;
     public $name = '';
     public $display_name = '';
+    public $website = '';
     
     // non table columns
     public $avatar = '';
@@ -41,11 +42,12 @@ class MemberEntity extends ModelNA {
         
         $this->created_at = isset($arr['created_at']) ? $arr['created_at'] : NULL;        
         $this->updated_at = isset($arr['updated_at']) ? $arr['updated_at'] : NULL;
+        $this->website = !empty($arr['website']) ? $arr['website'] : '';
         
         $this->name = isset($arr['name']) ? $arr['name'] : '';
         $this->display_name = !empty($arr['display_name']) ? $arr['display_name'] : $this->name;
         
-        
+        // properties that do not exist as columns in member table
         $this->avatar = isset($arr['avatar']) ? $arr['avatar'] : 0;
         $this->child_id = isset($arr['child_id']) ? $arr['child_id'] : 0;  
         $this->parent_id = isset($arr['parent_id']) ? $arr['parent_id'] : NULL;
@@ -66,7 +68,8 @@ class MemberEntity extends ModelNA {
         
         $this->id = \DB::table('members')->insertGetId([
             'name' => $this->name,
-            'display_name' => $this->display_name
+            'display_name' => $this->display_name,
+            'website' => $this->website
         ]);
         
         return $this;
@@ -82,7 +85,7 @@ class MemberEntity extends ModelNA {
 
         return \DB::table('members')->where('id', $this->id)
             ->update(
-                ['name' => $this->name, 'display_name' => $this->display_name]
+                ['name' => $this->name, 'display_name' => $this->display_name, 'website' => $this->website]
             );
     }
     

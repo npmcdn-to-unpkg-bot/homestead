@@ -95,10 +95,18 @@ class CategoriesController extends Controller {
 	 * @param  int  Categories $category
 	 * @return Response
 	 */
-	public function show(Category $category)
+	public function show(Category $categoryObj)
 	{
-	    return view('categories.show', compact('category'));
+                
+        $parentCatArr = $categoryObj->getParents();
+	    return view('categories.show', compact('categoryObj', 'parentCatArr'));
 	}
+    
+    public function sort()
+    {
+        $inputArr = Input::all();
+        return json_encode($inputArr);       
+    }
 
 	/**
 	 * Update the specified resource in storage.
