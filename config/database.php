@@ -53,7 +53,6 @@ return [
 			'database' => storage_path().'/database.sqlite',
 			'prefix'   => '',
 		],
-
 		'mysql' => [
 			'driver'    => 'mysql',
 			'host'      => env('DB_HOST', 'localhost'),
@@ -65,7 +64,7 @@ return [
 			'prefix'    => '',
 			'strict'    => false,
 		],
-        'users' => [
+        'nowarenausers' => [
 			'driver'    => 'mysql',
 			'host'      => 'localhost',
 			'database'  => 'nowarenausers',
@@ -76,6 +75,7 @@ return [
 			'prefix'    => '',
 			'strict'    => false,
 		],
+        /* is this needed? */
 		'nba' => [
 			'driver'    => 'mysql',
 			'host'      => env('DB_HOST', 'localhost'),

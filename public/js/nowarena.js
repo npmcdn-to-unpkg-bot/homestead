@@ -14,6 +14,9 @@ $(document).ready(function() {
         //$(".firstDisplay").show();
     });
     
+    // expand link and shrink link reference this
+    var originalTextContParentHeight = ($(".textCont").parent().height());
+    
     displayMedia(contentArr);
     
     function displayMedia(contentArr) {
@@ -39,9 +42,9 @@ $(document).ready(function() {
             // about 100px less then the width
             if (width < 740 && width >= 270) {
                 resizedWidth = width-100;
-                if (resizedWidth < 200) {
-                    resizedWidth = 200;
-                }
+                //if (resizedWidth < 200) {
+                //    resizedWidth = 200;
+                //}
                 //console.log('resizing:'+resizedWidth);
                 $(".contentAndFooterCont").css('width', resizedWidth);
             }
@@ -95,7 +98,8 @@ $(document).ready(function() {
         
         $("#textCont_" + memberId + "_" + index).html('End of feed reached');
         $("#thumbCont_" + memberId + "_" + index).hide();
-        $("#footerCont_" + memberId + "_" + index).html(" &nbsp; ");
+        $("#footerCont_" + memberId + "_" + index + " > .ageLink").html('&nbsp;');
+        $("#expandLink_" + memberId + "_" + index).css('display','');
         if (index == 1) {
             displayBlank(memberId, 2);
             displayBlank(memberId, 3);
@@ -109,7 +113,7 @@ $(document).ready(function() {
         if ( $("#textCont_" + memberId + "_" + index).length >0 ) {
             $("#textCont_" + memberId + "_" + index).html(' &nbsp; '); 
             $("#thumbCont_" + memberId + "_" + index).hide();
-            $("#footerCont_" + memberId + "_" + index).html(' &nbsp;');
+            $("#footerCont_" + memberId + "_" + index + " > .ageLink").html('&nbsp;');
         }
     }
     
@@ -137,45 +141,60 @@ $(document).ready(function() {
         onLink = "<a target='_blank' href='" + link + "'>on " + obj['source'] + "&raquo;</a>";
         footerContent = obj['age'] + " " + onLink;
         $("#footerCont_" + idStr + " > .ageLink").html(footerContent);
-        
-        // see if text overflows (parent div is set to overflow:hidden)
-        if ($("#textCont_" + idStr).height() >  $("#textCont_" + idStr).parent().height()) {
-            $("#footerCont_" + idStr + " > .expandLink").css('display', 'inline-block');
-            $("#footerCont_" + idStr + " > .shrinkLink").css('display', 'none');
-        } else {
-            $("#footerCont_" + idStr + " > .expandLink").css('display', 'none');
-            if ($("#textCont_" + idStr).parent().height() > 103) {
-                $("#footerCont_" + idStr + " > .shrinkLink").css('display', 'inline-block'); 
-            }
-        }
+        mngExpandShrinkLinks(memberId);
 
+    }
+    
+    function mngExpandShrinkLinks(memberId) {
+        
+        for (var i = 1; i <= numMediaDisplayed; i++) {
+            
+            idStr = memberId + '_' + i;
+            
+            // see if text overflows (parent div is set to overflow:hidden)
+            if ($("#textCont_" + idStr).height() >  $("#textCont_" + idStr).parent().height()) {
+                $("#expandLink_" + idStr).css('display', 'inline-block');
+                $("#shrinkLink_" + idStr).css('display', 'none');
+            } else {
+                $("#expandLink_" + idStr).css('display', 'none');
+                if ($("#textCont_" + idStr).parent().height() > originalTextContParentHeight) {
+                    $("#shrinkLink_" + idStr).css('display', 'inline-block'); 
+                } else {
+                    $("#shrinkLink_" + idStr).css('display', 'none'); 
+                }
+            }
+            
+        }
+        
     }
     
     $(".expandLink").click(function() {
         memberId = $(this).data('memberid');
         boxNum = $(this).data('boxnum');
-        var domPathStr = "#rowCont_" + memberId + " > .contentAndFooterCont > .contentCont";
+        var cssPathStr = "#rowCont_" + memberId + " > .contentAndFooterCont > .contentCont";
         // set textContainer height to real height of text
         var realHeight = $("#textCont_" + memberId + "_" + boxNum).height();
-        var hiddenHeight = $(domPathStr).height();
-        $(domPathStr).height(realHeight);
+        var hiddenHeight = $(cssPathStr).height();
+        $(cssPathStr).height(realHeight);
         // set leftBar to additional height
         var leftBarHeight = $("#rowCont_" + memberId + " > .leftBar").height();
         var increaseBy = realHeight - hiddenHeight;
         $("#rowCont_" + memberId + " > .leftBar").height(leftBarHeight + increaseBy);
-        $(this).hide();
-        $(this).next().show();
+        mngExpandShrinkLinks(memberId);
+        //$(this).hide();
+        //$(this).next().show();
     
     });
     
     $(".shrinkLink").click(function() {
         memberId = $(this).data('memberid');
         boxNum = $(this).data('boxnum');
-        var domPathStr = "#rowCont_" + memberId + " > .contentAndFooterCont > .contentCont";
-        $(domPathStr).css('height', '');
+        var cssPathStr = "#rowCont_" + memberId + " > .contentAndFooterCont > .contentCont";
+        $(cssPathStr).css('height', '');
         $("#rowCont_" + memberId + " > .leftBar").css('height', '');    
-        $(this).prev().show();
-        $(this).hide();
+        //$(this).prev().show();
+        //$(this).hide();
+        mngExpandShrinkLinks(memberId);
     });
     
     /*

@@ -241,6 +241,11 @@
     border-top-left-radius: 25px;
     -webkit-top-right-border-radius: 25px;
     -moz-top-left-border-radius: 25px;   
+    
+    box-shadow: 0px 0px 5px #888888;
+    -webkit-box-shadow: 0px 5px 5px #888888;
+    -moz-box-shadow: 0px 5px 5px #888888;    
+    
     border-bottom:0px;
     padding-left:12px;
     padding-right:10px;

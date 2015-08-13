@@ -2,6 +2,15 @@
 
 @section('content')
 
+<?php
+$encrypter = app('Illuminate\Encryption\Encrypter');
+$encrypted_token = $encrypter->encrypt(csrf_token());
+?>
+
+<form>
+    
+<input id="token" type="hidden" value="<?php echo $encrypted_token; ?>">
+
 @if ( empty($parentCatArr) )
     No categories 
 @else
@@ -9,7 +18,7 @@
     <br><br>
     <ul id='sortable'>
         @foreach( $parentCatArr as $id => $name )
-            <li id="cat_' . {{$id}}" class="ui-state-default catBox">
+            <li id="cat_{{$id}}" class="ui-state-default catBox">
                 <span class="ui-icon ui-icon-arrowthick-2-n-s"></span>
                 <div>{{ $name }}</div>
             </li>
@@ -17,10 +26,9 @@
     </ul>
 @endif
 
+</form>
 
-<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
-<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
-<script src='/js/admin.js'></script>
+
 
 <style>
 
@@ -35,5 +43,8 @@
 }
 
 </style>
+
+
+@include('admin/partials/_footer')
 
 @endsection

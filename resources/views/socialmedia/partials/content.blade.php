@@ -51,9 +51,11 @@ for($i=1; $i<=$numCols; $i++) {
 
     echo "' id = 'footerCont_" . $memberId . "_" . $i . "'>";
     echo "<div class='ageLink'></div>";    
-    echo "<a data-memberid='" . $memberId . "' data-boxnum='" . $i . "' ";
+    echo "<a id='expandLink_" . $memberId . "_" . $i . "' ";
+    echo "data-memberid='" . $memberId . "' data-boxnum='" . $i . "' ";
     echo "class='expandLink' href='javascript:void(0);'>expand &darr;</a> ";
-    echo "<a data-memberid='" . $memberId . "' data-boxnum='" . $i . "' ";
+    echo "<a id='shrinkLink_" . $memberId . "_" . $i . "' ";
+    echo "data-memberid='" . $memberId . "' data-boxnum='" . $i . "' ";
     echo "class='shrinkLink' href='javascript:void(0);'>shrink &uarr;</a> ";
     
     echo "</div>";

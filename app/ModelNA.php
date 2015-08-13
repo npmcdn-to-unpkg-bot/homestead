@@ -123,7 +123,7 @@ dd($_SERVER);
         $text = trim($text);
         //echo "<hr>A:<br>";
         $text = preg_replace("~\\n|\\r~", " ", $text);
-        
+        $text = str_replace( '–', '-', $text);
         //echo $text;
         
         //echo "<br>A.5:<br>";

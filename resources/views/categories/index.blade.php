@@ -16,7 +16,7 @@
                     {!! Form::open(array('class' => 'form-inline', 'method' => 'DELETE', 'route' => array('categories.destroy', $obj->slug))) !!}
                         <div class='category_label'>{{ $obj->display_name }}</div>
                             {!! link_to_route('categories.edit', 'Edit', array($obj->slug), array('class' => 'btn btn-info')) !!} &nbsp;   
-                            {!! Form::submit('Delete', array('class' => 'btn btn-danger')) !!}
+                            {!! Form::submit('Delete', array('class' => 'btn btn-danger btn-delete')) !!}
                     {!! Form::close() !!}
                 </li>
             @endforeach
@@ -37,6 +37,6 @@
 
 @include('admin/partials/_footer')
     
-<script src="/js/form_index.js"></script>    
+
 
 @endsection

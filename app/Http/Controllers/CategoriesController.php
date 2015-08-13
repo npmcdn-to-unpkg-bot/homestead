@@ -102,10 +102,14 @@ class CategoriesController extends Controller {
 	    return view('categories.show', compact('categoryObj', 'parentCatArr'));
 	}
     
-    public function sort()
+    public function sort(Category $categoryObj)
     {
+        //print_r($categoryObj);
         $inputArr = Input::all();
-        return json_encode($inputArr);       
+        //print_r($inputArr);
+        $categoryObj->updateCategoryRank($inputArr['cat']);
+        
+        //return json_encode($inputArr);       
     }
 
 	/**
@@ -141,7 +145,7 @@ class CategoriesController extends Controller {
 	    
 	   $category->delete();
        $this->categoryPAndCObj->where('child_id', '=', $category->id)->orWhere('parent_id', '=', $category->id)->delete();
-       DB::table('member_categories')->where('category_id', '=', $category->id)->delete();
+       \DB::table('member_categories')->where('category_id', '=', $category->id)->delete();
  
 	   return Redirect::route('categories.index')->with('message', 'Category deleted.');
 	

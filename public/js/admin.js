@@ -34,14 +34,18 @@ $(document).ready(function() {
      * Sortable categories
      */
     $(function() {
+        
+        var token = $('#token').val();
+        
         $("#sortable").sortable();
-        $("#sortable").disableSelection();
+        //$("#sortable").disableSelection();
         $('#sortable').sortable({
             axis: 'y',
             update: function (event, ui) {
                 var data = $(this).sortable('serialize');
                 // POST to server using $.post or $.ajax
                 $.ajax({
+                    headers: { 'X-XSRF-TOKEN' : token }, 
                     data: data,
                     type: 'POST',
                     url: '/categories/sort'
@@ -49,6 +53,26 @@ $(document).ready(function() {
             }
         });
 
+    });
+
+    var currentForm;
+    $("#dialog").dialog({
+       autoOpen: false,
+       modal: true,
+       buttons : {
+            "Confirm" : function() {
+                currentForm.submit();            
+            },
+            "Cancel" : function() {
+              $(this).dialog("close");
+            }
+          }
+    });
+
+    $(".btn-delete").on("click", function(e) {
+        currentForm = $(this.form);
+        e.preventDefault();
+        $("#dialog").dialog("open");
     });
     
 });

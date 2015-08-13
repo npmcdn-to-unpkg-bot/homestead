@@ -15,7 +15,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
      * Users model gets its own database so that a user may be shared across multiple
      * databases/subdomains.
      */
-    protected $connection = 'users';
+    protected $connection = 'nowarenausers';
     
 	/**
 	 * The database table used by the model.

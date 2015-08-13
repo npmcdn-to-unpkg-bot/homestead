@@ -32,7 +32,7 @@ Route::group(['middleware' => 'auth'], function () {
         $ent = new App\MemberEntity();
         return $ent->getMemberDB($value);
     });
-    
+    Route::post('categories/sort', 'CategoriesController@sort');    
     Route::bind('categories', function($slug, $route) {
         // pass category to social media controller
         // members in the category and their social media can subsequently 
@@ -40,9 +40,8 @@ Route::group(['middleware' => 'auth'], function () {
         return App\Category::whereSlug($slug)->first();
     });
 
-          Route::get('categories/sort', 'CategoriesController@sort');
-    //Route::model('categories', 'Category');
-     Route::resource('categories', 'CategoriesController');  
+    Route::resource('categories', 'CategoriesController');  
+     
 
 });
 

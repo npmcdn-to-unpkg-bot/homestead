@@ -1,11 +1,6 @@
 <div style='clear:both;'></div>
 <hr>
-<!--
-<form action='/members/search' style='text-align:center;'>";        
-<input type='text' name='search' value='" . htmlentities($search) . "' style='width:100px;font-size:10px;'>";
-<input type='submit' value='Search'>
-</form>
--->
+
 <ul style="margin-left:-130px;margin-right:-130px;">
     
 <?php
@@ -22,13 +17,15 @@ foreach($subdomainArr as $key => $arr) {
     echo "<span class='mainPageCategoryName'>";
     echo $arr['nameShort'];
     echo "</span><br>";
-    echo "<a href='" . $arr['baseUrl'] . "/members'>Members</a> ";
-    echo " &nbsp; &#183; &nbsp; ";
-    echo "<a href='" . $arr['baseUrl'] . "/members/create'>Members Create</a> ";
+    echo "<a href='" . $arr['baseUrl'] . "/members'>Members:</a> ";
+    echo " &nbsp; ";
+    echo "<a href='" . $arr['baseUrl'] . "/members/create'> Create</a> ";
     echo " &nbsp; &#183; &nbsp; "; 
-    echo "<a href='" . $arr['baseUrl'] . "/categories'>Categories</a> ";
-    echo " &nbsp; &#183; &nbsp; ";
-    echo "<a href='" . $arr['baseUrl'] . "/categories/create'>Categories Create</a> ";
+    echo "<a href='" . $arr['baseUrl'] . "/categories'>Categories:</a> ";
+    echo " &nbsp; ";
+    echo "<a href='" . $arr['baseUrl'] . "/categories/create'>Create</a> ";
+    echo " &nbsp; ";
+    echo "<a href='" . $arr['baseUrl'] . "/categories/show'>Sort</a> ";
     echo " &nbsp; &#183; &nbsp; ";
     echo "<a href='" . $arr['baseUrl'] . "/twitter/getfeed'>Add Twitter Feed</a> ";
     echo " &nbsp; &#183; &nbsp; ";
@@ -44,3 +41,7 @@ foreach($subdomainArr as $key => $arr) {
 ?>
 
 </ul>
+<div id="dialog" title="Confirmation Required">  Are you sure about this?</div>​
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+<script src='/js/admin.js'></script>

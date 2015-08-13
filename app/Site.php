@@ -61,10 +61,13 @@ class Site {
             'name' => 'NowArena.com',
             'nameShort' => 'NowArena.com',
             'nameLong' => 'NowArena.com',
-            'database' => 'users',
+            'database' => 'nowarenausers',
             'pageTitle' => 'NowArena.com : What\'s happening now',
             'baseUrl' => 'http://' . self::$subdomain . '.' . self::$domain,
             'thumbUrl' => '',
+            'twitterScreenName' => '',
+            'instagramScreenName' => '',
+            'instagramAccessToken' => '',
         );
         return array(
             '' => $defaultArr,
@@ -78,7 +81,8 @@ class Site {
                 'baseUrl' => 'http://nba.' . self::$domain,
                 'description' => 'Lebron, Griffin, Kobe and more.', 
                 'twitterScreenName' => 'nbablvd',
-                
+                'instagramScreenName' => '',
+                'instagramAccessToken' => '',
                 'categoryDepth' => 3
             ),
             'abbotkinneyblvd' => array(

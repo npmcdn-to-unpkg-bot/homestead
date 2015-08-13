@@ -47,7 +47,7 @@
                             
                         </div>
                             {!! link_to_route('members.edit', 'Edit', array($obj->id), array('class' => 'btn btn-info')) !!} &nbsp;   
-                            {!! Form::submit('Delete', array('class' => 'btn btn-danger')) !!}
+                            {!! Form::submit('Delete', array('class' => 'btn btn-danger btn-delete')) !!}
                     {!! Form::close() !!}
                 </li>
             @endforeach
@@ -55,6 +55,8 @@
     @endif
 
     </div>
+
+
 
     <div class='right_col' style='float:none;margin-top:-20px;'>
         

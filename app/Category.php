@@ -6,12 +6,23 @@ use DB;
 class Category extends Model {
 
     protected $guarded = [];
+    protected $table = 'categories';
+    
+    public function updateCategoryRank(array $catArr) 
+    {
+        
+        foreach($catArr as $key => $id) {
+            $this->where('id', $id)->update(['rank' => $key]);
+        }
+        
+    }
     
     public function getParents()
     {
  
         $arr = $this->select()->join('category_parent_and_children', 'categories.id', '=', 'child_id')
                 ->where('parent_id', '=', '0')
+                ->orderBy('rank', 'ASC')
                 ->lists('display_name', 'child_id');
 
         return $arr;

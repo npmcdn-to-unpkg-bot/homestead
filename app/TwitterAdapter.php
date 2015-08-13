@@ -103,7 +103,7 @@ class TwitterAdapter
             }
             
             // add 'in reply to' link to text
-            if (!empty($obj->in_reply_to_status_id)) {
+            if (false && !empty($obj->in_reply_to_status_id)) {
                 $replyLink = "<reply>";
                 $replyLink.= "<a target='_blank' ";
                 $replyLink.= "href='https://twitter.com/" . $obj->in_reply_to_screen_name . "/status/";
