@@ -191,7 +191,7 @@ class TwitterAdapter
             exit ('users is not a property of twitter result $r');
         }
         
-        $this->setFriendArr($r);
+        $this->parseFriends($r);
                
         return $r->next_cursor_str;
         

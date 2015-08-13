@@ -123,7 +123,7 @@ class InstagramAdapter extends ModelNA
             $this->friendsArr[] = [
                 'name' => $obj->full_name,
                 'member_social_id' => $obj->username,
-                'social_site' => 'instagram',
+                'source' => 'instagram',
                 'avatar' => $obj->profile_picture
             ];
             

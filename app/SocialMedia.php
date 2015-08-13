@@ -85,71 +85,121 @@ class SocialMedia extends ModelNA {
 
         // only returns members with no matching member_social_id in member_social_id table
         // members in this membersArr will have no id from member table
-        $membersArr = $this->getMemberSocialIdsNotInDB($membersArr);
+        $newMembersArr = $this->getMemberSocialIdsNotInDB($membersArr);
+        
+        // get members not in newMembersArr (ie members already in db) 
+        $membersInDBArr = array_diff_key($membersArr, $newMembersArr);
+
+        // update avatars of members not in newMembersArr
+        $this->updateAvatars($membersInDBArr);
+        // s
+        $membersArr = $newMembersArr;
 
         $noMemberIdArr = array();
         foreach($membersArr as $key => $arr) {
  
-            $memberObj = new \App\MemberEntity($arr);
+            $memberEnt = new \App\MemberEntity($arr);
          
             if ($matchToSimiliarSocialIds) {
-                $memberObj->setId($this->getMemberIdWithSocialId($memberObj));
+                $memberEnt->setId($this->getMemberIdWithSocialId($memberEnt));
             } 
 
             // Add to main member table
-            if ($addToMembers && $memberObj->getId() == 0) {
+            if ($addToMembers && $memberEnt->getId() == 0) {
                 // no member id for this member, insert them into the member table and assign an id
-                $memberObj->insertMember();
+                $memberEnt->insertMember();
             }
             
             // if member does not have a member id it is because a similar social id was not found
             // or $addToMembers was false, so build an array of not found so that member
             // may be added manually
-            if ($memberObj->getId() ==0 ) {
-                $noMemberIdArr[] = $memberObj;
+            if ($memberEnt->getId() ==0 ) {
+                $noMemberIdArr[] = $memberEnt;
                 continue;
             }
             
             // reminder: getMemberSocialIdsNotInDB() allows only members without member_social_ids to be here
-            $this->insertMemberSocialId($memberObj);
+            $this->insertMemberSocialId($memberEnt);
 
             if ($categorize) {
-                $this->categorizeMember($memberObj);
+                $this->categorizeMember($memberEnt);
             }
 
         }
+        
+        $this->updatePrimaryAvatars();
         
         return $noMemberIdArr;
 
     }
     
-    protected function categorizeMember($memberObj) 
+    /*
+     * Set all members with only one member_social_id and an avatar to that avatar being primary
+     */
+    protected function updatePrimaryAvatars()
+    {
+        
+        $idArr = [];
+//        $q = "SELECT id, COUNT(*) AS num FROM member_social_ids ";
+//        $q.= "WHERE avatar IS NOT NULL AND primary_avatar != 1 ";
+//        $q.= "GROUP BY member_id ";
+//        $q.= "HAVING num < 2";
+        
+        $q = 'SELECT id, sum(primary_avatar) as avSum ' 
+        . 'FROM member_social_ids ' 
+        . 'WHERE avatar IS NOT NULL AND disabled = 0 ' 
+        . 'GROUP BY member_id ' 
+        . 'HAVING avSum=0';
+        $r = DB::select($q);
+        foreach($r as $key => $obj) {
+            $idArr[] = $obj->id;
+        }
+        if (!empty($idArr)) {
+            $q = "UPDATE member_social_ids SET primary_avatar = 1 WHERE id IN (" . implode(',', $idArr) . ")";
+            $r = DB::update($q);
+        }
+
+    }
+    
+    protected function updateAvatars($memberArr) 
+    {
+
+        foreach($memberArr as $memberSocialId => $arr) {
+            DB::table('member_social_ids')
+                ->where('member_social_id', $arr['member_social_id'])
+                ->where('social_site', $arr['source'])
+                ->update(['avatar' => $arr['avatar']]);
+        }
+        
+    }
+    
+    protected function categorizeMember(MemberEntity $memberEntity) 
     {
 
         // If they already have a category, skip
-        $r = DB::table('member_categories')->select()->where('member_id', '=', $memberObj->id);
+        $r = DB::table('member_categories')->select()->where('member_id', '=', $memberEnt->id);
         if ($r->count() > 0) {
             return false;
         }
 
-        $addCatSuccess = $this->addCategories($memberObj);
+        $addCatSuccess = $this->addCategories($memberEnt);
         if ($addCatSuccess == false  && $this->scrapeObj) {
 
             // TODO make scraping an overwritable method specific to subdomain's extending class
-            echo "<p>scraping for: " . $memberObj->name . "</p>";
-            $team = $this->scraperObj->scrapeTeam($memberObj, $this->keyword);
+            echo "<p>scraping for: " . $memberEnt->name . "</p>";
+            $team = $this->scraperObj->scrapeTeam($memberEnt, $this->keyword);
             if ($team) {
                 echo "scrapted and found $team<br>";
-                $memberObj->setDescription($team);
-                $addCatSuccess = $this->addCategories($memberObj);
+                $memberEnt->setDescription($team);
+                $addCatSuccess = $this->addCategories($memberEnt);
             }
         }
 
         if ($addCatSuccess) {
-            echo "succeeded: " . $memberObj->name."<br>";
+            echo "succeeded: " . $memberEnt->name."<br>";
         } else {
-            echo "<br>failed: " . $memberObj->name . "<br>"; 
-            $this->insertMemberCategory($memberObj, 0);
+            echo "<br>failed: " . $memberEnt->name . "<br>"; 
+            $this->insertMemberCategory($memberEnt, 0);
             echo " setting as Uncategorized<br><br>";
         }
 
@@ -160,15 +210,15 @@ class SocialMedia extends ModelNA {
      * if so, use the member id associated with it 
      * if not, try and find a simliar member_social_id and use that
      */
-    public function getMemberIdWithSocialId($memberObj)
+    public function getMemberIdWithSocialId(MemberEntity $memberEnt)
     {
 
         // for now only do for instagram and twitter. could be made into a loop
-        $memberSocialId = $memberObj->getMemberSocialId();
+        $memberSocialId = $memberEnt->getMemberSocialId();
         foreach(self::getSocialSiteIdArr() as $socialSiteKey => $socialSiteName) {
             
             // Get member id for SAME social id but different from source member came from
-            if ($socialSiteKey != $memberObj->getSource()) {
+            if ($socialSiteKey != $memberEnt->getSource()) {
                 // eg. if 'twitter' != 'instagram'
                 // eg. if current member is from instagram, look for same memberSocialId from twitter
                 $arr = $this->memberSocialObj->getMemberIdsWithMemberSocialIds(array($memberSocialId), $socialSiteKey);
@@ -205,8 +255,8 @@ class SocialMedia extends ModelNA {
         $memberSocialIdNoUnderscore = str_replace("_", "", $memberSocialId);
         $memberSocialIdLettersOnly = preg_replace("~[0-9_]~", "", $memberSocialId);
         $endPos = strlen($memberSocialId);
-        if ($endPos >= 12) {
-            $endPos = $endPos - 4; 
+        if ($endPos >= 8) {
+            $endPos = 8; 
         }
         $memberSocialIdShort = substr($memberSocialId, 0, $endPos);
         
@@ -256,9 +306,7 @@ class SocialMedia extends ModelNA {
 
     }
     
-    // TODO move avatar to member_social_ids and make selectable
-    // TODO make avatar updatable
-    protected function insertMemberSocialId($memberObj)
+    protected function insertMemberSocialId(MemberEntity $memberEnt)
     {
 /*
         $r = DB::table('member_social_ids')
@@ -267,9 +315,10 @@ class SocialMedia extends ModelNA {
                 ->get();
 */
         DB::table('member_social_ids')->insert([
-            'member_id' => $memberObj->id,
+            'member_id' => $memberEnt->getId(),
             'social_site' => $this->socialSite,
-            'member_social_id' => $memberObj->getMemberSocialId()
+            'avatar' => $memberEnt->getAvatar(),
+            'member_social_id' => $memberEnt->getMemberSocialId()
         ]);
         
     }
@@ -470,7 +519,8 @@ class SocialMedia extends ModelNA {
 
         foreach($socialMediaArr as $val) {
             
-            // addfriend may not have been called
+            // they may not be in members table yet (addfriend may not have been called but we're following them on
+            // twitter)
             if (!isset($memberSocialIdMemberIdArr[$val['memberSocialId']])) {
                 continue;
             }

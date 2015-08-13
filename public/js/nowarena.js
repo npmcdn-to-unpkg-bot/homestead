@@ -136,9 +136,41 @@ $(document).ready(function() {
 
         onLink = "<a target='_blank' href='" + link + "'>on " + obj['source'] + "&raquo;</a>";
         footerContent = obj['age'] + " " + onLink;
-        $("#footerCont_" + idStr).html(footerContent);
-                
+        $("#footerCont_" + idStr + " > .ageLink").html(footerContent);
+        
+        // see if text overflows (parent div is set to overflow:hidden)
+        if ($("#textCont_" + idStr).height() >  $("#textCont_" + idStr).parent().height()) {
+            $("#footerCont_" + idStr + " > .expandLink").css('display', 'inline-block');
+        }
+
     }
+    
+    $(".expandLink").click(function() {
+        memberId = $(this).data('memberid');
+        boxNum = $(this).data('boxnum');
+        var domPathStr = "#rowCont_" + memberId + " > .contentAndFooterCont > .contentCont";
+        // set textContainer height to real height of text
+        var realHeight = $("#textCont_" + memberId + "_" + boxNum).height();
+        var hiddenHeight = $(domPathStr).height();
+        $(domPathStr).height(realHeight);
+        // set leftBar to additional height
+        var leftBarHeight = $("#rowCont_" + memberId + " > .leftBar").height();
+        var increaseBy = realHeight - hiddenHeight;
+        $("#rowCont_" + memberId + " > .leftBar").height(leftBarHeight + increaseBy);
+        $(this).hide();
+        $(this).next().show();
+    
+    });
+    
+    $(".shrinkLink").click(function() {
+        memberId = $(this).data('memberid');
+        boxNum = $(this).data('boxnum');
+        var domPathStr = "#rowCont_" + memberId + " > .contentAndFooterCont > .contentCont";
+        $(domPathStr).css('height', '');
+        $("#rowCont_" + memberId + " > .leftBar").css('height', '');    
+        $(this).prev().show();
+        $(this).hide();
+    });
     
     /*
      * Set array of member's social media for display

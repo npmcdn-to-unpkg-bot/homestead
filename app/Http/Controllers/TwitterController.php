@@ -30,7 +30,7 @@ class TwitterController extends Controller
     public function getFeed()
     {
         
-        if (($socialMediaArr = $this->twitterAdapter->addStatus()) !== false) {
+        if (($socialMediaArr = $this->twitterAdapter->getFeed()) !== false) {
             $this->socialMediaObj->addSocialMedia($socialMediaArr);
         }
         printR($socialMediaArr);

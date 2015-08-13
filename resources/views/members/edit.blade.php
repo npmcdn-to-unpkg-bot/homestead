@@ -3,10 +3,10 @@
 @section('content')
     <h2>Edit Member</h2>
     <hr>
- 
-    {!! Form::model($memberObj, ['method' => 'PATCH', 'route' => ['members.update', $memberObj->id]]) !!}
+
+    {!! Form::model($memberEnt, ['method' => 'PATCH', 'route' => ['members.update', $memberEnt->id]]) !!}
         @include('members/partials/_form', [
-            'memberObj' => $memberObj, 
+            'memberEnt' => $memberEnt, 
             'memberSocialIdArr' => $memberSocialIdArr,
             'parentChildArr' => $parentChildArr,
             'categoriesArr' => $categoriesArr,

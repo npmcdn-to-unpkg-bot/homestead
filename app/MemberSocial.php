@@ -1,13 +1,8 @@
 <?php
 namespace App;
 
-use Illuminate\Database\Eloquent\Model;
 use Twitter;
 use DB;
-use App\Scraper;
-use App\Category;
-use App\SocialMediaEntity;
-//use CategoriesParentAndChildren;
 
 class MemberSocial extends ModelNA
 {
@@ -30,18 +25,23 @@ class MemberSocial extends ModelNA
             $q.= "media_width, link, source ";
             $q.= "FROM social_media ";
             $q.= "INNER JOIN member_social_ids ON ";
-            $q.= "(`member_social_ids`.`member_id` = `social_media`.`member_id` "; 
+            $q.= "(member_social_ids.member_id = social_media.member_id "; 
             $q.= "AND "; 
-            $q.= "`social_media`.`source` = `member_social_ids`.`social_site`) ";
+            $q.= "member_social_ids.social_site = social_media.source) ";
             $q.= "WHERE "; 
-            $q.= "`social_media`.`member_id` = '" . (int)$obj->id . "' "; 
+            $q.= "social_media.member_id = '" . (int)$obj->id . "' "; 
             $q.= "AND "; 
-            $q.= "`social_media`.`unpublish` = '0' "; 
+            $q.= "social_media.unpublish = '0' "; 
             $q.= "AND "; 
-            $q.= "`member_social_ids`.`disabled` = 0 "; 
-            $q.= "ORDER BY `social_media`.`id` DESC "; 
+            $q.= "member_social_ids.disabled = 0 "; 
+            if ($socialMediaId) {
+                $q.= "AND "; 
+                $q.= "social_media.id < $socialMediaId ";
+            }
+            $q.= "ORDER BY social_media.id DESC "; 
             $q.= ") AS tmp_table ";
             $q.= "GROUP BY tmp_table.id ";
+            $q.= "ORDER BY tmp_table.id DESC ";
             $q.= "LIMIT 6 "; 
             $q.= "OFFSET 0";
             //echo $q."<br>";
@@ -72,6 +72,9 @@ class MemberSocial extends ModelNA
             echo $this->getQuery($r);exit();
              * 
              */
+            
+            // initialize array for ordering members by social media date
+            $mostRecentMediaDateArr[$obj->id] = 0;
 
             foreach($r as $i => $rowObj) {
                 
@@ -86,21 +89,40 @@ class MemberSocial extends ModelNA
                 }
                 
                 // TODO move to social media entity?
-                $text = Twitter::linkify($text);
+                $text = Twitter::setSource($rowObj->source)->linkify($text);
                 $text = html_entity_decode($inReplyToText) . " " . $text;
                 $r[$i]->text = $text;
                 
                 // set age of post
-                $age = $this->getAge($rowObj->written_at);
+                $age = $this->getAge($rowObj->written_at);// . "| " . $rowObj->written_at . " | ";
                 $r[$i]->age = $age;
+
+                // members with most recent social media are to appear first
+                // set most recent social_media unixtime for member
+                $ut = strtotime($rowObj->written_at);
+                if ($mostRecentMediaDateArr[$rowObj->member_id] < $ut) {
+                    $mostRecentMediaDateArr[$rowObj->member_id] = $ut;
+                }
+                
             }
 
             // TODO use SocialMediaEntity
             $contentArr[$obj->id] = $r;
  
         }
-      
-        return $contentArr;
+
+        // sort members based on most recent social media
+        arsort($mostRecentMediaDateArr);
+        $newMemberArr = [];
+        foreach($mostRecentMediaDateArr as $memberId => $ut) {
+            foreach($memberArr as $obj) {
+                if ($obj->id == $memberId) {
+                    $newMemberArr[] = $obj;
+                }
+            }
+        }
+
+        return array($newMemberArr, $contentArr);
         
     }        
                

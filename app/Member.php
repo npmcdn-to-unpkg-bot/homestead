@@ -20,20 +20,42 @@ class Member extends ModelNA {
      */
     public function getMembersWithinSingleCategory($catId)
     {
-        $q = "SELECT tmp_table.id, tmp_table.name, tmp_table.avatar, ";
-        $q.= "DATE_FORMAT(tmp_table.written_at, '%b %d, %Y %h:%i %p') as written_at ";
-        $q.= "FROM ";
-        $q.="(";
-        $q.= "SELECT members.id, members.name, members.avatar, social_media.written_at ";
+//        $q = "SELECT tmp_table.id, tmp_table.name, tmp_table.avatar, tmp_table.written_at ";
+//        //$q.= ", DATE_FORMAT(tmp_table.written_at, '%b %d, %Y %h:%i %p') as written_at ";
+//        $q.= "FROM ";
+//        $q.="(";
+//        $q.= "SELECT members.id, members.name, sm.written_at, member_social_ids.avatar ";
+//        $q.= "FROM members ";
+//        $q.= "INNER JOIN member_categories ON members.id = member_categories.member_id ";
+//        $q.= "AND category_id = " . $catId . " ";
+//        $q.= "LEFT JOIN social_media AS sm ON members.id = sm.member_id AND sm.unpublish = 0 ";
+//        $q.= "INNER JOIN member_social_ids ON sm.member_id = member_social_ids.member_id ";
+//        $q.= "AND primary_avatar = 1 AND disabled = 0 ";
+//        $q.= "ORDER BY sm.written_at DESC ";
+//        $q.= ") ";
+//        $q.= "AS tmp_table ";
+//        $q.= "GROUP BY tmp_table.id ";
+//        $q.= "ORDER BY written_at DESC";
+        
+        $q = "SELECT members.id, members.name, avatar ";
         $q.= "FROM members ";
         $q.= "INNER JOIN member_categories ON members.id = member_categories.member_id ";
         $q.= "AND category_id = " . $catId . " ";
-        $q.= "LEFT JOIN social_media ON members.id = social_media.member_id AND social_media.unpublish = 0 ";
-        $q.= "ORDER BY social_media.written_at DESC ";      
-        $q.= ") ";
-        $q.= "AS tmp_table GROUP BY tmp_table.id  ORDER BY written_at DESC";
-
-        $r = DB::select($q);   
+        $q.= "LEFT JOIN member_social_ids AS msi ON msi.member_id = members.id ";
+        $q.= "AND msi.primary_avatar = 1 AND msi.disabled = 0 ";
+        $q.= "GROUP BY members.id";
+        $r = DB::select($q); 
+        return $r;
+        
+        $memberIdArr = array_map(function ($o) {return $o->id;}, $r);
+        
+        $q = "SELECT sm.written_at, msi.avatar  FROM social_media AS sm ";
+        $q.= "INNER JOIN member_social_ids AS msi ON (msi.member_id = sm.member_id ";
+        $q.= "AND sm.member_id IN (" . implode(",", $memberIdArr) . ")) ";
+        $q.= "WHERE msi.disabled = 0 ";
+        $q.= "AND sm.unpublish = 0 ";
+        $r = DB::select($q); 
+        printR($r);exit;
         return $r;
         
     }
@@ -75,12 +97,12 @@ class Member extends ModelNA {
     public function getNoChild($next = 0, $limit = 15)
     {
         
-        $q = 'SELECT *, count(*) as num '; 
-        $q.= 'FROM members ';
-        $q.= 'JOIN member_categories as mc ON members.id = mc.member_id ';
-        $q.= 'GROUP BY mc.member_id ';
-        $q.= 'HAVING num < 2 ';
-        $q.= "LIMIT $next, $limit";
+//        $q = 'SELECT *, count(*) as num '; 
+//        $q.= 'FROM members ';
+//        $q.= 'JOIN member_categories as mc ON members.id = mc.member_id ';
+//        $q.= 'GROUP BY mc.member_id ';
+//        $q.= 'HAVING num < 2 ';
+//        $q.= "LIMIT $next, $limit";
         
         $r = $this->select('members.*', DB::raw('count(*) as num'))
             ->join('member_categories', function($join)
@@ -153,17 +175,23 @@ class Member extends ModelNA {
         foreach($socialIdSiteArr as $socialId => $socialSite) {
             $memberSocialId = '';
             $disabled = 1;
+            $avatar = '';
+            $primaryAvatar = 0;
             foreach($memberSocialIdArr as $key => $obj) {
                 if ($obj->social_site == $socialId) {
                     $memberSocialId = $obj->member_social_id;
                     $disabled = $obj->disabled;
+                    $avatar = $obj->avatar;
+                    $primaryAvatar = $obj->primary_avatar;
                     break;
                 }
             }
             $fullMemberSocialIdArr[$socialId] = array(
                 'name' => $socialSite, 
                 'memberSocialId' => $memberSocialId,
-                'disabled' => $disabled
+                'disabled' => $disabled,
+                'avatar' => $avatar,
+                'primaryAvatar' => $primaryAvatar
             );
         }
 
@@ -171,17 +199,15 @@ class Member extends ModelNA {
         
     }
     
-    public  function saveMemberSocialIds($siteArr, $memberId)
+    public  function saveMemberSocialIds($siteArr, $useAvatarFromSocialSite, $memberId)
     {
-        
+//printR($siteArr);printR($avatarArr);exit;
         $socialIdSiteArr = SocialMedia::getSocialSiteIdArr();
 
-        // TODO: transaction
-        // 
-        // delete existing parent-child relationships in table
+        // delete existing relationships in table
         DB::table('member_social_ids')->where('member_id', $memberId)->delete(); 
 
-        // save new parent-child relationships
+        // save new 
     	if (count($siteArr) > 0) {
             $valuesArr = array();
             //$siteArr = array_unique($siteArr);
@@ -192,17 +218,28 @@ class Member extends ModelNA {
                 if ($siteId == '' || $site == '' || !isset($socialIdSiteArr[$site])) {
                     continue;
                 }
+           
+                $avatarSrc = isset($arr['avatar_src']) ? $arr['avatar_src'] : '';
+                    $primaryAvatar = 0;                
+                if ($useAvatarFromSocialSite == $site) {
+                    $primaryAvatar = 1;
+                }
+
     	        $valuesArr[] = array(
-                   'member_id' => $memberId, 
-                   'social_site' => $site, 
-                   'member_social_id' => $siteId,
-                   'disabled' => $arr['disabled'] 
+                    'member_id' => $memberId, 
+                    'social_site' => $site, 
+                    'member_social_id' => $siteId,
+                    'disabled' => $arr['disabled'],
+                    'primary_avatar' => $primaryAvatar,
+                    'avatar' => $avatarSrc
+                    
                    
                 );
     	   }
     	   if (count($valuesArr) > 0) {
     	       DB::table('member_social_ids')->insert($valuesArr);
     	   }
+          
     	}
         
     }

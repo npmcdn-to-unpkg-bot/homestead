@@ -72,16 +72,16 @@ class SocialMediaController extends Controller {
         if ($getChildren) {
             
             $memberArr = $this->memberObj->getMembersWithinSingleCategory($catObj->id);
-            $contentArr = $this->memberSocialObj->getSocialMediaWithMemberIds($memberArr);
+            list($memberArr, $contentArr) = $this->memberSocialObj->getSocialMediaWithMemberIds($memberArr);
 
             return view('socialmedia.child', compact('memberArr', 'contentArr', 'catPathArr'));
 
         } else {
-            
+       
             $parentArr['contentArr'] = [];
             foreach($catArr as $catId => $catName) {
                 $memberArr = $this->memberObj->getMembersWithinSingleCategory($catId);
-                $contentArr = $this->memberSocialObj->getSocialMediaWithMemberIds($memberArr);
+                list($memberArr, $contentArr) = $this->memberSocialObj->getSocialMediaWithMemberIds($memberArr);
                 $parentArr['memberArr'][$catId] = $memberArr;
                 $parentArr['contentArr'] = $parentArr['contentArr'] + $contentArr;
 

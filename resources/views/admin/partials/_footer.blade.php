@@ -6,7 +6,7 @@
 <input type='submit' value='Search'>
 </form>
 -->
-<ul>
+<ul style="margin-left:-130px;margin-right:-130px;">
     
 <?php
 
@@ -30,13 +30,13 @@ foreach($subdomainArr as $key => $arr) {
     echo " &nbsp; &#183; &nbsp; ";
     echo "<a href='" . $arr['baseUrl'] . "/categories/create'>Categories Create</a> ";
     echo " &nbsp; &#183; &nbsp; ";
-    echo "<a href='" . $arr['baseUrl'] . "/twitter/addstatus'>Add Twitter Status</a> ";
+    echo "<a href='" . $arr['baseUrl'] . "/twitter/getfeed'>Add Twitter Feed</a> ";
     echo " &nbsp; &#183; &nbsp; ";
-    echo "<a href='" . $arr['baseUrl'] . "/twitter/addfriends'>Add Twitter Friends</a> "; 
+    echo "<a href='" . $arr['baseUrl'] . "/twitter/getfriends'>Add Twitter Friends</a> "; 
     echo " &nbsp; &#183; &nbsp; ";
-    echo "<a href='" . $arr['baseUrl'] . "/instagram/addfriends'>Add Instagram Friends</a> "; 
+    echo "<a href='" . $arr['baseUrl'] . "/instagram/getfriends'>Add Instagram Friends</a> "; 
     echo " &nbsp; &#183; &nbsp; ";
-    echo "<a href='" . $arr['baseUrl'] . "/instagram/addstatus'>Add Instagram Status</a> ";
+    echo "<a href='" . $arr['baseUrl'] . "/instagram/getfeed'>Add Instagram Feed</a> ";
     echo "</li>";
 
 }

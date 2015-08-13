@@ -29,7 +29,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('members', 'MembersController');
 
     Route::bind('members', function($value, $route) {
-        return App\Member::where('id', $value)->first();
+        $ent = new App\MemberEntity();
+        return $ent->getMemberDB($value);
     });
     
     Route::bind('categories', function($slug, $route) {

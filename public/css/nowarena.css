@@ -1,3 +1,15 @@
+.expandLink {
+    display:none;
+    float:right;
+}
+.shrinkLink {
+    display:none;
+    float:right;
+}
+.ageLink {
+    display:inline-block;
+}
+
 .siteTitle {
     font-weight:bold;
     font-size:20px;
@@ -109,13 +121,14 @@
 }
 
 .footerCont, .firstFooterCont {
+    position:relative;
     width:100%;
     display:inline-block;
     border-left:1px solid #cccccc;
-    height:20px;
+
     padding-left:2px;
     padding-right:2px;
-    text-align:right;
+
 }
 
 .firstFooterCont {
@@ -136,8 +149,8 @@
 }
 
 .contentAndFooterCont {
-    width:420px;
-    //height:137px;
+    width:417px;
+    background-color:#ffffff;
     border:0px solid black;
     display:inline-block;
 }

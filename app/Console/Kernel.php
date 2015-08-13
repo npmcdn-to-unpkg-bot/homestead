@@ -37,6 +37,6 @@ class Kernel extends ConsoleKernel
         $schedule->command('getnbatweets:run')->cron('*/5 * * * *')->sendOutputTo('/tmp/cronlog.txt');
         $schedule->command('getaktweets:run')->cron('*/6 * * * *')->sendOutputTo('/tmp/cronlog.txt');
         $schedule->command('getnbainstagrams:run')->cron('*/7 * * * *')->sendOutputTo('/tmp/cronlog.txt');
-        $schedule->command('getakinstagram:run')->cron('*/1 * * * *')->sendOutputTo('/tmp/cronlog.txt');
+        $schedule->command('getakinstagram:run')->cron('*/8 * * * *')->sendOutputTo('/tmp/cronlog.txt');
     }
 }

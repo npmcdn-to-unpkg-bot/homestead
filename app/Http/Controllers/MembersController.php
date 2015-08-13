@@ -1,13 +1,17 @@
 <?php namespace App\Http\Controllers;
 
+//TODO look at Request
 use App\Http\Requests;
+use Illuminate\Http\Request;
+
 use App\Http\Controllers\Controller;
-use App\Member;
-use App\Category;
 use App\CategoryParentAndChildren;
 use Input;
 use Redirect;
-use Illuminate\Http\Request;
+
+use App\Member;
+use App\Category;
+use App\MemberEntity;
 
 class MembersController extends Controller {
     
@@ -98,17 +102,22 @@ class MembersController extends Controller {
 	 *
 	 * @return Response
 	 */
-	public function store(Member $memberObj)
+	public function store(MemberEntity $memberObj)
 	{
-	 
+	 dd($memberObj);
     	$inputArr = Input::all();
     	$socialSiteArr = $inputArr['site'];
-        $categoryIdArr = $inputArr['category_id'];
+        $categoryIdArr = [];
+        if (isset($inputArr['category_id'])) {
+            $categoryIdArr = $inputArr['category_id'];
+        }
     	$inputArr = array_except($inputArr, array('site', 'category_id'));
     	$memberObj = $memberObj->create( $inputArr );
-    	$memberObj->saveMemberSocialIds($socialSiteArr, $memberObj->id);
-        $memberObj->saveMemberCategoryIds($categoryIdArr, $memberObj->id);
-
+    	$memberObj->saveMemberSocialIds($socialSiteArr, null, $memberObj->id);
+        if (!empty($categoryIdArr)) {
+            $memberObj->saveMemberCategoryIds($categoryIdArr, $memberObj->id);
+        }
+        
     	return Redirect::route('members.edit', [$memberObj->id])->with('message', 'Member added.');
 		
 	}
@@ -130,17 +139,17 @@ class MembersController extends Controller {
 	 * @param  int  $id
 	 * @return Response
 	 */
-	public function edit(Member $memberObj)
+	public function edit(MemberEntity $memberEnt)
 	{
 
-	    $memberSocialIdArr = $memberObj->getMemberSocialIdArr($memberObj->id);
+	    $memberSocialIdArr = $this->memberObj->getMemberSocialIdArr($memberEnt->id);
 	    $parentChildArr = $this->categoryPAndCObj->getHierarchy();
 	    $categoriesArr = $this->categoryObj->getCategoriesArr();
 
-	    $memberCategoryIdArr = $memberObj->getMemberCategoryIdArr($memberObj->id);
-	    
+	    $memberCategoryIdArr = $this->memberObj->getMemberCategoryIdArr($memberEnt->id);
+
         return view('members.edit', 
-                compact('memberObj', 'memberSocialIdArr', 'parentChildArr', 'memberCategoryIdArr', 'categoriesArr'));
+                compact('memberEnt', 'memberSocialIdArr', 'parentChildArr', 'memberCategoryIdArr', 'categoriesArr'));
  
 	}
 
@@ -150,19 +159,23 @@ class MembersController extends Controller {
 	 * @param  int  $id
 	 * @return Response
 	 */
-	public function update(Member $memberObj, Request $request)
+	public function update(MemberEntity $memberEnt, Request $request)
 	{
-            
+        
         $this->validate($request, $this->rules); 
         $inputArr = Input::all();
         $socialSiteArr = $inputArr['site'];
-        $categoryIdArr = isset($inputArr['category_id']) ? $inputArr['category_id'] : array();
-        $memberObj->saveMemberCategoryIds($categoryIdArr, $memberObj->id);
-        $inputArr = array_except($inputArr, '_method', 'site', 'category_id');
-        $memberObj->update($inputArr);
-        $memberObj->saveMemberSocialIds($socialSiteArr, $memberObj->id);
+        $primaryAvatar = !empty($inputArr['primary_avatar']) ? $inputArr['primary_avatar'] : '';
 
-    	return Redirect::route('members.edit', [$memberObj->id])->with('message', 'Member updated.');
+        $categoryIdArr = isset($inputArr['category_id']) ? $inputArr['category_id'] : array();
+        $this->memberObj->saveMemberCategoryIds($categoryIdArr, $memberEnt->id);
+        $inputArr = array_except($inputArr, '_method', 'site', 'category_id');
+
+        $ent = $memberEnt->init($inputArr)->updateMember();
+
+        $this->memberObj->saveMemberSocialIds($socialSiteArr, $primaryAvatar, $memberEnt->id);
+
+    	return Redirect::route('members.edit', [$memberEnt->id])->with('message', 'Member updated.');
 
 	}
 

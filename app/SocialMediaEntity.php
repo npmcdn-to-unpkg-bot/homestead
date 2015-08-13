@@ -2,7 +2,7 @@
 namespace App;
 /**
  * A single instance of social media content for a specific member and social media id
- * eg. 'Blake Griffin', 'twitter', 
+ * 
  *
  * @author matt
  */

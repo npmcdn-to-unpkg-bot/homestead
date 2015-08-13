@@ -3,6 +3,9 @@
 <div class="form-group">
     {!! Form::label('name', 'Name:') !!}
     {!! Form::text('name') !!}
+    <br><br>
+    {!! Form::label('display_name', 'Display Name:') !!}
+    {!! Form::text('display_name') !!}
 </div>
     
     <!--
@@ -14,42 +17,65 @@
     {!! Form::label('last_name', 'Last Name:') !!}
     {!! Form::text('last_name') !!}
 </div>
-    -->
+
 <div class="form-group">
     {!! Form::label('avatar', 'Avatar:') !!}
     {!! Form::text('avatar') !!}
     <?php
-    if ($memberObj->avatar != '') {
-        echo "<img src='" . $memberObj->avatar . "'>";
+    if ($memberEnt->avatar != '') {
+        echo "<img src='" . $memberEnt->avatar . "'>";
     }
     ?>
 </div>
+    -->
 
-
-{!! Form::label('Social Media Ids:') !!}
+{!! Form::label('Social Media:') !!}
 <ul class='form-group'>
     <br>
+    
     <?php
+    
     foreach($memberSocialIdArr as $siteKey => $arr) {
 
         $labelName = $arr['name'];
-        if ($arr['name'] == 'Twitter' && $arr['memberSocialId'] != '') {
-            $labelName = '<a target="_blank" href="https://twitter.com/' . $arr['memberSocialId'] . '">Twitter</a>';
-        } else if ($arr['name'] == 'Instagram' && $arr['memberSocialId'] != '') {
-            $labelName = '<a target="_blank" href="https://instagram.com/' . $arr['memberSocialId'] . '">Instagram</a>';
-        }
+        if ($arr['memberSocialId'] != '') {
+            $site = strtolower($arr['name']) . '.com';
+            $labelName = '<a target="_blank" href="https://' . $site . '/' . $arr['memberSocialId'] . '">';
+            $labelName.= $arr['name'] . '</a>';
+        } 
+        
     ?>
     
         {!! Html::decode(Form::label('site', $labelName . ":", array('class' => 'site_label'))) !!}
         {!! Form::text("site[$siteKey][id]", $arr['memberSocialId']) !!}
         
+
         on: {!! Form::radio("site[$siteKey][disabled]", 0, ($arr['disabled']?false:true)) !!}
         off: {!! Form::radio("site[$siteKey][disabled]", 1, ($arr['disabled']?true:false)) !!}
         
-        <br>
+
+
+        
+        <?php
+        
+        if ($arr['avatar'] != '') { ?>
+            {!! Form::label('avatar', $arr['name'] . ' Avatar:') !!}
+            <?php echo "<img src='" . $arr['avatar'] . "' width='48'>"; ?>
+            Primary: {!! Form::radio("primary_avatar", $siteKey, ($arr['primaryAvatar']?true:false)) !!}            
+            {!! Form::hidden("site[$siteKey][avatar_src]", $arr['avatar']) !!}
+            <?php
+        }
+        
+        ?>          
+        
+        <hr>
+        
     <?php
+    
     }
+    
     ?> 
+    Avatars off: {!! Form::radio("primary_avatar", 'none') !!}
 </ul> 
 
 
@@ -57,7 +83,7 @@
     {!! Form::submit('Submit') !!}
 </div>
 
-{!! Form::hidden('member_id', $memberObj->id) !!}
+{!! Form::hidden('member_id', $memberEnt->id) !!}
 
 
 <br>
