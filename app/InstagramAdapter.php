@@ -35,17 +35,17 @@ class InstagramAdapter extends ModelNA implements SocialFeedInterface
             return false;
         }
                 
-        $socialMediaArr = $this->parseFeed($r);
+        $socialMediaArr = $this->parseFeed($r->data);
 
         return $socialMediaArr;
         
     }
         
-    public function parseFeed($r)
+    public function parseFeed(array $r)
     {
 
         $socialMediaArr = [];
-        foreach($r->data as $key => $obj) {
+        foreach($r as $obj) {
 
             $memberSocialId = strtolower($obj->user->username);
             $socialId = $obj->id;
