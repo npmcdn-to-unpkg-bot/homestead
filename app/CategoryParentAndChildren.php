@@ -11,7 +11,8 @@ class CategoryParentAndChildren extends Model {
     public function saveParentChild($parentIdArr, $childId, $deleteParentIdArr)
     {
 
-        // TODO: transaction
+        DB::beginTransaction();
+        
         // delete existing parent-child relationships in table
         DB::table('category_parent_and_children')->where('child_id', $childId)->delete(); 
 
@@ -30,6 +31,7 @@ class CategoryParentAndChildren extends Model {
     	   }
     	}
      
+        DB::commit();
         
     }
 

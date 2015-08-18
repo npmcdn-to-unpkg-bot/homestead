@@ -13,32 +13,26 @@ if (!empty($parentArr['memberArr'])) {
 <script>
     
 displayArr=[];
-memIdArr=[];
-memNameArr=[];
-memAvatarArr= [];
-memIdChildIdArr = [];
+memberIdArr=[];
+memberNameArr=[];
 
 <?php
 
 foreach($parentArr['memberArr'] as $childId => $memberArr) {
     
-    echo "memIdArr[$childId]=[];\n";
-    echo "memNameArr[$childId]=[];\n";
-    echo "memAvatarArr[$childId]=[];\n";    
-
+    echo "displayArr[$childId]=[];\n";
+    echo "memberIdArr[$childId]=[];\n";
+    echo "memberNameArr[$childId]=[]\n";
     
     foreach($memberArr as $i => $obj) {
     
-        echo "memIdArr[$childId][$i] = " . $obj->id . ";\n";
-        echo "memNameArr[$childId][$i] = \"" . $obj->name . "\";\n";
-        echo "memAvatarArr[$childId][$i] = \"" . $obj->avatar . "\";\n";
-        echo "memIdChildIdArr[" . $obj->id . "] = $childId;\n";
+        echo "displayArr[$childId][$i]='" . (($i ==0 ) ? "block" : "none") . "';\n";
+        echo "memberIdArr[$childId][$i] = " . $obj->id . ";\n";
+        echo "memberNameArr[$childId][$i] = \"" . $obj->name . "\";\n";
         
     }
     
 }
-
-
 echo "\n</script>";
 echo "<br>";
 
@@ -52,15 +46,14 @@ foreach($parentArr['memberArr'] as $childId => $memberArr) {
         echo "<span class='parentTitle'>";
         echo "<a href='/socialmedia/" . str_slug($catArr[$childId], "_") . "'>";
         echo $catArr[$childId];
-        echo "&raquo;</a></span>";
-
+        echo "</a></span>";
     echo "</div>";
     
     echo "<div class='childrenNavTop'>";
-        $childrenNav = "<a data-childid='$childId' href='javascript:void(0);' class='childPrev'>&laquo;Prev</a>";   
+        $childrenNav = "<a data-childid='$childId' href='javascript:void(0);' class='childPrev' id='child_$childId'>&laquo;Prev</a>";   
         $childrenNav.= " - ";
-        $childrenNav.= "<a data-childid='$childId' href='javascript:void(0);' class='childNext'>Next ";
-        $childrenNav.= "<span class='next_child_id_" . $childId . "'>&nbsp;</span>";
+        $childrenNav.= "<a data-childid='$childId' href='javascript:void(0);' class='childNext' id='child_$childId'>Next ";
+        $childrenNav.= "<span class='next_member_" . $childId . "'>&nbsp;</span>";
         $childrenNav.= "&raquo;</a>";
         echo $childrenNav;
     echo "</div>";
@@ -73,18 +66,16 @@ foreach($parentArr['memberArr'] as $childId => $memberArr) {
     foreach($memberArr as $i => $obj) { 
 
         $class = ($i == 0) ? 'childrenHolderBlock': 'childrenHolderNone'; 
-        echo "<div class='$class' id='stack_" . $childId ."'>";// style='z-index:" . $count . ";'>"; 
+        echo "<div class='$class' id='stack_" . $obj->id ."' style='z-index:" . $count . ";'>"; 
         $count--;
         
         ?>
 
-        @include('socialmedia/partials/contentparent', ['obj' => $obj, 'childId' => $childId])
+        @include('socialmedia/partials/content', ['obj' => $obj])
 
         </div>
 
     <?php 
-    
-        break;
     
     }
     
@@ -106,7 +97,7 @@ foreach($parentArr['memberArr'] as $childId => $memberArr) {
 <script>
 <?php echo 'contentArr=' . json_encode($parentArr['contentArr']); ?>
 </script>    
-<script src='/js/nowarena_parent.js'></script>
+<script src='/js/nowarena.js'></script>
 
 <?php } else {
     echo 'no content yet';

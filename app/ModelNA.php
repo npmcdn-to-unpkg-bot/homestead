@@ -14,20 +14,7 @@ class ModelNA extends Model{
     {
 
         parent::__construct($attributes);
-        //$this->setConnection('nba');
         
-   /*     
-        // determine which db to connect to based on the subdomain
-        // eg. nba.nowarena = nba db
-        // if a command line execution, first argument should be the db
-        if (PHP_SAPI == 'cli') {
-            
-        }
-        $this->setConnection('mysql');
-        var_dump(PHP_SAPI);
-dd($_SERVER);
-    * 
-    */
     }
     
     
@@ -102,6 +89,8 @@ dd($_SERVER);
 
         // set url
         curl_setopt($ch, CURLOPT_URL, $url);
+        
+        curl_setopt($ch, CURLOPT_TIMEOUT, 20);
 
         //return the transfer as a string
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);

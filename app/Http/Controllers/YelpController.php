@@ -1,34 +1,31 @@
 <?php
 namespace App\Http\Controllers;
-use App\Http\Controllers\Controller;
 
-use App\InstagramAdapter;
-use App\Scraper;
+use App\Http\Controllers\Controller;
+use App\YelpAdapter;
 use App\SocialMedia;
 use App\Site;
 
-class InstagramController extends Controller
+class YelpController extends Controller
 {
     
     public function __construct()
     {
+        
         $keyword = Site::getInstance()->getSubdomain();
-        $instagramScreenName = Site::getInstance()->getInstagramScreenName();
-        $instagramAccessToken = env("AK_INSTAGRAM_ACCESS_TOKEN");
+        $twitterScreenName = Site::getInstance()->getTwitterScreenName();
 
-        $scrapeObj = false;
-        if ($keyword == 'nba') {
-            $scrapeObj = new Scraper($keyword);
-        }
-        $this->socialMediaObj = new SocialMedia($keyword, 'instagram', $scrapeObj);
-        $this->instagramAdapter = new InstagramAdapter($instagramScreenName, $instagramAccessToken, $this->socialMediaObj);
+        $scraperObj = false;
+        $this->socialMediaObj = new SocialMedia($keyword, 'yelp', $scraperObj);
+        $this->yelpAdapter = new YelpAdapter();
+        
     }
     
     public function getFeed()
     {
         
-        if (($socialMediaArr = $this->instagramAdapter->getFeed()) !== false) {
-            $this->socialMediaObj->addSocialMedia($socialMediaArr);
+        if (($socialMediaArr = $this->yelpAdapter->getFeed()) !== false) {
+            //$this->socialMediaObj->addSocialMedia($socialMediaArr);
         }
         printR($socialMediaArr);
         exit('done');
@@ -37,22 +34,26 @@ class InstagramController extends Controller
     public function getFriends()
     {
 
-        $noMemberIdArr = array();
+        $cursor = -1;
+        do {
+            $cursor = $this->yelpAdapter->getFriends($cursor);
+        } while($cursor > 0);
         
-        $errorArr = $this->instagramAdapter->getFriends();
-        $friendsArr = $this->instagramAdapter->getFriendsArr();
-        
-        if (count($errorArr) == 0 && count($friendsArr) > 0 ) {
-            
-            $addToMembersTable = false; 
-            $matchToSimiliarSocialIds = true; 
+        // operate on the formatted twitter feed
+        $friendsArr = $this->yelpAdapter->getFriendsArr();
+
+        if (count($friendsArr) >0 ) {
+
+            $addToMembersTable = true; 
+            $matchToSimiliarSocialIds = false; // use twitter account as main source of ids
             $categorize = true;
-            $noMemberIdArr = $this->socialMediaObj->addNewMembers($friendsArr, $addToMembersTable, $matchToSimiliarSocialIds, $categorize);
+            $this->socialMediaObj->addNewMembers($friendsArr, $addToMembersTable, $matchToSimiliarSocialIds, $categorize);
             
+        } else {
+            echo "No new Twitter followers to add.";
         }
-        
-        return view('admin.getfriends', compact('noMemberIdArr', 'errorArr'));
-        
+        printR($friendsArr);
+        exit('asfd');
     }
   
 
@@ -84,7 +85,7 @@ class InstagramController extends Controller
      */
     public function show($id)
     {
-        
+        //
     }
 
     /**
@@ -119,5 +120,5 @@ class InstagramController extends Controller
     {
         //
     }
-    
+        
 }

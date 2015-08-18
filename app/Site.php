@@ -13,6 +13,7 @@ class Site {
     public static $subdomain = '';
     public static $subdomainArr = array();
     public static $domain = '';
+    public static $url = '';
     
     public static function getInstance($domain = false, $subdomain = false)
     {
@@ -20,7 +21,7 @@ class Site {
             $instance = new static;
             $instance::setDomains($domain, $subdomain);            
             $instance::setSubdomainArr();
-            
+            self::setUrl();
             // TODO check for invalid subdomain
         }
         return $instance;
@@ -37,12 +38,42 @@ class Site {
             self::$domain = $domain;
             self::$subdomain = $subdomain;
         } else {
+            $domain = env('DOMAIN');
+            $subdomain = '';
+            //set subdomain - parse the actual url
+            if (isset($_SERVER['HTTP_HOST'])) {
+                $arr = explode('.', $_SERVER['HTTP_HOST']);
+                if (count($arr) == 2) {
+                    // if the array is only a length of 2, that means it is the domain name plus extension,
+                    // eg. nowarena.com, so no subdomain
+                    $subdomain = '';
+                } else {
+                    $subdomain = strtolower($arr[0]);
+                }
+            }
             // set values based on what was determined in config/app.php
-            self::$domain = config('app.domain');
-            self::$subdomain = config('app.subdomain');
+            self::$domain = $domain;
+            self::$subdomain = $subdomain;
+
         }
        
-
+    }
+    
+    private static function setUrl()
+    {
+        
+        $url = 'http://';
+        if (self::$subdomain != '') {
+            $url.=self::$subdomain;
+        }
+        $url.=self::$domain;
+        self::$url = $url;
+            
+    }
+    
+    public static function getUrl()
+    {
+        return self::$url;
     }
     
     private static function setSubdomainArr()
@@ -66,8 +97,8 @@ class Site {
             'baseUrl' => 'http://' . self::$subdomain . '.' . self::$domain,
             'thumbUrl' => '',
             'twitterScreenName' => '',
-            'instagramScreenName' => '',
             'instagramAccessToken' => '',
+            'categoryDepth' => 0
         );
         return array(
             '' => $defaultArr,
@@ -82,7 +113,6 @@ class Site {
                 'description' => 'Lebron, Griffin, Kobe and more.', 
                 'twitterScreenName' => 'nbablvd',
                 'instagramScreenName' => '',
-                'instagramAccessToken' => '',
                 'categoryDepth' => 3
             ),
             'abbotkinneyblvd' => array(
@@ -95,7 +125,6 @@ class Site {
                 'description' => "Food, fashion, cocktails, pop culture, street art from the premiere boulevard in Venice Beach, California.",
                 'twitterScreenName' => 'abbotkinneybl',
                 'instagramScreenName' => 'abbotkinneybl',
-                'instagramAccessToken' => env('AK_INSTAGRAM_ACCESS_TOKEN'),
                 'categoryDepth' => 2
             )
         );
@@ -118,9 +147,10 @@ class Site {
     public static function getDatabase() 
     {
         $db = self::$subdomainArr['database'];
-        if (env('APP_ENV') != 'local') {
+        //if (env('APP_ENV') != 'local') {
             $db = 'nowarena' . $db;
-        }
+        //}
+
         return $db;
         
         
@@ -159,11 +189,6 @@ class Site {
     public static function getInstagramScreenName()
     {
         return self::$subdomainArr['instagramScreenName'];
-    }
-    
-    public static function getInstagramAccessToken()
-    {
-        return self::$subdomainArr['instagramAccessToken'];
     }
     
     public static function getCategoryDepth()

@@ -78,9 +78,9 @@ class MemberEntity extends ModelNA {
     
     public function updateMember() 
     {
-        // TODO throw exception
+
         if (empty($this->id)) {
-            return false;
+            throw new \Exception('Trying to update a member that has no primary key id');
         }
 
         return \DB::table('members')->where('id', $this->id)

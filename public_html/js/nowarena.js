@@ -138,9 +138,10 @@ $(document).ready(function() {
             $("#thumbCont_" + idStr).hide(); 
         }
 
-        onLink = "<a target='_blank' href='" + link + "'>on " + obj['source'] + "&raquo;</a>";
+        onLink = " on <a target='_blank' href='" + link + "'>" + obj['source'] + "&raquo;</a>";
         footerContent = obj['age'] + " " + onLink;
-        $("#footerCont_" + idStr + " > .ageLink").html(footerContent);
+        $("#footerCont_" + idStr + " > .ageLink > .ageText").html(obj['age']);
+        $("#footerCont_" + idStr + " > .ageLink > .onLink").html(onLink);
         mngExpandShrinkLinks(memberId);
 
     }
@@ -181,6 +182,14 @@ $(document).ready(function() {
         var increaseBy = realHeight - hiddenHeight;
         $("#rowCont_" + memberId + " > .leftBar").height(leftBarHeight + increaseBy);
         mngExpandShrinkLinks(memberId);
+        // if in the parent layout, expand parent holder as well - layers
+        // were creating non clickable links below them even though layers
+        // were not visible
+        if ($(this).closest('.parentHolder').length ) {
+            parentHolderHeight = $(this).closest('.parentHolder').height();
+            $(this).closest('.parentHolder').height(parentHolderHeight + increaseBy);
+        }
+        //console.log('asfd'+$(this).closest('.parentHolder').height());
         //$(this).hide();
         //$(this).next().show();
     
@@ -192,6 +201,9 @@ $(document).ready(function() {
         var cssPathStr = "#rowCont_" + memberId + " > .contentAndFooterCont > .contentCont";
         $(cssPathStr).css('height', '');
         $("#rowCont_" + memberId + " > .leftBar").css('height', '');    
+        if ($(this).closest('.parentHolder').length ) {
+            $(this).closest('.parentHolder').css('height', '');
+        }
         //$(this).prev().show();
         //$(this).hide();
         mngExpandShrinkLinks(memberId);
@@ -291,9 +303,9 @@ $(document).ready(function() {
 
     });
     
-    
     $(".navReload").click(function() {
-        memberId = $(this).attr('id').substring(7);
+        
+        memberId = $(this).data('memberid');
         //reset contentArr
         contentArr[memberId] = [];
         getJson(memberId, 0);
@@ -305,11 +317,10 @@ $(document).ready(function() {
     //
        
     $(".childNext, .childPrev").click(function() {
-        
-        id = $(this).attr('id');
-        childId = id.substr(6);
+       
+        childId = $(this).data('childid');
         clickAction = $(this).attr('class');
-
+        
         // find the visible member
         for(var i in displayArr[childId]) {
             
@@ -317,10 +328,27 @@ $(document).ready(function() {
 
             if (displayArr[childId][i] == 'block') {
                 
-                // hide current visible member
                 memberId = memberIdArr[childId][i];
+                
+                // work on the current visible member
+                        
+                // if size of box was exanded by adding a height style to parentHolder
+                // remove any style added to parent holder
+                $(this).closest('.parentCont').find('.parentHolder').css('height', '');
+                // if shrinkLink is visible, trigger it so as to revert display to normal
+                // size
+                if ($('#shrinkLink_' + memberId + '_1').is(":visible")) {
+                    $('#shrinkLink_' + memberId + '_1').trigger('click');
+                } else if ($('#shrinkLink_' + memberId + '_2').is(":visible")) {
+                    console.log('here');
+                    $('#shrinkLink_' + memberId + '_2').trigger('click');
+                }
+        
+                // hide current visible member
                 $("#stack_" + memberId).hide();
                 displayArr[childId][i] = 'none';
+                
+                // work on next or prev member
                 
                 if (clickAction == 'childNext') {
                     // set childNext values
@@ -351,11 +379,15 @@ $(document).ready(function() {
                         nextLinkIndex = 0;
                     } 
                 }
+                
+                
                 newMemberId = memberIdArr[childId][newIndex];
                 $("#stack_" + newMemberId).show();
+                mngExpandShrinkLinks(newMemberId);
                 displayArr[childId][newIndex] = 'block';
 
-                memberName = memberNameArr[childId][nextLinkIndex];
+                //memberName = memberNameArr[childId][nextLinkIndex];
+                memberName = getMemberName(childId, nextLinkIndex);
                 $('.next_member_' + childId).text(memberName);
                 
                 break;
@@ -369,9 +401,42 @@ $(document).ready(function() {
             if (memberNameArr[childId].length == 1) {
                 continue;
             }
-            $(".next_member_" + childId).html(memberNameArr[childId][1]);
+            memberName = getMemberName(childId, 1);
+            $(".next_member_" + childId).html(memberName);
 
         }   
+    }
+    
+    /*
+     * For small screens, break name into less than 20 characters by
+     * making use of any spaces in their name
+     */
+    function getMemberName(childId, nextLinkIndex) {
+        
+        width = $(window).width();
+        memberName = memberNameArr[childId][nextLinkIndex];
+        if (width <= 360) {
+            if (memberName.length > 18 ) {
+                arr = memberName.split(' ');
+                name = '';
+                for(var i in arr) {
+                    tmp = name + " " + arr[i];
+                    if (tmp.length < 18) {
+                        name = tmp;
+                    } else {
+                        break;
+                    }
+                }
+                if (name.length < 5) {
+                    memberName = memberName.substr(0, 18);
+                } else {
+                    memberName = name;
+                }
+            }
+        }
+
+        return memberName;
+        
     }
 
 });

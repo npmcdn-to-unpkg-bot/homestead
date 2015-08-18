@@ -17,9 +17,9 @@ Route::get('twitter/getfriends', 'TwitterController@getfriends');
 Route::get('twitter/getfeed', 'TwitterController@getfeed');
 Route::get('instagram/getfriends', 'InstagramController@getfriends');
 Route::get('instagram/getfeed', 'InstagramController@getfeed');
+Route::get('yelp/getfeed', 'YelpController@getfeed');
 
 Route::get('login/{provider?}', 'Auth\AuthController@login');
-
 
 Route::group(['middleware' => 'auth'], function () {
     
@@ -50,31 +50,9 @@ Route::controllers([
 	'password' => 'Auth\PasswordController',
 ]);
 
-//Route::model('tasks', 'Task');
-//Route::model('projects', 'Project');
-
-
-
-
-//Route::resource('socialmedia', 'SocialMediaController');
 Route::resource('twitter', 'TwitterController');
 Route::resource('instagram', 'InstagramController');
 
 Route::get('socialmedia/getmembersocialmedia', 'SocialMediaController@getmembersocialmedia');
 Route::get('socialmedia/{slug}', 'SocialMediaController@index');
 Route::get('socialmedia', 'SocialMediaController@categorylist');
-/*
-Route::group(array('domain' => '{subdomain}.nowarena.dev'), function()
-{
-
-
-    Route::get('/', function($subdomain)
-    {
-        dd(Route::input('subdomain'));
-        Route::get('/', 'SocialMediaController@categorylist');
-
-    });
-
-});
- 
- */

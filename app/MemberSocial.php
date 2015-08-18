@@ -9,7 +9,7 @@ class MemberSocial extends ModelNA
 
     protected $table = 'member_social_ids';
 
-    public function getSocialMediaWithMemberIds(array $memberArr, $socialMediaId = false, $offset = 0, $limit = 6)
+    public function getSocialMediaWithMemberIds(array $memberArr, $socialMediaId = false, $offset = 0, $limit = 2)
     {
         
         if (count($memberArr) ==0 ) {
@@ -42,36 +42,9 @@ class MemberSocial extends ModelNA
             $q.= ") AS tmp_table ";
             $q.= "GROUP BY tmp_table.id ";
             $q.= "ORDER BY tmp_table.id DESC ";
-            $q.= "LIMIT 6 "; 
+            $q.= "LIMIT $limit "; 
             $q.= "OFFSET 0";
-            //echo $q."<br>";
             $r = DB::select($q);
-
-            /*
-            $r = DB::table('social_media')
-                ->select('social_media.*')
-                ->join('member_social_ids', function($join)
-                {
-                    $join->on('member_social_ids.member_id', '=', 'social_media.member_id')
-                         ->on('social_media.source','=', 'member_social_ids.social_site');
-                })         
-                ->where('social_media.member_id', '=', $obj->id)
-                ->where('social_media.unpublish', '=', '0')
-                ->where('member_social_ids.disabled', '=', '0');  
-                
-            if ($socialMediaId) {
-                // get 'older' aka smaller id's
-                $r = $r->where('social_media.id', '<', $socialMediaId);
-            }
-
-            $r = $r->orderBy('social_media.id', 'DESC')
-                ->skip($offset)
-                ->take($limit);
-            //$r->get();
-
-            echo $this->getQuery($r);exit();
-             * 
-             */
             
             // initialize array for ordering members by social media date
             $mostRecentMediaDateArr[$obj->id] = 0;
@@ -81,7 +54,6 @@ class MemberSocial extends ModelNA
                 // format links
                 $inReplyToText = '';
                 $text = is_object($rowObj) ? $rowObj->text : '';
-                // TODO check save setting in laravel for not decoding html
                 preg_match("~&lt;reply&gt;&lt;(.*?)&lt;/reply&gt;~is", $text, $arr);
                 if (isset($arr[0])) {
                     $inReplyToText = $arr[0];

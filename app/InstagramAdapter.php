@@ -1,9 +1,9 @@
 <?php
 namespace App;
 
-use App\ModelNA;
+//use App\ModelNA;
 
-class InstagramAdapter extends ModelNA
+class InstagramAdapter extends ModelNA implements SocialFeedInterface
 {
     protected $friendsArr = array();
     
@@ -104,7 +104,7 @@ class InstagramAdapter extends ModelNA
         
     }
     
-    protected function parseFriends($instagramUsersArr) 
+    public function parseFriends(array $instagramUsersArr) 
     {
         /*
          * Array

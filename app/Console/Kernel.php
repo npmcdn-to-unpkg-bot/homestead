@@ -34,9 +34,9 @@ class Kernel extends ConsoleKernel
         //Site::getInstance('nowarena.dev', 'abbotkinneyblvd');
         //$schedule->call('TwitterController@addstatus')->everyMinute();//->everyMinute();
         //$schedule->call('twitter@addstatus')->everyMinute();
-        $schedule->command('getnbatweets:run')->cron('*/5 * * * *')->sendOutputTo('/tmp/cronlog.txt');
-        $schedule->command('getaktweets:run')->cron('*/6 * * * *')->sendOutputTo('/tmp/cronlog.txt');
-        $schedule->command('getnbainstagrams:run')->cron('*/7 * * * *')->sendOutputTo('/tmp/cronlog.txt');
-        $schedule->command('getakinstagram:run')->cron('*/8 * * * *')->sendOutputTo('/tmp/cronlog.txt');
+        $schedule->command('getnbatweets:run')->cron('*/25 * * * *');//->sendOutputTo('/tmp/cronlog.txt');
+        $schedule->command('getaktweets:run')->cron('*/10 * * * *')->sendOutputTo('../cronlog.txt');
+        $schedule->command('getnbainstagrams:run')->cron('*/26 * * * *');//->sendOutputTo('/tmp/cronlog.txt');
+        $schedule->command('getakinstagram:run')->cron('*/8 * * * *');//->sendOutputTo('/tmp/cronlog.txt');
     }
 }

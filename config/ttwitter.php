@@ -2,7 +2,8 @@
 
 // set the twitter keys per subdomain by retrieving them from the .env file and setting them here
 //
-$subdomain = config('app.subdomain');
+use \App\Site;
+$subdomain = Site::getInstance()->getSubdomain();
 
 $consumerKey = '';
 $consumerSecret = '';

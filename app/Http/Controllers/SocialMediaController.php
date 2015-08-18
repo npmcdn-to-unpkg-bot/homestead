@@ -47,13 +47,13 @@ class SocialMediaController extends Controller {
 	 */
 	public function index($slug )
 	{
- 
+
         if ($slug != 'all') {
             
             $catObj = Category::whereSlug($slug)->first();
             if (is_null($catObj)) {
-                // TODO redirct 404
-                exit('not finding category for that slug');
+                \Session::flash('message', 'Invalid category');
+                return redirect('/socialmedia/all');
             }
             $catPathArr = $catObj->getCategoryPath($slug);
             $catArr = $catObj->getChildren($catObj->id);
@@ -81,7 +81,8 @@ class SocialMediaController extends Controller {
             $parentArr['contentArr'] = [];
             foreach($catArr as $catId => $catName) {
                 $memberArr = $this->memberObj->getMembersWithinSingleCategory($catId);
-                list($memberArr, $contentArr) = $this->memberSocialObj->getSocialMediaWithMemberIds($memberArr);
+                $tmpMemberArr = array($memberArr[0]);
+                list(, $contentArr) = $this->memberSocialObj->getSocialMediaWithMemberIds($tmpMemberArr);
                 $parentArr['memberArr'][$catId] = $memberArr;
                 $parentArr['contentArr'] = $parentArr['contentArr'] + $contentArr;
 

@@ -1,9 +1,9 @@
 <?php
 namespace App;
 
-//use Twitter;
+use App\SocialFeedInterface;
 
-class TwitterAdapter
+class TwitterAdapter implements SocialFeedInterface
 {
     protected $friendsArr = array();
     
@@ -32,7 +32,7 @@ class TwitterAdapter
             if ($since_id) {
                 $paramArr['since_id'] = $since_id;
             }
-            //printR($paramArr);
+
             $r = \Twitter::getHomeTimeline($paramArr);
             
         } else {
@@ -197,9 +197,9 @@ class TwitterAdapter
         
     }
     
-    protected function parseFriends($twitterFriendsObj)
+    public function parseFriends(array $twitterFriendsObj)
     {
-        $this->friendsArr = [];
+
         foreach($twitterFriendsObj->users as $obj) {
 
             $this->friendsArr[] = [

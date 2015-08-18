@@ -24,10 +24,10 @@ class SocialMedia extends ModelNA {
     /* 
      * Each instance of this class is tied to the 'keyword' and 'socialsite' passed in
      */
-    public function __construct($keyword, $socialSite, $scrapeObj = false)
+    public function __construct($keyword, $socialSite, $scraperObj = false)
     {
 
-        $this->scrapeObj = $scrapeObj;
+        $this->scraperObj = $scraperObj;
         $this->socialSite = $socialSite;
         $this->keyword = $keyword;
         $this->memberSocialObj = new MemberSocial();
@@ -60,22 +60,18 @@ class SocialMedia extends ModelNA {
     /*
      * Add a member (eg. twitter follower) to members table and try to categorize them
      * based on words in their description matching category words and/or scrape wikipedia page
-     * TODO this should be in twitter model as the profiles of the twitter users being followed 
-     * is being used to create this site's members profile data
-     * TODO break out adding member_social_ids to it's own method and adding member profile to 
-     * this site in another method and adding categorize member to another method
      * 
      */
     public function addNewMembers(array $membersArr, $addToMembers = false, $matchToSimiliarSocialIds = false, $categorize = false)
     {
 
         // set member_social_id to lowercase and set member_social_id as key in members array
-        $newMembersArr = [];
+        $formattedMembersArr = [];
         foreach($membersArr as $key => $arr) {
             $arr['member_social_id'] = strtolower($arr['member_social_id']);
-            $newMembersArr[$arr['member_social_id']] = $arr;
+            $formattedMembersArr[$arr['member_social_id']] = $arr;
         }
-        $membersArr = $newMembersArr;
+        $membersArr = $formattedMembersArr;
 
         /*// set to member_social_id to lowercase 
         array_walk($membersArr, function(&$m) {
@@ -90,20 +86,21 @@ class SocialMedia extends ModelNA {
         // get members not in newMembersArr (ie members already in db) 
         $membersInDBArr = array_diff_key($membersArr, $newMembersArr);
 
-        // update avatars of members not in newMembersArr
+        // update avatars of members not in newMembersArr (ie members already in db)
         $this->updateAvatars($membersInDBArr);
-        // s
-        $membersArr = $newMembersArr;
 
         $noMemberIdArr = array();
-        foreach($membersArr as $key => $arr) {
+        foreach($newMembersArr as $key => $arr) {
  
-            $memberEnt = new \App\MemberEntity($arr);
+            $memberEnt = new \App\MemberEntity;
+            $memberEnt = $memberEnt->init($arr);
          
             if ($matchToSimiliarSocialIds) {
                 $memberEnt->setId($this->getMemberIdWithSocialId($memberEnt));
             } 
 
+            DB::beginTransaction();
+            
             // Add to main member table
             if ($addToMembers && $memberEnt->getId() == 0) {
                 // no member id for this member, insert them into the member table and assign an id
@@ -124,6 +121,8 @@ class SocialMedia extends ModelNA {
             if ($categorize) {
                 $this->categorizeMember($memberEnt);
             }
+            
+            DB::commit();
 
         }
         
@@ -140,11 +139,6 @@ class SocialMedia extends ModelNA {
     {
         
         $idArr = [];
-//        $q = "SELECT id, COUNT(*) AS num FROM member_social_ids ";
-//        $q.= "WHERE avatar IS NOT NULL AND primary_avatar != 1 ";
-//        $q.= "GROUP BY member_id ";
-//        $q.= "HAVING num < 2";
-        
         $q = 'SELECT id, sum(primary_avatar) as avSum ' 
         . 'FROM member_social_ids ' 
         . 'WHERE avatar IS NOT NULL AND disabled = 0 ' 
@@ -173,7 +167,7 @@ class SocialMedia extends ModelNA {
         
     }
     
-    protected function categorizeMember(MemberEntity $memberEntity) 
+    protected function categorizeMember(MemberEntity $memberEnt) 
     {
 
         // If they already have a category, skip
@@ -183,7 +177,7 @@ class SocialMedia extends ModelNA {
         }
 
         $addCatSuccess = $this->addCategories($memberEnt);
-        if ($addCatSuccess == false  && $this->scrapeObj) {
+        if ($addCatSuccess == false  && $this->scraperObj) {
 
             // TODO make scraping an overwritable method specific to subdomain's extending class
             echo "<p>scraping for: " . $memberEnt->name . "</p>";
@@ -308,12 +302,7 @@ class SocialMedia extends ModelNA {
     
     protected function insertMemberSocialId(MemberEntity $memberEnt)
     {
-/*
-        $r = DB::table('member_social_ids')
-                ->where('member_social_id', '=', $memberObj->getMemberSocialId())
-                ->where('social_site', '=', $this->socialSite)
-                ->get();
-*/
+
         DB::table('member_social_ids')->insert([
             'member_id' => $memberEnt->getId(),
             'social_site' => $this->socialSite,
@@ -466,6 +455,9 @@ class SocialMedia extends ModelNA {
                 ->where('category_id', '=', $catId);
 
         if ($r->count() == 0) {
+            
+            DB::beginTransaction();
+            
             DB::table('member_categories')->insert([
                 'member_id' => $memberObj->id,
                 'category_id' => $catId
@@ -477,6 +469,9 @@ class SocialMedia extends ModelNA {
                     ->where('category_id', '=', '0')
                     ->delete();
             }
+            
+            DB::commit();
+            
         }
     }
     

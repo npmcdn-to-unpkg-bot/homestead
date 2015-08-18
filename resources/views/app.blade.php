@@ -8,7 +8,15 @@ $site = Site::getInstance();
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title><?php echo $site::getPageTitle(); ?></title>
+	<title>
+    <?php 
+    if ($site::getSubdomain() == 'abbotkinneyblvd') {
+        echo 'AbbotKinneyBl.com - what\'s coming up and going down on Abbot Kinney Blvd.';
+    } else {
+        echo $site::getPageTitle(); 
+    }
+    ?>
+    </title>
 
 	<link href="/css/app.css" rel="stylesheet">
 	
@@ -57,8 +65,16 @@ $site = Site::getInstance();
 
 	<div class='container'>
         
-        <a href='http://<?php echo $site::$domain; ?>'><div class='siteTitle'>NowArena.com</div></a>
-        
+        <?php if ($site::$subdomain == 'abbotkinneyblvd') {
+            echo "<span class='akPageTitle'>AbbotKinneyBL.com</span>";
+            echo "<div class='akPageIntro'>";
+            echo "&nbsp; Social media about what's coming up and going down on Abbot Kinney Blvd. (Optimized for all devices!)</div> ";
+            echo "<div style='clear:both;'></div>";
+        } else { ?>
+            <a href='http://<?php echo $site::$domain; ?>'><div class='siteTitle'>NowArena.com</div></a>
+        <?php
+        }
+        ?>
         
 	@yield('content')
 	</div>

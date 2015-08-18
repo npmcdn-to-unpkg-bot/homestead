@@ -50,7 +50,7 @@ for($i=1; $i<=$numCols; $i++) {
     }
 
     echo "' id = 'footerCont_" . $memberId . "_" . $i . "'>";
-    echo "<div class='ageLink'></div>";    
+    echo "<span class='ageLink'><span class='ageText'></span><span class='onLink'></span></span>";    
     echo "<a id='expandLink_" . $memberId . "_" . $i . "' ";
     echo "data-memberid='" . $memberId . "' data-boxnum='" . $i . "' ";
     echo "class='expandLink' href='javascript:void(0);'>expand &darr;</a> ";
@@ -78,7 +78,7 @@ echo "<div class='contentNav' id='contentNav_" . $memberId . "'>\n";
     echo "<div class='navButton'>&laquo;</div>";
     echo "</a>";
 
-    echo "<a class='navReload' href='javascript:void(0);' id='reload_" . $memberId . "'>";        
+    echo "<a class='navReload' href='javascript:void(0);' data-memberid='" . $memberId . "'>";        
     echo "<div class='navButton'>&#8634;</div>";
     echo "</a>\n";
 

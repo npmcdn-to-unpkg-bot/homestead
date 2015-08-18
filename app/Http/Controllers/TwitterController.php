@@ -1,11 +1,9 @@
 <?php
 namespace App\Http\Controllers;
-use Illuminate\Http\Request;
-use App\Http\Requests;
 use App\Http\Controllers\Controller;
 
 use App\TwitterAdapter;
-use App\MemberSocial;
+use App\Scraper;
 use App\SocialMedia;
 use App\Site;
 
@@ -18,11 +16,11 @@ class TwitterController extends Controller
         $keyword = Site::getInstance()->getSubdomain();
         $twitterScreenName = Site::getInstance()->getTwitterScreenName();
 
-        $scrapeObj = false;
+        $scraperObj = false;
         if ($keyword == 'nba') {
-            $scrapeObj = new Scraper($this->keyword);
+            $scraperObj = new Scraper($keyword);
         }
-        $this->socialMediaObj = new SocialMedia($keyword, 'twitter', $scrapeObj);
+        $this->socialMediaObj = new SocialMedia($keyword, 'twitter', $scraperObj);
         $this->twitterAdapter = new TwitterAdapter($twitterScreenName);
         
     }
@@ -47,9 +45,10 @@ class TwitterController extends Controller
         
         // operate on the formatted twitter feed
         $friendsArr = $this->twitterAdapter->getFriendsArr();
+
         if (count($friendsArr) >0 ) {
 
-            $addToMembersTable = false; 
+            $addToMembersTable = true; 
             $matchToSimiliarSocialIds = false; // use twitter account as main source of ids
             $categorize = true;
             $this->socialMediaObj->addNewMembers($friendsArr, $addToMembersTable, $matchToSimiliarSocialIds, $categorize);
@@ -57,7 +56,7 @@ class TwitterController extends Controller
         } else {
             echo "No new Twitter followers to add.";
         }
-        
+        printR($friendsArr);
         exit('asfd');
     }
   

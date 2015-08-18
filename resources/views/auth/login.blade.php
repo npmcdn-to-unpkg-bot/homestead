@@ -1,8 +1,13 @@
+<?php
+use \App\Site;
+?>
+
+
 @extends('app')
 
 @section('content')
 <?php if (true) { ?>
-    <a href='http://<?php echo config('app.domain');?>/login/facebook'>Login with Facebook</a> 
+    <a href='http://<?php echo Site::getInstance()->getDomain();?>/login/facebook'>Login with Facebook</a> 
 <?php }else{ ?>
 
 <div class="container-fluid">
