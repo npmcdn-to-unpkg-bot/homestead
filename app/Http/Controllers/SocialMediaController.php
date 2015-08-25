@@ -11,7 +11,7 @@ use App\Category;
 use App\Site;
 use App\Member;
 
-class SocialMediaController extends Controller 
+class SocialMediaController extends Controller
 {
     
     protected $rules = [
@@ -25,11 +25,6 @@ class SocialMediaController extends Controller
         $this->memberObj = new Member();
     }
     
-    public function welcome()
-    {
-        return view('welcome');
-    }
-    
     /**
      * List of categories in parent - child hierarchy
      * 
@@ -41,9 +36,9 @@ class SocialMediaController extends Controller
         $categoryPAndCObj = new \App\CategoryParentAndChildren();
         $category = new \App\Category;
         $categoriesObj = $category->all();
-		$categoriesArr = $category->getCategoriesArr($categoriesObj);
-		$parentChildArr = $categoryPAndCObj->getHierarchy();
-		return view('socialmedia.categorylist', compact('categoriesObj', 'parentChildArr', 'categoriesArr'));
+        $categoriesArr = $category->getCategoriesArr($categoriesObj);
+        $parentChildArr = $categoryPAndCObj->getHierarchy();
+        return view('socialmedia.categorylist', compact('categoriesObj', 'parentChildArr', 'categoriesArr'));
 
     }
 
@@ -92,18 +87,8 @@ class SocialMediaController extends Controller
             foreach ($catArr as $catId => $catName) {
                 
                 $memberArr = $this->memberObj->getMembersWithinSingleCategory($catId);
-                // log error
-                if (!isset($memberArr[0])) {
-                    $memberArr = array();
-                    $contentArr = array();
-                    $str = "\n\n---------------\n\ncatId:" . $catId . "\n\n";
-                    $str.= serialize($memberArr) . "\n\n";
-                    //file_put_contents('../storage/logs/laravel.log', $str, FILE_APPEND);
-                    //throw new \Exception('Not finding members for category ' . $catId);
-                } else {
-                    $tmpMemberArr = array($memberArr[0]);
-                    list(, $contentArr) = $this->memberSocialObj->getSocialMediaWithMemberIds($tmpMemberArr);
-                }
+                $tmpMemberArr = array($memberArr[0]);
+                list(, $contentArr) = $this->memberSocialObj->getSocialMediaWithMemberIds($tmpMemberArr);
 
                 $parentArr['memberArr'][$catId] = $memberArr;
                 $parentArr['contentArr'] = $parentArr['contentArr'] + $contentArr;
@@ -150,8 +135,12 @@ class SocialMediaController extends Controller
         return $getChildren;
     }
     
-    /*
+    /**
+     *
      * ajax call to get member's social media
+     * 
+     * @param Request $request
+     * @return response
      */
     public function getMemberSocialMedia( Request $request) 
     {
@@ -163,7 +152,6 @@ class SocialMediaController extends Controller
         $socialMediaId = $input['social_media_id'];
         $memberArr = array('id' => $obj);
         list(, $memberContentArr) = $this->memberSocialObj->getSocialMediaWithMemberIds($memberArr, $socialMediaId);
-        //printR($memberContentArr);
         return response()->json(['memberContentArr' => $memberContentArr]);
     	
         
