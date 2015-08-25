@@ -38,7 +38,9 @@ class SocialMedia extends ModelNA {
         
     }
     
-    /*
+    /**
+     * This array represents ALL social sites that are being used
+     * 
      * See 'getSimiliarSocialIds() when adding to this array
      */
     public static function getSocialSiteIdArr()
@@ -57,7 +59,7 @@ class SocialMedia extends ModelNA {
         
     }
     
-    /*
+    /**
      * Add a member (eg. twitter follower) to members table and try to categorize them
      * based on words in their description matching category words and/or scrape wikipedia page
      * 
@@ -147,7 +149,7 @@ class SocialMedia extends ModelNA {
         . 'GROUP BY member_id ' 
         . 'HAVING avSum=0';
         $r = DB::select($q);
-        foreach($r as $key => $obj) {
+        foreach ($r as $key => $obj) {
             $idArr[] = $obj->id;
         }
         if (!empty($idArr)) {
@@ -202,6 +204,13 @@ class SocialMedia extends ModelNA {
         
     }
     
+    /**
+     * Categorize members based on keywords in their self-written description matching site categories. eg. description
+     * "Playing for the Lakers" would match site category "Lakers"
+     * 
+     * @param \App\MemberEntity $memberEnt
+     * @return boolean
+     */
     protected function categorizeMember(MemberEntity $memberEnt) 
     {
 
@@ -234,7 +243,7 @@ class SocialMedia extends ModelNA {
 
     }
 
-    /*
+    /**
      * see if they have the same username as an existing account in member_social_id table,
      * if so, use the member id associated with it 
      * if not, try and find a simliar member_social_id and use that
@@ -335,6 +344,10 @@ class SocialMedia extends ModelNA {
 
     }
     
+    /**
+     * 
+     * @param \App\MemberEntity $memberEnt
+     */
     protected function insertMemberSocialId(MemberEntity $memberEnt)
     {
 
@@ -346,10 +359,11 @@ class SocialMedia extends ModelNA {
         ]);
         
     }
-    
-    /*
-     * Try and add them to a category
+
+    /**
      * 
+     * @param type $memberObj
+     * @return boolean
      */
     protected function addCategories($memberObj)
     {
@@ -382,7 +396,7 @@ class SocialMedia extends ModelNA {
         $catSetArr = array();
         $childIdFound = false;
         $parentIdFound = false;
-        foreach($this->categoriesArr as $catObj) {
+        foreach ($this->categoriesArr as $catObj) {
             
             $memberObj = $this->setChildParentIds($catObj->display_name, $memberObj, $catObj);
                        
@@ -401,7 +415,7 @@ class SocialMedia extends ModelNA {
         
         // break up category name, if possible, and search for each
         // word greater than 3 characters in the member description
-        foreach($this->categoriesArr as $catObj) {
+        foreach ($this->categoriesArr as $catObj) {
             
             $arr = explode(" ", $catObj->display_name);
             if (count($arr) == 1 ) {
@@ -412,7 +426,7 @@ class SocialMedia extends ModelNA {
             // Lakers is most significant part and will avoid conflicts with Los Angeles Clippers
             $arr = array_reverse($arr);
             
-            foreach($arr as $word) {
+            foreach ($arr as $word) {
                 
                 $word = trim($word);
                 if (strlen($word) < 4 ) {
@@ -437,6 +451,10 @@ class SocialMedia extends ModelNA {
         
     }
     
+    /**
+     * 
+     * @param type $memberObj
+     */
     protected function saveChildParentIds($memberObj) 
     {
         if ($memberObj->childId >0 ) {
@@ -447,6 +465,13 @@ class SocialMedia extends ModelNA {
         }
     }
     
+    /**
+     * 
+     * @param string $text
+     * @param member model $memberObj
+     * @param category model $catObj
+     * @return member model
+     */
     protected function setChildParentIds($text, $memberObj, $catObj)
     {
     
@@ -465,23 +490,33 @@ class SocialMedia extends ModelNA {
         
     }
 
-    /*
+    /**
      * $this->catPCArr is a lookup array with childId as index and parentId as value
      * Array values of 0 given an index value means the given index value is a parent
+     * @param type $catObj
+     * @return type
      */
     private function isParentId($catObj) 
     {
         return (isset($this->catPCArr[$catObj->id]) && $this->catPCArr[$catObj->id] == 0 ) ? true : false;
     }
     
-    /* $this->catPCArr is a lookup array with childId as index and parentId as value
+    /**
+     * $this->catPCArr is a lookup array with childId as index and parentId as value
      * Array values greater than zero given and index means the given index value has a parent and is thus a child 
+     * @param type $catObj
+     * @return type
      */
     private function isChildId($catObj)
     {
         return (isset($this->catPCArr[$catObj->id]) && $this->catPCArr[$catObj->id] > 0 ) ? true : false;        
     }
-        
+       
+    /**
+     * 
+     * @param type $memberObj
+     * @param type $catId
+     */
     private function insertMemberCategory($memberObj, $catId)
     {
         
@@ -510,7 +545,11 @@ class SocialMedia extends ModelNA {
         }
     }
     
-    // get members whose social id (twitter screename or whichever site) has not added to the database already    
+    /**
+     * get members whose social id (twitter screename or whichever site) has not added to the database already 
+     * @param type $membersArr
+     * @return type
+     */
     public function getMemberSocialIdsNotInDB($membersArr)      
     {
 
@@ -534,11 +573,15 @@ class SocialMedia extends ModelNA {
 
     }
     
+    /**
+     * 
+     * @param array $socialMediaArr
+     */
     public function addSocialMedia(array $socialMediaArr) 
     {
   
         $memberSocialIdArr = array();
-        foreach($socialMediaArr as $key => $val) {
+        foreach ($socialMediaArr as $key => $val) {
             $memberSocialIdArr[] = $val['memberSocialId'];
         }
 
@@ -547,7 +590,7 @@ class SocialMedia extends ModelNA {
         // sort by time so that social_media.id generated by db insert will be in order with date
         usort($socialMediaArr, array($this, 'sortByWrittenAt'));
 
-        foreach($socialMediaArr as $val) {
+        foreach ($socialMediaArr as $val) {
             
             // they may not be in members table yet (addfriend may not have been called but we're following them on
             // twitter)

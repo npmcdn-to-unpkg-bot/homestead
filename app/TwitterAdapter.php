@@ -14,28 +14,30 @@ class TwitterAdapter implements SocialFeedInterface
         
     }
     
+    /**
+     * 
+     * Retrieve tweets of people being followed if they have an tweet id greater than the last
+     * id retrieved
+     */
     public function getFeed()
     {
-        
-        if (1) {
             
-            $since_id = \DB::table('social_media')
-                ->where('source', '=', 'twitter')
-                ->orderBy('social_id', 'DESC')
-                ->take(1)
-                ->pluck('social_id');
+        $since_id = \DB::table('social_media')
+            ->where('source', '=', 'twitter')
+            ->orderBy('social_id', 'DESC')
+            ->take(1)
+            ->pluck('social_id');
 
-            $paramArr = [
-                'count' => 200,
-                'include_entities' => 1
-            ];
-            if ($since_id) {
-                $paramArr['since_id'] = $since_id;
-            }
-
-            $r = \Twitter::getHomeTimeline($paramArr);
-
+        $paramArr = [
+            'count' => 200,
+            'include_entities' => 1
+        ];
+        if ($since_id) {
+            $paramArr['since_id'] = $since_id;
         }
+
+        $r = \Twitter::getHomeTimeline($paramArr);
+
 
         if (count($r) == 0) {
             return false;
@@ -46,7 +48,12 @@ class TwitterAdapter implements SocialFeedInterface
         return $socialMediaArr;
         
     }
-        
+    
+    /**
+     * Parse the feed
+     * @param array $r feed result
+     * @return array
+     */
     public function parseFeed(array $r)
     {
         printR($r);exit;
@@ -71,7 +78,7 @@ class TwitterAdapter implements SocialFeedInterface
             // replace shortened urls with full urls
             $text = $obj->text;
             if (!empty($obj->entities->urls)) {
-                foreach($obj->entities->urls as $key => $urlObj) {
+                foreach ($obj->entities->urls as $key => $urlObj) {
                     $text = str_replace($urlObj->url, $urlObj->expanded_url, $text);
                 }
             }
@@ -83,7 +90,7 @@ class TwitterAdapter implements SocialFeedInterface
                 $text = $arr[0] . $retweetedText;
             }
            
-            $written_at = date("Y-m-d H:m:i", strtotime($obj->created_at));
+            $writtenAt = date("Y-m-d H:m:i", strtotime($obj->created_at));
 
             $socialMediaArr[] = [
                 'memberSocialId' => $memberSocialId,
@@ -95,7 +102,7 @@ class TwitterAdapter implements SocialFeedInterface
                 'mediaHeight' => $mediaHeight,
                 'mediaWidth' => $mediaWidth,
                 'source' => 'twitter',
-                'written_at' => $written_at
+                'written_at' => $writtenAt
             ];
             
         }
@@ -104,6 +111,11 @@ class TwitterAdapter implements SocialFeedInterface
 
     }
 
+    /**
+     * 
+     * Get list of people being followed
+     * 
+     */
     public function getFriends($nextCursor = -1)
     {
 
@@ -115,12 +127,8 @@ class TwitterAdapter implements SocialFeedInterface
             'cursor' => $nextCursor,
             'count' => 200
         ];
-        
-        if (1) {
-            
-             $r = \Twitter::getFriends($paramArr);
-
-        } 
+         
+        $r = \Twitter::getFriends($paramArr);
         
         if (!isset($r->users)) {
             throw new \Exception('users is not a property of twitter result');
@@ -132,10 +140,15 @@ class TwitterAdapter implements SocialFeedInterface
         
     }
     
+    /**
+     * Parse list of people being followed
+     * 
+     * @param array $twitterFriendsArr 
+     */
     public function parseFriends(array $twitterFriendsArr)
     {
 
-        foreach($twitterFriendsArr as $obj) {
+        foreach ($twitterFriendsArr as $obj) {
 
             $this->friendsArr[] = [
                 'name' => $obj->name,
@@ -150,7 +163,11 @@ class TwitterAdapter implements SocialFeedInterface
         
     }
 
-    
+    /**
+     * Retrieve array of people being followed that were parsed
+     * 
+     * @return array
+     */
     public function getFriendsArr()
     {
         return $this->friendsArr;

@@ -7,9 +7,17 @@ use App\Scraper;
 use App\SocialMedia;
 use App\Site;
 
+/**
+ * This method is called by a cron job and any and all output will not returned to a view, but
+ * to whatever the cron job is set to do. No presentation of output other than basic formatting 
+ * is necessary
+ */
 class TwitterController extends Controller
 {
     
+    /**
+     * Initialize objects that will do the work
+     */
     public function __construct()
     {
         
@@ -25,6 +33,10 @@ class TwitterController extends Controller
         
     }
     
+    /**
+     * Retrieve the tweets of people being followed by 'twitterScreenName'
+     * 
+     */
     public function getFeed()
     {
         
@@ -35,6 +47,10 @@ class TwitterController extends Controller
         exit('done');
     }
     
+    /**
+     * Get the friends that $twitterScreenName is following 
+     * 
+     */
     public function getFriends()
     {
 
@@ -47,7 +63,7 @@ class TwitterController extends Controller
         if (count($friendsArr) >0 ) {
 
             $addToMembersTable = true; 
-            $matchToSimiliarSocialIds = false; // use twitter account as main source of ids
+            $matchToSimiliarSocialIds = false; 
             $categorize = true;
             $this->socialMediaObj->addNewMembers($friendsArr, $addToMembersTable, $matchToSimiliarSocialIds, $categorize);
             
@@ -57,70 +73,5 @@ class TwitterController extends Controller
         printR($friendsArr);
         exit('asfd');
     }
-  
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @return Response
-     */
-    public function store()
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  int  $id
-     * @return Response
-     */
-    public function update($id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return Response
-     */
-    public function destroy($id)
-    {
-        //
-    }
-        
 }
