@@ -66,11 +66,6 @@ class Category extends Model {
                 ->where('categories.id', '=', $r[0]->parent_id)
                 ->get();
             $arr[] = $r[0];
-            if ($count++ >3 ) {
-                echo $r->toSql();
-                exit;
-                break;
-            }
         } while($r[0]->parent_id >0 );
 
         // since we built the array from child up to parent, reverse it for top down display

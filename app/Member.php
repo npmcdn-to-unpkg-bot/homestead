@@ -18,21 +18,97 @@ class Member extends ModelNA {
      */
     public function getMembersWithinSingleCategory($catId)
     {
+     
+        $r = \Cache::get($catId);
+        if ($r === null) {
+            $q = "SELECT * FROM (
+            SELECT members.id, members.name, avatar, social_media.written_at  
+            FROM members ";
+            $q.= "INNER JOIN member_categories ON members.id = member_categories.member_id AND category_id = " . intval($catId) . " 
+            LEFT JOIN member_social_ids AS msi ON msi.member_id = members.id AND msi.primary_avatar = 1 AND msi.disabled = 0 
+            LEFT JOIN social_media ON (social_media.member_id = members.id) 
+            ORDER BY social_media.written_at DESC 
+            ) AS tmp_table 
+            GROUP BY tmp_table.id 
+            ORDER BY tmp_table.written_at DESC";
+            $r = DB::select($q); 
+            \Cache::put($catId, $r, 60);
+        }
         
-        $q = "SELECT * FROM (
-		SELECT members.id, members.name, avatar, social_media.written_at  
-		FROM members ";
-        $q.= "INNER JOIN member_categories ON members.id = member_categories.member_id AND category_id = " . intval($catId) . " 
-		LEFT JOIN member_social_ids AS msi ON msi.member_id = members.id AND msi.primary_avatar = 1 AND msi.disabled = 0 
-		LEFT JOIN social_media ON (social_media.member_id = members.id) 
-		ORDER BY social_media.written_at DESC 
-		) AS tmp_table 
-		GROUP BY tmp_table.id 
-		ORDER BY tmp_table.written_at DESC";
-		$r = DB::select($q); 
         return $r;
         
     }
+    
+    /////////////////////////////////////
+    // Begin instagram location id
+    //
+    /**
+     * Get instagram location id for member
+     * 
+     * @param array $memberArr multi-dim array with unique id 
+     * 
+     * @return array
+     */
+    public function getInstagramLocationIds(array $memberArr)
+    {
+        if (count($memberArr) == 0) {
+            return array();
+        } 
+        
+        $memberIdArr = array_map(function ($arr) {return $arr['id'];}, $memberArr);
+
+        $q = "SELECT * FROM instagram_location_ids WHERE member_id IN (" . implode(", ", $memberIdArr) . ")";
+        $r = DB::select($q);
+
+        return $r;
+        
+    }
+    
+    /**
+     * Save instagram location id
+     * 
+     * @param int $memberId
+     * 
+     * @param int $locationId
+     */
+    public function saveInstagramLocationId($memberId, $locationId) 
+    {
+        
+        $q = "DELETE FROM instagram_location_ids WHERE member_id = " . intval($memberId);
+        DB::statement($q);
+        
+        if ($locationId != 0) {
+            \DB::table('instagram_location_ids')->insert(
+                [
+                'member_id' => $memberId,
+                'location_id' => $locationId
+                ]
+            );
+        }
+
+    }
+    
+    /**
+     * Get single location id
+     * 
+     * @param int id of member 
+     * 
+     * @return int
+     */
+    public function getInstagramLocationId($memberId)
+    {
+        
+        $memberArr = array(array('id' => $memberId));
+        $r = $this->getInstagramLocationIds($memberArr);
+        if (isset($r[0]->location_id)) {
+            return $r[0]->location_id;
+        }
+        return '';
+        
+    }
+    //
+    // End instagram location id
+    /////////////////////////////////////////////
 
     /*
      * Get category_ids member belongs to

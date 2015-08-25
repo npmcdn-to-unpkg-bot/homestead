@@ -49,7 +49,7 @@ class TwitterAdapter implements SocialFeedInterface
         
     public function parseFeed(array $r)
     {
-        
+        printR($r);exit;
         $socialMediaArr = [];
         foreach($r as $key => $obj) {
             
@@ -123,7 +123,7 @@ class TwitterAdapter implements SocialFeedInterface
         } 
         
         if (!isset($r->users)) {
-            exit ('users is not a property of twitter result $r');
+            throw new \Exception('users is not a property of twitter result');
         }
         
         $this->parseFriends($r->users);
@@ -143,6 +143,7 @@ class TwitterAdapter implements SocialFeedInterface
                 'source' => 'twitter',
                 'avatar' => $obj->profile_image_url,
                 'description' => $obj->description,
+                'website' => $obj->url
             ];
             
         }

@@ -11,14 +11,16 @@ use App\Category;
 use App\Site;
 use App\Member;
 
-class SocialMediaController extends Controller {
+class SocialMediaController extends Controller 
+{
     
     protected $rules = [
 		'member_id' => ['required'],
 		'social_media_id' => ['required']
 	];
     
-    public function __construct() {
+    public function __construct() 
+    {
         $this->memberSocialObj = new MemberSocial();
         $this->memberObj = new Member();
     }
@@ -28,6 +30,11 @@ class SocialMediaController extends Controller {
         return view('welcome');
     }
     
+    /**
+     * List of categories in parent - child hierarchy
+     * 
+     * @return Response
+     */
     public function categorylist()
     {
         
@@ -41,12 +48,15 @@ class SocialMediaController extends Controller {
     }
 
 	/**
-	 * Display a listing of the resource.
+	 * Display a listing of categories and the category members (parent-children) and their social media.
 	 *
 	 * @return Response
 	 */
 	public function index($slug )
 	{
+        
+        // get links in footer
+        $linksArr = \App\Links::orderBy('rank', 'ASC')->lists('link', 'name');
 
         if ($slug != 'all') {
             
@@ -74,26 +84,46 @@ class SocialMediaController extends Controller {
             $memberArr = $this->memberObj->getMembersWithinSingleCategory($catObj->id);
             list($memberArr, $contentArr) = $this->memberSocialObj->getSocialMediaWithMemberIds($memberArr);
 
-            return view('socialmedia.child', compact('memberArr', 'contentArr', 'catPathArr'));
+            return view('socialmedia.child', compact('memberArr', 'contentArr', 'catPathArr', 'linksArr'));
 
         } else {
        
             $parentArr['contentArr'] = [];
-            foreach($catArr as $catId => $catName) {
+            foreach ($catArr as $catId => $catName) {
+                
                 $memberArr = $this->memberObj->getMembersWithinSingleCategory($catId);
-                $tmpMemberArr = array($memberArr[0]);
-                list(, $contentArr) = $this->memberSocialObj->getSocialMediaWithMemberIds($tmpMemberArr);
+                // log error
+                if (!isset($memberArr[0])) {
+                    $memberArr = array();
+                    $contentArr = array();
+                    $str = "\n\n---------------\n\ncatId:" . $catId . "\n\n";
+                    $str.= serialize($memberArr) . "\n\n";
+                    //file_put_contents('../storage/logs/laravel.log', $str, FILE_APPEND);
+                    //throw new \Exception('Not finding members for category ' . $catId);
+                } else {
+                    $tmpMemberArr = array($memberArr[0]);
+                    list(, $contentArr) = $this->memberSocialObj->getSocialMediaWithMemberIds($tmpMemberArr);
+                }
+
                 $parentArr['memberArr'][$catId] = $memberArr;
                 $parentArr['contentArr'] = $parentArr['contentArr'] + $contentArr;
 
             }
 
-            return view('socialmedia.parent', compact('parentArr', 'catArr', 'catPathArr'));
+            return view('socialmedia.parent', compact('parentArr', 'catArr', 'catPathArr', 'linksArr'));
             
         }
         
 	}
     
+    /**
+     * Determine if children of parents are to be retrieved
+     * 
+     * @param array $catPathArr
+     * @param string $slug
+     * @param object $catObj
+     * @return boolean
+     */
     private function getChildrenBool($catPathArr, $slug, $catObj) 
     {
         
@@ -105,8 +135,8 @@ class SocialMediaController extends Controller {
         } else {
             // Check to see if we're getting children - members within single category
             // or parent - members within groups of categories 
-            // eg. parent = members within groups of categories = members of the NBA Pacific div and the teams they're on
-            // eg. children = members within single category = members (Blake Griffin et al) of the category Clippers 
+            // eg. parent = members within groups of categories = members of the NBA Pacific div and the teams they're 
+            // on eg. children = members within single category = members (Blake Griffin et al) of the category Clippers 
             // Members in single category gets all members displayed unconcealed on page
             // Members in groups of categories get members concealed and navigable within categories on page
             foreach($catPathArr as $obj) {
@@ -132,7 +162,7 @@ class SocialMediaController extends Controller {
         $obj->id = $input['member_id'];
         $socialMediaId = $input['social_media_id'];
         $memberArr = array('id' => $obj);
-        list($memberArr, $memberContentArr) = $this->memberSocialObj->getSocialMediaWithMemberIds($memberArr, $socialMediaId);
+        list(, $memberContentArr) = $this->memberSocialObj->getSocialMediaWithMemberIds($memberArr, $socialMediaId);
         //printR($memberContentArr);
         return response()->json(['memberContentArr' => $memberContentArr]);
     	

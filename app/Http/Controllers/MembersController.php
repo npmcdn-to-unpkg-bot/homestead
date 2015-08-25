@@ -112,12 +112,14 @@ class MembersController extends Controller {
         if (isset($inputArr['category_id'])) {
             $categoryIdArr = $inputArr['category_id'];
         }
-    	$inputArr = array_except($inputArr, array('site', 'category_id'));
+        $instagramLocationId = $inputArr['instagram_location_id'];
+    	$inputArr = array_except($inputArr, array('site', 'category_id', 'instagram_location_id'));
         $memberEnt = $memberEnt->init($inputArr)->insertMember();
     	$this->memberObj->saveMemberSocialIds($socialSiteArr, null, $memberEnt->id);
         if (!empty($categoryIdArr)) {
             $this->memberObj->saveMemberCategoryIds($categoryIdArr, $memberEnt->id);
         }
+        
         
     	return Redirect::route('members.edit', [$memberEnt->id])->with('message', 'Member added.');
 		
@@ -146,11 +148,13 @@ class MembersController extends Controller {
 	    $memberSocialIdArr = $this->memberObj->getMemberSocialIdArr($memberEnt->id);
 	    $parentChildArr = $this->categoryPAndCObj->getHierarchy();
 	    $categoriesArr = $this->categoryObj->getCategoriesArr();
+        $instagramLocationId = $this->memberObj->getInstagramLocationId($memberEnt->id);
 
 	    $memberCategoryIdArr = $this->memberObj->getMemberCategoryIdArr($memberEnt->id);
 
         return view('members.edit', 
-                compact('memberEnt', 'memberSocialIdArr', 'parentChildArr', 'memberCategoryIdArr', 'categoriesArr'));
+                compact('memberEnt', 'memberSocialIdArr', 'parentChildArr', 'memberCategoryIdArr', 'categoriesArr'
+                , 'instagramLocationId'));
  
 	}
 
@@ -165,6 +169,7 @@ class MembersController extends Controller {
         
         $this->validate($request, $this->rules); 
         $inputArr = Input::all();
+        $instagramLocationId = $inputArr['instagram_location_id'];
         $socialSiteArr = $inputArr['site'];
         $primaryAvatar = !empty($inputArr['primary_avatar']) ? $inputArr['primary_avatar'] : '';
 
@@ -175,7 +180,8 @@ class MembersController extends Controller {
         $ent = $memberEnt->init($inputArr)->updateMember();
 
         $this->memberObj->saveMemberSocialIds($socialSiteArr, $primaryAvatar, $memberEnt->id);
-
+        $this->memberObj->saveInstagramLocationId($memberEnt->id, $instagramLocationId);
+        
     	return Redirect::route('members.edit', [$memberEnt->id])->with('message', 'Member updated.');
 
 	}
@@ -189,11 +195,17 @@ class MembersController extends Controller {
 	public function destroy(MemberEntity $memberEnt)
 	{
 
-        \DB::table('member_categories')->where('member_id', '=', $memberEnt->id)->delete();
-        \DB::table('member_social_ids')->where('member_id', '=', $memberEnt->id)->delete();
-        \DB::table('social_media')->where('member_id', '=', $memberEnt->id)->delete();
+        \DB::transaction(function() use($memberEnt)
+        {
+            
+            \DB::table('member_categories')->where('member_id', '=', $memberEnt->id)->delete();
+            \DB::table('member_social_ids')->where('member_id', '=', $memberEnt->id)->delete();
+            \DB::table('social_media')->where('member_id', '=', $memberEnt->id)->delete();
+            \DB::table('instagram_location_ids')->where('member_id', '=', $memberEnt->id)->delete();
+
+            \DB::table('members')->where('id', '=', $memberEnt->id)->delete();
         
-        \DB::table('members')->where('id', '=', $memberEnt->id)->delete();
+        });
  
 	    return Redirect::route('members.index')->with('message', 'Member deleted.');
 	}

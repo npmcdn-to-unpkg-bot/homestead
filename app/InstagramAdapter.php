@@ -1,8 +1,6 @@
 <?php
 namespace App;
 
-//use App\ModelNA;
-
 class InstagramAdapter extends ModelNA implements SocialFeedInterface
 {
     protected $friendsArr = array();
@@ -10,6 +8,7 @@ class InstagramAdapter extends ModelNA implements SocialFeedInterface
     public function __construct($screenName, $accessToken, $socialMediaObj)
     {
 
+        
         $this->socialMediaObj = $socialMediaObj;
         $this->screenName = $screenName;
         $this->accessToken = $accessToken;
@@ -34,7 +33,7 @@ class InstagramAdapter extends ModelNA implements SocialFeedInterface
         if (!isset($r->data)) {
             return false;
         }
-                
+              
         $socialMediaArr = $this->parseFeed($r->data);
 
         return $socialMediaArr;
@@ -45,7 +44,7 @@ class InstagramAdapter extends ModelNA implements SocialFeedInterface
     {
 
         $socialMediaArr = [];
-        foreach($r as $obj) {
+        foreach ($r as $obj) {
 
             $memberSocialId = strtolower($obj->user->username);
             $socialId = $obj->id;
@@ -70,7 +69,8 @@ class InstagramAdapter extends ModelNA implements SocialFeedInterface
                 'mediaHeight' => $mediaHeight,
                 'mediaWidth' => $mediaWidth,
                 'source' => 'instagram',
-                'written_at' => $written_at
+                'written_at' => $written_at,
+                'website' => ''
             ];
             
         }
@@ -106,6 +106,7 @@ class InstagramAdapter extends ModelNA implements SocialFeedInterface
     
     public function parseFriends(array $instagramUsersArr) 
     {
+        
         /*
          * Array
                 (
@@ -118,13 +119,14 @@ class InstagramAdapter extends ModelNA implements SocialFeedInterface
                         )
          */
         $this->friendsArr = [];
-        foreach($instagramUsersArr as $key => $obj) {
+        foreach ($instagramUsersArr as $key => $obj) {
 
             $this->friendsArr[] = [
                 'name' => $obj->full_name,
                 'member_social_id' => $obj->username,
                 'source' => 'instagram',
-                'avatar' => $obj->profile_picture
+                'avatar' => $obj->profile_picture,
+                'website' => ''
             ];
             
         }
@@ -133,7 +135,7 @@ class InstagramAdapter extends ModelNA implements SocialFeedInterface
     
     public function getFriendsArr()
     {
-        return $this->friendsArr;
+        return $this->friendsArr; 
     }
 
      

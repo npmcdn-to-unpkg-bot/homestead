@@ -27,6 +27,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('members/create', 'MembersController@create');
     Route::get('members/{slug}', 'MembersController@index');
     Route::resource('members', 'MembersController');
+    Route::resource('links', 'LinksController');
+    Route::post('links/sort', 'LinksController@sort');       
 
     Route::bind('members', function($value, $route) {
         $ent = new App\MemberEntity();

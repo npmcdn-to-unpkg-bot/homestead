@@ -89,6 +89,7 @@ class Site {
     public static function getSubdomainData() 
     {
         $defaultArr = array(
+            'rank' => 0,
             'name' => 'NowArena.com',
             'nameShort' => 'NowArena.com',
             'nameLong' => 'NowArena.com',
@@ -104,6 +105,7 @@ class Site {
             '' => $defaultArr,
             'www' => $defaultArr,
             'nba' => array(
+                'rank' => 3,
                 'name' => 'NBA',
                 'nameShort' => 'NBA',
                 'nameLong' => 'National Basketball Association',
@@ -116,6 +118,7 @@ class Site {
                 'categoryDepth' => 3
             ),
             'abbotkinneyblvd' => array(
+                'rank' => 1,
                 'name' => 'Abbot Kinney',
                 'nameShort' => 'Abbot Kinney Blvd.',
                 'nameLong' => 'Abbot Kinney Boulevard',
@@ -126,8 +129,36 @@ class Site {
                 'twitterScreenName' => 'abbotkinneybl',
                 'instagramScreenName' => 'abbotkinneybl',
                 'categoryDepth' => 2
+            ),
+            'fullstack' => array(
+                'rank' => 2, 
+                'name' => 'Full Stack Development',
+                'nameShort' => 'Full Stack Dev.',
+                'nameLong' => 'Full Stack Web Development',
+                'database' => 'nowarenafullstack',
+                'pageTitle' => "NowArena.com : Latest social media full stack web development.",
+                'baseUrl' => 'http://fullstack.' . self::$domain,
+                'description' => "Linux, Web Server, Database, php, Javascript, CSS, HTML, Dev Tools and Utilities",
+                'twitterScreenName' => 'fullstackarena',
+                'instagramScreenName' => 'fullstackarena',
+                'categoryDepth' => 2
             )
         );
+        
+    }
+    
+    public static function getSortedSubdomainData()
+    {
+     
+        $arr = self::getSubdomainData();
+        $arr = array_values(array_sort($arr, function($value)
+        {
+
+            return $value['rank'];
+            
+        }));
+        
+        return $arr;
         
     }
     
@@ -147,9 +178,9 @@ class Site {
     public static function getDatabase() 
     {
         $db = self::$subdomainArr['database'];
-        //if (env('APP_ENV') != 'local') {
+        if (!stristr($db, "nowarena")) {
             $db = 'nowarena' . $db;
-        //}
+        }
 
         return $db;
         

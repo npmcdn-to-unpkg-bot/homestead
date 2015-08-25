@@ -16,6 +16,20 @@ class MemberSocial extends ModelNA
             return array();
         }
 
+        //use member ids as cache keys
+        $idArr = array_map(function ($obj) {return $obj->id;}, $memberArr);
+        sort($idArr);
+        $idStr = implode("_", $idArr);
+        // add additional params to make cache key
+        $key = $idStr . "_" . intval($socialMediaId) . "_" . $offset . "_" . $limit;
+        $memberKey = 'member_' . $key;
+        $contentKey = 'content_' . $key;
+        $newMemberArr = \Cache::get($memberKey);
+        $contentArr = \Cache::get($contentKey);
+        if ($newMemberArr !== null && $contentArr != null) {
+            return array($newMemberArr, $contentArr);
+        }
+
         $contentArr = array();
         foreach($memberArr as $obj) {
             
@@ -43,7 +57,7 @@ class MemberSocial extends ModelNA
             $q.= "GROUP BY tmp_table.id ";
             $q.= "ORDER BY tmp_table.id DESC ";
             $q.= "LIMIT $limit "; 
-            $q.= "OFFSET 0";
+            $q.= "OFFSET $offset";
             $r = DB::select($q);
             
             // initialize array for ordering members by social media date
@@ -93,6 +107,9 @@ class MemberSocial extends ModelNA
                 }
             }
         }
+        
+        \Cache::put($memberKey, $newMemberArr, 10);
+        \Cache::put($contentKey, $contentArr, 10);
 
         return array($newMemberArr, $contentArr);
         

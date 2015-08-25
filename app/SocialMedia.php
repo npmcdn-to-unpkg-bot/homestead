@@ -67,7 +67,7 @@ class SocialMedia extends ModelNA {
 
         // set member_social_id to lowercase and set member_social_id as key in members array
         $formattedMembersArr = [];
-        foreach($membersArr as $key => $arr) {
+        foreach ($membersArr as $key => $arr) {
             $arr['member_social_id'] = strtolower($arr['member_social_id']);
             $formattedMembersArr[$arr['member_social_id']] = $arr;
         }
@@ -88,9 +88,11 @@ class SocialMedia extends ModelNA {
 
         // update avatars of members not in newMembersArr (ie members already in db)
         $this->updateAvatars($membersInDBArr);
+        //update website of members not in newMembersArr
+        $this->updateWebsiteUrl($membersInDBArr);
 
         $noMemberIdArr = array();
-        foreach($newMembersArr as $key => $arr) {
+        foreach ($newMembersArr as $key => $arr) {
  
             $memberEnt = new \App\MemberEntity;
             $memberEnt = $memberEnt->init($arr);
@@ -155,10 +157,43 @@ class SocialMedia extends ModelNA {
 
     }
     
+    /**
+     * Update members table with website url. Only members already in DB are in memberArr
+     * 
+     * @param array $memberArr
+     */
+    protected function updateWebsiteUrl($memberArr) 
+    {
+        
+        $pdo = DB::getPdo();
+
+        foreach ($memberArr as $memberSocialId => $arr) {
+            
+            /*
+            DB::table('members')->join('member_social_ids AS msi', function($join) use ($memberSocialId) {
+                $join->on('msi.member_id', '=', 'members.id')->where('msi.member_social_id', '=', $memberSocialId);
+            })->update(['website' => $arr['website']]);
+             */
+
+            $q = "UPDATE members ";
+            $q.= "INNER JOIN member_social_ids AS msi ON msi.member_id = members.id ";
+            $q.= "SET members.website = " . $pdo->quote($arr['website']) . " ";
+            $q.= "WHERE msi.member_social_id = " . $pdo->quote($arr['member_social_id']) . " ";
+            DB::select($q);
+
+        }
+        
+    }
+    
+    /**
+     * Only members already in DB get here
+     * 
+     * @param array $memberArr
+     */
     protected function updateAvatars($memberArr) 
     {
 
-        foreach($memberArr as $memberSocialId => $arr) {
+        foreach ($memberArr as $memberSocialId => $arr) {
             DB::table('member_social_ids')
                 ->where('member_social_id', $arr['member_social_id'])
                 ->where('social_site', $arr['source'])

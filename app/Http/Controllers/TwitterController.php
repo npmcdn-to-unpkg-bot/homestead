@@ -43,9 +43,7 @@ class TwitterController extends Controller
             $cursor = $this->twitterAdapter->getFriends($cursor);
         } while($cursor > 0);
         
-        // operate on the formatted twitter feed
         $friendsArr = $this->twitterAdapter->getFriendsArr();
-
         if (count($friendsArr) >0 ) {
 
             $addToMembersTable = true; 
