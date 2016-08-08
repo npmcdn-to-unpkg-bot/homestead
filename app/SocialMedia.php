@@ -89,6 +89,7 @@ class SocialMedia extends ModelNA {
         $membersInDBArr = array_diff_key($membersArr, $newMembersArr);
 
         // update avatars of members not in newMembersArr (ie members already in db)
+        printR($membersInDBArr);
         $this->updateAvatars($membersInDBArr);
         //update website of members not in newMembersArr
         $this->updateWebsiteUrl($membersInDBArr);
@@ -597,7 +598,7 @@ class SocialMedia extends ModelNA {
             if (!isset($memberSocialIdMemberIdArr[$val['memberSocialId']])) {
                 continue;
             }
-            
+
             $memberId = $memberSocialIdMemberIdArr[$val['memberSocialId']];
 
             $socialMediaEnt = new SocialMediaEntity();            

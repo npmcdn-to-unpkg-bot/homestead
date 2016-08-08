@@ -11,6 +11,9 @@
 |
 */
 
+Route::resource('game/jquerymatch', 'GameController@jquerymatch');
+Route::resource('game/reactmatch', 'GameController@reactmatch');
+Route::get("/index", "IndexController@index");
 Route::get('/', 'SocialMediaController@welcome');
 Route::get('twitter', 'TwitterController@index');
 Route::get('twitter/getfriends', 'TwitterController@getfriends');

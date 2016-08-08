@@ -104,19 +104,6 @@ class Site {
         return array(
             '' => $defaultArr,
             'www' => $defaultArr,
-            'nba' => array(
-                'rank' => 3,
-                'name' => 'NBA',
-                'nameShort' => 'NBA',
-                'nameLong' => 'National Basketball Association',
-                'database' => 'nba',
-                'pageTitle' => 'NowArena.com : Latest social media from the NBA',
-                'baseUrl' => 'http://nba.' . self::$domain,
-                'description' => 'Lebron, Griffin, Kobe and more.', 
-                'twitterScreenName' => 'nbablvd',
-                'instagramScreenName' => '',
-                'categoryDepth' => 3
-            ),
             'abbotkinneyblvd' => array(
                 'rank' => 1,
                 'name' => 'Abbot Kinney',
