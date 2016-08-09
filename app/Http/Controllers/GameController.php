@@ -38,6 +38,7 @@ class GameController extends Controller
      */
     public function reactmatch()
     {
+        exit('asdf');
         return view('game.reactmatch');
     }
 
