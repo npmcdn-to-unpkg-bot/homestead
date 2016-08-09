@@ -10,7 +10,7 @@
 | and give it the controller to call when that URI is requested.
 |
 */
-
+Route::resource('game/searchfilter', 'GameController@searchfilter');
 Route::resource('game/jquerymatch', 'GameController@jquerymatch');
 Route::resource('game/reactmatch', 'GameController@reactmatch');
 Route::get("/index", "IndexController@index");

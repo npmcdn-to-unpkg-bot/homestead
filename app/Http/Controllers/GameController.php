@@ -21,25 +21,21 @@ class GameController extends Controller
 
     }
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return Response
-     */
     public function jquerymatch()
     {
         return view('game.jquerymatch');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return Response
-     */
     public function reactmatch()
     {
-        exit('asdf');
+
         return view('game.reactmatch');
+    }
+
+    public function searchfilter()
+    {
+
+        return view('game.searchfilter');
     }
 
     /**
