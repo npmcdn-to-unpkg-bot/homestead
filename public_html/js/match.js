@@ -1,13 +1,13 @@
 var globalObj = {
 
+    gridArr: [], // array of objects representing the box tile
     numPieces: 8,
     score: 0,
     matches: 0,
     misses: 0,
     visibleJArr: [],
     completedArr: [],
-    visibleIndexArr: [],
-    completedArr: [],
+    visibleIndexArr: [],//1 through numPieces
 
     getScore: function()
     {
@@ -21,7 +21,7 @@ var globalObj = {
     {
         // don't compute clicks on already completed squares
         for(var key in this.completedArr) {
-            if (typeof this.completedArr[key] != 'undefined' && this.completedArr[key] == this.props.index) {
+            if (typeof this.completedArr[key] != 'undefined' && this.completedArr[key] == index) {
                 return false;
             }
         }
@@ -40,7 +40,14 @@ var globalObj = {
         if (this.visibleJArr.length == 2) {
             if (this.visibleJArr[0] == this.visibleJArr[1]) {
                 this.matches++;
-                this.completedArr.push(props.index);
+                // get the index for each box and store it in completedArr
+                for(var i in this.gridArr) {
+                    if (this.gridArr[i].j == this.visibleJArr[0]) {
+                        this.completedArr.push(this.gridArr[i].index);
+                    } else if (this.gridArr[i] == this.visibleJArr[1]) {
+                        this.completedArr.push(this.gridArr[i].index);
+                    }
+                }
                 var result = 'match';
             } else {
                 this.misses++;
@@ -82,7 +89,6 @@ var globalObj = {
 
         // Build the grid
         // Set an array with a sequential range of numbers
-        var gridArr = [];
         var numArr = [];
         for(var j = 1; j <= this.numPieces; j++) {
             numArr.push(j);
@@ -102,11 +108,11 @@ var globalObj = {
                     j:j,
                     displayJ:j
                 };
-                gridArr.push(obj);
+                this.gridArr.push(obj);
             }
         }
 
-        return gridArr;
+        return this.gridArr;
 
     }
 

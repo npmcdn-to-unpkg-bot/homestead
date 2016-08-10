@@ -22,32 +22,45 @@
     var Box = React.createClass({
 
         componentWillMount: function() {
-            console.log('componentWillMount');
+            //console.log('componentWillMount');
+
         },
         componentDidMount: function() {
 //            componentDidMount is called after the component is mounted and has a
 //            DOM representation. This is often a place where you would attach generic DOM events.
-            console.log('componentDidMount');
+            //console.log('componentDidMount');
         },
         componentWillReceiveProps: function() {
-            console.log('componentWillReceiveProps');
+            //console.log('componentWillReceiveProps');
         },
         shouldComponentUpdate: function() {
-            console.log('shouldComponentUpdate');
+            //console.log('shouldComponentUpdate');
             return true;
         },
-        componentWillUpdate: function() {
-            console.log('componentWillUpdate');
+        componentWillUpdate: function(nextProps, nextState) {
+//        console.log('componentWillUpdate');
+//        console.log(nextProps);
+//        console.log(nextState);
         },
         componentDidUpdate: function() {
-            console.log('componentDidUpdate');
+            //console.log('componentDidUpdate');
 
         },
         componentWillUnmount: function() {
-            console.log('componentWillUnmount');
+            //console.log('componentWillUnmount');
         },
+        // this does nothing
         getDefaultProps: function() {
-            console.log('getDefaultProps');
+            return {
+                clickedIndex: 0,
+                prevTarget: {}
+            };
+        },
+        // If getInitialState does not return a clickedIndex value, a null value error is thrown upon instantiation
+        getInitialState: function() {
+            return {
+                clickedIndex: 0
+            };
         },
 
         handleOnClick: function(e) {
@@ -56,38 +69,40 @@
                 return;
             }
 
-            // set current target
-            curVisibleComponent = e.currentTarget.children[0];
-            curVisibleComponent.style.display = 'block';
+            this.setState({clickedIndex:this.props.index});
 
             // evaluate clicks
             var result = globalObj.eval(this.props);
+            console.log("result:" + result);
             if (result == 'match') {
-                //remove boxes
-                setTimeout(function () {
-                    ReactDOM.findDOMNode(curVisibleComponent).style.display = 'none';
-                }, 1000);
-                setTimeout(function () {
-                    ReactDOM.findDOMNode(prevVisibleComponent).style.display = 'none';
-                }, 1000);
-console.log('match');
-            } else if (result == 'miss') {
-                // conceal number
-console.log('miss');
-            } else {
-                prevVisibleComponent = e.currentTarget.children[0];
+                //ReactDOM.findDOMNode(this.state.prevTarget).style.visibility = 'hidden';
             }
 
         },
 
         render: function() {
-            var style = 'display:none';
-            if (this.props.clickedIndex == this.props.index) {
-                style = 'display:block';
+
+            // TODO - get second matched box to disappear. Both disappear after slight delay
+            //      - possible solution: set listener in parent for the click on the box, not on the box itself, and the parent sets state
+            // Have misses re-conceal after slight delay
+            // Makes score and msg visible
+
+            // set box to empty style if it is in completedArr
+            var emptyBox = {};
+            for(var i in globalObj.completedArr) {
+                if (this.props.index == globalObj.completedArr[i]) {
+                    emptyBox = {backgroundColor:'#cee3f8'};
+                }
             }
+            // if the box is not empty and box is clicked on, show the number/pattern
+            var innerBoxStyle = {display:'none'};
+            if (Object.keys(emptyBox).length == 0 && this.state.clickedIndex == this.props.index) {
+                innerBoxStyle = {display:'block'};
+            }
+
             return (
-                <div className="Box" onClick={this.handleOnClick}>
-                    <div style={{style}} className="InnerBox">{this.props.displayJ}</div>
+                <div style={emptyBox} className="Box" onClick={this.handleOnClick}>
+                    <div style={innerBoxStyle} className="InnerBox">{this.props.displayJ}</div>
                 </div>
             );
         }
