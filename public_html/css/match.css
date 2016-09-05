@@ -1,8 +1,9 @@
-.Box, .box{
+.Box {
     border:1px solid #cccccc;
     width:100px;
     height:100px;
-    background-color:#dddddd;
+    background-color:#000000;
+    background-image:url('/img/100x100/cover.png');
     float:left;
     font-size:60px;
     font-weight:bold;
@@ -12,10 +13,10 @@
 }
 
 .InnerBox {
-    display:none;
+    display:block;
 }
 
-#container{
+.Boxes{
     height:408px;
     width:408px;
     border:1px solid black;

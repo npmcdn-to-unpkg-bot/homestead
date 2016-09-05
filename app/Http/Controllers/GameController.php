@@ -31,7 +31,11 @@ class GameController extends Controller
 
         return view('game.reactmatch');
     }
+    public function react()
+    {
 
+        return view('game.react');
+    }
     public function searchfilter()
     {
 

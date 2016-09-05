@@ -1,24 +1,28 @@
 var globalObj = {
 
-    gridArr: [], // array of objects representing the box tile
-    numPieces: 8,
+    gridArr: [], // array of objects representing the game board of squares aka boxes aka tiles
+    numPieces: 8,// two pairs of numPieces, 8 numPieces = 16 boxes
     score: 0,
     matches: 0,
     misses: 0,
     visibleJArr: [],
     completedArr: [],
     visibleIndexArr: [],//1 through numPieces
+    gameStatus: 'running',// or 'over'
+    clickCount:0,
 
     getScore: function()
     {
         if (this.matches == 0 || this.misses == 0 ) {
-            this.score = 0;
+            score = 0;
         } else {
-            this.score = parseInt((this.matches / this.misses) * 100) + '%';
+            score = parseInt((this.matches / this.misses) * 100) + '%';
         }
+        return score;
     },
     isValidClick: function(index)
     {
+
         // don't compute clicks on already completed squares
         for(var key in this.completedArr) {
             if (typeof this.completedArr[key] != 'undefined' && this.completedArr[key] == index) {
@@ -31,12 +35,25 @@ var globalObj = {
             return false;
         }
 
+        // the visibleArr length gets set after this isValidClick() function, so use this.clickCount instead
+        this.clickCount++;
+        console.log("clickCount: " + this.clickCount);
+        if (this.clickCount > 2) {
+            return false;
+        }
+
         return true;
+
+    },
+    resetClickCount: function()
+    {
+        this.clickCount = 0;
     },
     eval: function(props)
     {
         this.visibleJArr.push(props.j);
         this.visibleIndexArr.push(props.index);
+        // If we have two clicked boxes
         if (this.visibleJArr.length == 2) {
             if (this.visibleJArr[0] == this.visibleJArr[1]) {
                 this.matches++;
@@ -58,7 +75,8 @@ var globalObj = {
             this.visibleIndexArr = new Array();
 
             if (this.numPieces == this.completedArr.length / 2) {
-                this.msg = "Game Over. <a href=''>Play again.</a>";
+                this.msg = "Game Over. ";
+                this.gameStatus = "over";
             }
 
             return result;
@@ -66,6 +84,7 @@ var globalObj = {
 
         return 'oneclicked';
     },
+    // shuffle function via stackoverflow
     shuffle: function(array) {
 
         var currentIndex = array.length, temporaryValue, randomIndex;
@@ -103,10 +122,10 @@ var globalObj = {
                 j = numArr[x];
                 var obj = {
                     index: index,
-                    indexKey: index,
                     i: i,
                     j:j,
-                    displayJ:j
+                    displayJ: j,
+                    img: '/img/100x100/' + j + '.png'
                 };
                 this.gridArr.push(obj);
             }
