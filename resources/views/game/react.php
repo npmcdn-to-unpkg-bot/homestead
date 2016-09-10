@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <script src="https://npmcdn.com/react@15.3.0/dist/react.js"></script>
-    <script src="https://npmcdn.com/react-dom@15.3.0/dist/react-dom.js"></script>
-    <script src="https://npmcdn.com/babel-core@5.8.38/browser.min.js"></script>
+    <script src="https://unpkg.com/react@15.3.0/dist/react.js"></script>
+    <script src="https://unpkg.com/react-dom@15.3.0/dist/react-dom.js"></script>
+    <script src="https://unpkg.com/babel-core@5.8.38/browser.min.js"></script>
     <meta charset="utf-8">
     <title>JS Bin</title>
 </head>
